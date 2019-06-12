@@ -24,6 +24,7 @@ EOF
 needed_packages=()
 
 hash sudo &>/dev/null || needed_packages+=(sudo)
+test -f /etc/profile.d/vte.sh || needed_packages+=(vte-profile)
 
 trap 'echo "$BASH_SOURCE:$LINENO: $BASH_COMMAND" failed, sorry.' ERR
 
