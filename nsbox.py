@@ -151,11 +151,6 @@ def get_script(name: str = '') -> Path:
     return script
 
 
-def require_root() -> None:
-    if os.getuid():
-        sys.exit('This must be run as root.')
-
-
 def exec_create(userdata: Userdata, args: Any) -> None:
     container: str = args.container
     version: int = args.version
