@@ -146,7 +146,7 @@ class IndexHtmlParser(HTMLParser):
 
 
 def get_script(name: str = '') -> Path:
-    script = Path(__file__).parent.absolute() / 'scripts' / name
+    script = Path(__file__).resolve().parent / 'scripts' / name
     assert script.exists()
     return script
 
