@@ -322,7 +322,7 @@ def exec_run(userdata: Userdata, args: Any) -> None:
     if mail.exists():
         nspawn.add_bind(mail, priv_path / 'mail')
 
-    exec = args.exec or [str(shell)]
+    exec = args.exec or [str(shell), '-l']
 
     nspawn.add_env('NSBOX_USER', userdata.user)
     nspawn.add_env('NSBOX_UID', str(userdata.uid))
