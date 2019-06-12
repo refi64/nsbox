@@ -280,7 +280,6 @@ def exec_run(userdata: Userdata, args: Any) -> None:
     env_file = host_priv_path / 'env'
     with env_file.open('w') as fp:
         for key, value in userdata.environ.items():
-            print(key)
             if key not in ENV_WHITELIST:
                 continue
 
