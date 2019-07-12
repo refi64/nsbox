@@ -129,10 +129,12 @@ class IndexHtmlParser(HTMLParser):
 
         self.filename: Optional[str] = None
 
-    def handle_starttag(self, tag: str, attrs: List[Tuple[str, str]]) -> None:
+    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
         attr_dict = dict(attrs)
-        if tag == 'a' and attr_dict.get('href', '').startswith('Fedora-Container-Base'):
-            raise IndexFilenameFound(attr_dict['href'])
+        if tag == 'a':
+            href = attr_dict.get('href', '')
+            if href is not None and href.startswith('Fedora-Container-Base'):
+                raise IndexFilenameFound(href)
 
     @staticmethod
     def find_filename(index: str) -> str:
@@ -209,6 +211,9 @@ class NspawnBuilder:
     def add_link_journal(self, value: str) -> None:
         self.add_argument(f'link-journal={value}')
 
+    def add_machine_name(self, machine: str) -> None:
+        self.add_argument(f'machine={machine}')
+
     def add_hostname(self, hostname: str) -> None:
         self.add_argument(f'hostname={hostname}')
 
@@ -264,6 +269,8 @@ def exec_run(userdata: Userdata, args: Any) -> None:
     nspawn = NspawnBuilder()
     nspawn.add_quiet()
     nspawn.add_as_pid2()
+    nspawn.add_machine_name(container)
+    nspawn.add_hostname('toolbox')
     nspawn.add_machine_directory(dest)
     nspawn.add_link_journal('host')
 
@@ -278,8 +285,8 @@ def exec_run(userdata: Userdata, args: Any) -> None:
 
     nspawn.add_bind('/var/lib/systemd/coredump')
 
-    with open('/etc/machine-id') as fp:
-        machine_id = next(fp).strip()
+    with open('/etc/machine-id') as machine_id_fp:
+        machine_id = next(machine_id_fp).strip()
     nspawn.add_bind(f'/var/log/journal/{machine_id}')
 
     if 'XDG_RUNTIME_DIR' in userdata.environ:
@@ -324,20 +331,20 @@ def exec_run(userdata: Userdata, args: Any) -> None:
     nspawn.add_env('NSBOX_HOST_MACHINE', machine_id)
 
     supplementary_groups_file = host_priv_path / 'supplementary-groups'
-    with supplementary_groups_file.open('w') as fp:
+    with supplementary_groups_file.open('w') as supplementary_groups_fp:
         for gid in userdata.groups:
-            print(f'::{gid}', file=fp)
+            print(f'::{gid}', file=supplementary_groups_fp)
 
     env_file = host_priv_path / 'env'
-    with env_file.open('w') as fp:
+    with env_file.open('w') as env_fp:
         for key, value in userdata.environ.items():
             if key not in ENV_WHITELIST:
                 continue
 
-            print(f'export {key}={shlex.quote(value)}', file=fp)
+            print(f'export {key}={shlex.quote(value)}', file=env_fp)
 
-        print(f'export NSBOX_HOST_MACHINE={shlex.quote(machine_id)}', file=fp)
-        print(f'export NSBOX_CONTAINER={shlex.quote(container)}', file=fp)
+        print(f'export NSBOX_HOST_MACHINE={shlex.quote(machine_id)}', file=env_fp)
+        print(f'export NSBOX_CONTAINER={shlex.quote(container)}', file=env_fp)
 
     nspawn.add_command('/run/host/nsbox/scripts/nsbox-enter.sh', *exec)
     nspawn.exec()
@@ -452,6 +459,17 @@ COMMANDS = {
 
 
 def main() -> None:
+    userdata: Userdata
+    is_root = False
+
+    if os.getuid() == 0:
+        userdata = Userdata.for_sudo_user()
+        is_root = True
+    else:
+        userdata = Userdata.for_user()
+
+    default_container = f'toolbox-{userdata.user}'
+
     parser = argparse.ArgumentParser(description='''
         nsbox is a lightweight, root/sudo-based alternative to the rootless toolbox script,
         build on top of systemd-nspawn instead of podman. This gives it several advantages,
@@ -459,35 +477,35 @@ def main() -> None:
         container in order to take advantage of newer changes.
     ''')
 
-    parser.add_argument('--userdata', help=argparse.SUPPRESS)
+    parser.add_argument('--environ', help=argparse.SUPPRESS)
 
     subcommands = parser.add_subparsers(dest='command', required=True)
 
     create_command = subcommands.add_parser('create', help='Create a new container')
-    create_command.add_argument('--container', '-c', default='toolbox',
+    create_command.add_argument('--container', '-c', default=default_container,
                                 help='The container name')
     create_command.add_argument('--version', type=int, help='The Fedora version to use')
 
     run_command = subcommands.add_parser('run', help='Run a command inside the container')
-    run_command.add_argument('--container', '-c', default='toolbox', help='The container name')
+    run_command.add_argument('--container', '-c', default=default_container,
+                             help='The container name')
     run_command.add_argument('exec', nargs=argparse.REMAINDER,
                              help='The command to run (default is your shell)')
 
     import_command = subcommands.add_parser('import',
                                             help='Import the packages from a rootless toolbox')
     import_command.add_argument('--source', '-s', help='The toolbox container name')
-    import_command.add_argument('--target', '-t', default='toolbox',
+    import_command.add_argument('--target', '-t', default=default_container,
                                 help='The nsbox container name')
 
     args = parser.parse_args()
 
-    if os.getuid() != 0:
-        os.execvp('sudo', ['sudo', os.path.abspath(__file__), '--userdata',
-                           Userdata.for_user().to_environ_json(), *sys.argv[1:]])
-    else:
-        userdata = Userdata.for_sudo_user()
-        if args.userdata:
-            userdata = userdata.with_environ_json(args.userdata)
+    if not is_root:
+        os.execvp('sudo', ['sudo', os.path.abspath(__file__), '--environ',
+                           userdata.to_environ_json(), *sys.argv[1:]])
+
+    if args.environ:
+        userdata = userdata.with_environ_json(args.environ)
 
     COMMANDS[args.command](userdata, args)
 
