@@ -200,6 +200,9 @@ class NspawnBuilder:
     def add_quiet(self) -> None:
         self.add_argument('quiet')
 
+    def add_as_pid2(self) -> None:
+        self.add_argument('as-pid2')
+
     def add_machine_directory(self, path: MaybePath) -> None:
         self.add_argument(f'directory={path}')
 
@@ -260,6 +263,7 @@ def exec_run(userdata: Userdata, args: Any) -> None:
 
     nspawn = NspawnBuilder()
     nspawn.add_quiet()
+    nspawn.add_as_pid2()
     nspawn.add_machine_directory(dest)
     nspawn.add_link_journal('host')
 
@@ -271,19 +275,6 @@ def exec_run(userdata: Userdata, args: Any) -> None:
 
     scripts_dir = get_script()
     nspawn.add_bind(scripts_dir, priv_path / 'scripts')
-
-    supplementary_groups_file = host_priv_path / 'supplementary-groups'
-    with supplementary_groups_file.open('w') as fp:
-        for gid in userdata.groups:
-            print(f'::{gid}', file=fp)
-
-    env_file = host_priv_path / 'env'
-    with env_file.open('w') as fp:
-        for key, value in userdata.environ.items():
-            if key not in ENV_WHITELIST:
-                continue
-
-            print(f'export {key}={shlex.quote(value)}', file=fp)
 
     nspawn.add_bind('/var/lib/systemd/coredump')
 
@@ -312,6 +303,8 @@ def exec_run(userdata: Userdata, args: Any) -> None:
     else:
         nspawn.add_bind(userdata.home, recursive=True)
 
+    nspawn.add_bind('/mnt', '/mnt')
+    # nspawn.add_bind(Path('/mnt').resolve(), '/run/host/mnt')
     nspawn.add_bind('/etc', '/run/host/etc')
 
     shell = userdata.shell
@@ -329,7 +322,22 @@ def exec_run(userdata: Userdata, args: Any) -> None:
     nspawn.add_env('NSBOX_SHELL', str(shell))
     nspawn.add_env('NSBOX_CWD', os.getcwd())
     nspawn.add_env('NSBOX_HOST_MACHINE', machine_id)
-    nspawn.add_env('NSBOX_CONTAINER', container)
+
+    supplementary_groups_file = host_priv_path / 'supplementary-groups'
+    with supplementary_groups_file.open('w') as fp:
+        for gid in userdata.groups:
+            print(f'::{gid}', file=fp)
+
+    env_file = host_priv_path / 'env'
+    with env_file.open('w') as fp:
+        for key, value in userdata.environ.items():
+            if key not in ENV_WHITELIST:
+                continue
+
+            print(f'export {key}={shlex.quote(value)}', file=fp)
+
+        print(f'export NSBOX_HOST_MACHINE={shlex.quote(machine_id)}', file=fp)
+        print(f'export NSBOX_CONTAINER={shlex.quote(container)}', file=fp)
 
     nspawn.add_command('/run/host/nsbox/scripts/nsbox-enter.sh', *exec)
     nspawn.exec()
