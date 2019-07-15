@@ -7,12 +7,22 @@
 set -e
 trap 'echo "$BASH_SOURCE:$LINENO: $BASH_COMMAND" failed, sorry.' ERR
 
+unset SUDO_COMMAND SUDO_USER SUDO_UID SUDO_GID
 . /run/host/nsbox/shared-env
 
-command='exec setsid -c sudo --user="$NSBOX_USER" /run/host/nsbox/scripts/nsbox-enter-run.sh "$@"'
-# Order here is relevant to nsbox.py.
-[[ -z "$1" ]] || command="$command <$1"
-[[ -z "$2" ]] || command="$command >$2"
-[[ -z "$3" ]] || command="$command 2>$3"
-shift 3
-eval "$command"
+cwd="$1"
+shift 1
+
+if [[ -d "$cwd" ]]; then
+  if [[ "$cwd" != */ ]]; then
+    cwd="$cwd/"
+  fi
+
+  if [[ "$cwd" == "$NSBOX_HOME_LINK_TARGET"/* ]]; then
+    cwd="$NSBOX_HOME_LINK_NAME/${cwd#$NSBOX_HOME_LINK_TARGET/}"
+  fi
+
+  cd "$cwd"
+fi
+
+exec "$@"
