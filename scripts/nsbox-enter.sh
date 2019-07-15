@@ -9,8 +9,10 @@ trap 'echo "$BASH_SOURCE:$LINENO: $BASH_COMMAND" failed, sorry.' ERR
 
 . /run/host/nsbox/shared-env
 
-# command='enter "$@"'
-command='exec setsid -c /run/host/nsbox/scripts/nsbox-enter-setup.sh "$@"'
+prefix=
+tty -s && prefix='setsid -c' ||:
+
+command='exec $prefix /run/host/nsbox/scripts/nsbox-enter-setup.sh "$@"'
 # Order here is relevant to nsbox.py.
 [[ -z "$1" ]] || command="$command <$1"
 [[ -z "$2" ]] || command="$command >$2"

@@ -509,7 +509,7 @@ def raw_stdin() -> Iterator[None]:
     try:
         old_attr = termios.tcgetattr(sys.stdin.fileno())
     except termios.error as ex:
-        print(ex)
+        pass
     else:
         tty.setraw(sys.stdin.fileno())
 
@@ -558,12 +558,9 @@ def exec_run(userdata: Userdata, args: Any) -> None:
     command: List[str] = ['nsenter', '-at', str(machine.get_leader()),
                           '/run/host/nsbox/scripts/nsbox-enter.sh']
 
-    # XXX: Okay so PTY handling is a royal mess. Basically, there are a couple of requirements:
-    # We want what's a tty to be transparent. If stdout is a tty but stdin isn't, that needs to
-    # be preserved.
-
-    # Now, nsenter doesn't give us a pty *at all*. Therefore, the plan of action is to ask
-    # machined for a pty inside the machine, and let nsbox-enter know where to redirect what.
+    # XXX: Okay so PTY handling is a royal mess. nsenter doesn't give us a pty *at all*.
+    # Therefore, the plan of action is to ask machined for a pty inside the machine, and let
+    # nsbox-enter know where to redirect what.
 
     # NOTE: Order here is important, nsbox-enter.sh assumes it.
     stdio = (sys.stdin, sys.stdout, sys.stderr)
