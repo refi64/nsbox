@@ -19,19 +19,6 @@ if [[ ! -f /etc/nsbox-state/remove-nodocs ]]; then
   touch /etc/nsbox-state/remove-nodocs
 fi
 
-needed_packages=()
-
-hash sudo &>/dev/null || needed_packages+=(sudo)
-test -f /etc/profile.d/vte.sh || needed_packages+=(vte-profile)
-test -f /usr/share/man/man3/errno.3.gz || needed_packages+=(man-pages)
-
-if (( ${#needed_packages[@]} )); then
-  echo "nsbox-enter: Installing: ${needed_packages[@]}"
-  dnf install -y "${needed_packages[@]}"
-fi
-
-ps -A
-
 groups=$(cat /run/host/nsbox/supplementary-groups /etc/group | cut -d: -f3 | sort | uniq -d \
          | head -c -1 | tr '\n' ',')
 grep -q "$user" /etc/passwd && userdel "$user" ||:
