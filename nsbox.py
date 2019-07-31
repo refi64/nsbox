@@ -18,6 +18,7 @@ import dataclasses
 import dbus  # type: ignore
 import enum
 import fcntl
+import glob
 import grp
 import json
 import os
@@ -446,6 +447,14 @@ def start_container(systemd: SystemdManagerProxy, machined: MachinedManagerProxy
 
     if os.path.exists('/run/media'):
         nspawn.add_bind('/run/media')
+
+    try:
+        subprocess.run(['losetup', '--find'], stdout=subprocess.DEVNULL)
+    except Exception:
+        pass
+
+    for loop in glob.glob('/dev/loop*'):
+        nspawn.add_bind(loop)
 
     env: Dict[str, str] = {}
 
