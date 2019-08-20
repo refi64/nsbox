@@ -16,7 +16,7 @@ import (
 )
 
 func OpenPtyInContainer(name string) (*os.File, error) {
-	containerPath := filepath.Join(paths.ContainerStorage, name)
+	containerPath := paths.ContainerStorage(name)
 	ptySocketPath := filepath.Join(containerPath, paths.InContainerPrivPath, paths.PtyServiceSocketName)
 
 	conn, err := net.Dial("unix", ptySocketPath)

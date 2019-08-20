@@ -126,7 +126,7 @@ func extractLayers(archive string, tmpdir string, containerPath string) error {
 }
 
 func CreateContainer(name string, version string) error {
-	var containerPath = filepath.Join(paths.ContainerStorage, name)
+	var containerPath = paths.ContainerStorage(name)
 	if _, err := os.Stat(containerPath); err == nil {
 		log.Fatalf("container %s already exists", name)
 	}
