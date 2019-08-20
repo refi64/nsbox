@@ -4,7 +4,7 @@
 
 // Called by nsboxd to directly start an nspawn container, while also starting a varlink service
 // responsible for letting the container talk to the host for various reasons.
-package run
+package daemon
 
 import (
 	"bufio"

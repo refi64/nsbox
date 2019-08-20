@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Run a container indirectly, by starting a transient systemd service that runs nsboxd.
-package run
+package daemon
 
 import (
 	"fmt"
