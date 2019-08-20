@@ -13,10 +13,13 @@ import (
 	"strings"
 )
 
-const ContainerStorage = State + "/nsbox/storage"
 const InContainerPrivPath = "/var/lib/.nsbox-priv"
 const HostServiceSocketName = "host-service.sock"
 const PtyServiceSocketName = "pty-service.sock"
+
+func ContainerStorage(name string) string {
+	return filepath.Join(State, "nsbox", name, "storage")
+}
 
 func GetExecutablePath() (self string, err error) {
 	self, err = os.Executable()

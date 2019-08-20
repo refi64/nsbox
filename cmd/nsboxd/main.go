@@ -11,7 +11,6 @@ import (
 	"github.com/refi64/nsbox/internal/run"
 	"github.com/refi64/nsbox/internal/userdata"
 	"os"
-	"path/filepath"
 )
 
 func main() {
@@ -24,7 +23,7 @@ func main() {
 	}
 
 	containerName := flag.Arg(0)
-	containerPath := filepath.Join(paths.ContainerStorage, containerName)
+	containerPath := paths.ContainerStorage(containerName)
 	if _, err := os.Stat(containerPath); err != nil {
 		log.Fatal(err)
 	}
