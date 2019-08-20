@@ -34,6 +34,7 @@ fi
 if grep -q "^$user" /etc/shadow; then
   grep -v "$user" /etc/shadow > /etc/shadow.x
   mv /etc/shadow{.x,}
+  chmod 000 /etc/shadow
 fi
 
 cp /etc/shadow{,.x}
