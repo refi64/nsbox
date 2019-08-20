@@ -45,6 +45,7 @@ copy("gofiles") {
     "internal/ptyservice/client.go",
     "internal/ptyservice/service.go",
     "internal/session/enter.go",
+    "internal/session/setup.go",
     "internal/userdata/userdata.go",
     "internal/varlink/dev.nsbox.varlink",
     "internal/varlinkhost/varlinkhost.go",
@@ -101,7 +102,6 @@ copy("install-private-exec") {
 copy("install-scripts") {
   sources = [
     "scripts/nsbox-init.sh",
-    "scripts/nsbox-enter.sh",
     "scripts/nsbox-enter-run.sh",
     "scripts/nsbox-enter-setup.sh",
   ]

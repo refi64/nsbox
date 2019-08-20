@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// Enter a running container session.
 package session
 
 import (
@@ -133,22 +134,20 @@ func EnterContainer(name string, command []string, usrdata *userdata.Userdata,
 		}
 	}
 
-	args := []string{"nsenter", "-at", strconv.Itoa(int(leader)),
-					 "/run/host/nsbox/scripts/nsbox-enter.sh"}
+	args := []string{"nsenter", "-at", strconv.Itoa(int(leader)), "nsbox-host", "enter"}
 
-	// Pass the redirects for nsbox-enter.sh.
-	for _, file := range stdio {
-		var arg string
-
-		if fileIsTerminal(file) {
-			arg = pty.Name()
+	ptyArgMap := []string{"stdin", "stdout", "stderr"}
+	for index, file := range stdio {
+		if !fileIsTerminal(file) {
+			continue
 		}
 
-		args = append(args, arg)
+		args = append(args, fmt.Sprintf("--%s=%s", ptyArgMap[index], pty.Name()))
 	}
 
-	// Add our cwd.
-	args = append(args, workdir)
+	args = append(args, fmt.Sprintf("--uid=%d", os.Getuid()), fmt.Sprintf("--cwd=%s", workdir))
+	// TODO: figure out how to stop parsing after an argument.
+	args = append(args, "--")
 
 	// Add the environment variables.
 	args = append(args, "env")
