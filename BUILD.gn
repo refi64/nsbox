@@ -1,0 +1,105 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+import("//build/go.gni")
+import("//build/symlink.gni")
+
+install_dir = "$root_out_dir/install"
+go_target_dir = "$root_build_dir/gofiles"
+
+# XXX: So, since we need to be able to write out files into what appears to be the source tree,
+# but we can't actually (since GN does multiple build dirs, which is a feature that I would
+# like to keep), then we need to instead copy ALL THE GO SOURCES over into the build tree.
+# govendor is symlinked because that would mostly just be annoying to copy.
+
+# Life is fun.
+
+symlink("vendor_symlink") {
+  name = "$go_target_dir/vendor"
+  value = rebase_path("//vendor", root_build_dir)
+}
+
+action("host_paths") {
+  script = "//build/generate_host_paths.py"
+  outputs = ["$go_target_dir/internal/paths/host_paths.go"]
+  args = ["--state", state_dir, "--libexec", libexec_dir, "--share", share_dir,
+          "--output", rebase_path(outputs[0])]
+}
+
+copy("gofiles") {
+  sources = [
+    "go.mod",
+    "go.sum",
+    "cmd/nsbox/main.go",
+    "cmd/nsboxd/main.go",
+    "cmd/nsbox-host/main.go",
+    "internal/create/create.go",
+    "internal/create/image_scraper.go",
+    "internal/kill/kill.go",
+    "internal/log/log.go",
+    "internal/nspawn/builder.go",
+    "internal/paths/paths.go",
+    "internal/ptyservice/client.go",
+    "internal/ptyservice/service.go",
+    "internal/run/direct.go",
+    "internal/run/enter.go",
+    "internal/run/transient.go",
+    "internal/userdata/userdata.go",
+    "internal/varlink/dev.nsbox.varlink",
+    "internal/varlinkhost/varlinkhost.go",
+  ]
+
+  outputs = ["$go_target_dir/{{source}}"]
+
+  deps = [":vendor_symlink", ":host_paths"]
+}
+
+go_binary("varlink-go-interface-generator") {
+  package = "github.com/varlink/go/cmd/varlink-go-interface-generator"
+  root = go_target_dir
+  deps = [":gofiles"]
+}
+
+action("nsbox-varlink-interface") {
+  varlink_generator = rebase_path(get_target_outputs(":varlink-go-interface-generator"),
+                                  go_target_dir)
+
+  script = "//build/bin_proxy.py"
+  args = [rebase_path(go_target_dir, root_build_dir), varlink_generator[0],
+          "internal/varlink/dev.nsbox.varlink"]
+  outputs = ["$go_target_dir/interface/varlink/devnsbox.go"]
+  deps = [":gofiles", ":varlink-go-interface-generator"]
+}
+
+binaries = ["nsbox", "nsboxd", "nsbox-host"]
+
+foreach(binary, binaries) {
+  go_binary(binary) {
+    package = "github.com/refi64/nsbox/cmd/$binary"
+    root = go_target_dir
+    deps = [":gofiles", ":nsbox-varlink-interface"]
+  }
+}
+
+copy("install-bin") {
+  sources = get_target_outputs(":nsbox")
+  outputs = ["$install_dir/$bin_dir/{{source_file_part}}"]
+  deps = [":nsbox"]
+}
+
+copy("install-private-exec") {
+  sources = get_target_outputs(":nsboxd") + get_target_outputs(":nsbox-host")
+  outputs = ["$install_dir/$libexec_dir/nsbox/{{source_file_part}}"]
+  deps = [":nsboxd", ":nsbox-host"]
+}
+
+copy("install-scripts") {
+  sources = [
+    "scripts/nsbox-init.sh",
+    "scripts/nsbox-enter.sh",
+    "scripts/nsbox-enter-run.sh",
+    "scripts/nsbox-enter-setup.sh",
+  ]
+  outputs = ["$install_dir/$share_dir/nsbox/scripts/{{source_file_part}}"]
+}
