@@ -1,0 +1,16 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+template("symlink") {
+  action(target_name) {
+    stamp = "$target_gen_dir/$target_name.stamp"
+
+    script = "//build/symlink.py"
+    args = [rebase_path(invoker.value, root_build_dir),
+            rebase_path(invoker.name, root_build_dir),
+            rebase_path(stamp, root_build_dir)]
+    sources = []
+    outputs = [stamp]
+  }
+}

@@ -1,0 +1,19 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+template("go_binary") {
+  action(target_name) {
+    forward_variables_from(invoker, ["deps"])
+
+    output = "$target_out_dir/$target_name"
+    depfile = "$target_out_dir/$target_name.d"
+
+    script = "//build/go.py"
+    args = ["--go", go_exe, "--package", invoker.package,
+            "--root", rebase_path(invoker.root, root_build_dir),
+            "--out-bin", rebase_path(output, invoker.root),
+            "--out-dep", rebase_path(depfile, invoker.root)]
+    outputs = [output]
+  }
+}

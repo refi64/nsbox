@@ -1,0 +1,43 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+if (target_os == "") {
+  target_os = host_os
+}
+
+if (target_cpu == "") {
+  target_cpu = host_cpu
+}
+
+if (current_cpu == "") {
+  current_cpu = target_cpu
+}
+
+if (current_os == "") {
+  current_os = target_os
+}
+
+declare_args() {
+  # The path to the Go binary.
+  go_exe = "go"
+
+  # Override the complete Go build command. Only use this for packagers.
+  go_full_build_command = ""
+
+  # The system's bin directory, relative to the system's prefix.
+  bin_dir = "bin"
+
+  # The system's libexec directory, relative to the system's prefix.
+  libexec_dir = "libexec"
+
+  # The system's data directory, relative to the system's prefix.
+  share_dir = "share"
+
+  # The system's shared state directory. (Unlike the other *_dir options, this one
+  # should be an absolute path.)
+  state_dir = "/var/lib"
+}
+
+# We're not building any C/C++ code, so the toolchain only needs to define a few tools.
+set_default_toolchain("//build/minimal-toolchain")

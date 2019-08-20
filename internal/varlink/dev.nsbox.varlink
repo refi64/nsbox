@@ -1,0 +1,7 @@
+# This file is currently very boring. It will probably become less boring later on, but still
+# will probably be boring.
+
+interface dev.nsbox
+
+# Notify the host that the container is fully initialized.
+method NotifyStart() -> ()
