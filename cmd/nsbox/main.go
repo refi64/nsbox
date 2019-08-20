@@ -6,10 +6,11 @@ package main
 
 import (
 	"github.com/refi64/nsbox/internal/create"
+	"github.com/refi64/nsbox/internal/daemon"
 	"github.com/refi64/nsbox/internal/kill"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
-	"github.com/refi64/nsbox/internal/run"
+	"github.com/refi64/nsbox/internal/session"
 	"github.com/refi64/nsbox/internal/userdata"
 	"golang.org/x/sys/unix"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -132,14 +133,14 @@ func main() {
 		err = create.CreateContainer(*createContainer, version)
 
 	case runCommand.FullCommand():
-		err = run.RunContainerViaTransientUnit(*runContainer, usrdata)
+		err = daemon.RunContainerViaTransientUnit(*runContainer, usrdata)
 		if err == nil {
 			if *workdir == "" {
 				*workdir = getWorkdir()
 			}
 
 			var exitCode int
-			exitCode, err = run.EnterContainer(*runContainer, *runExec, usrdata, *workdir)
+			exitCode, err = session.EnterContainer(*runContainer, *runExec, usrdata, *workdir)
 
 			if err == nil {
 				os.Exit(exitCode)
