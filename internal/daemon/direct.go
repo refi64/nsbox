@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/kballard/go-shellquote"
 	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/nspawn"
 	"github.com/refi64/nsbox/internal/paths"
@@ -95,11 +96,11 @@ func stripLeadingSlash(path string) string {
 	return result
 }
 
-func setUserEnv(name, hostMachineId, containerPath string, usrdata *userdata.Userdata) {
+func setUserEnv(hostMachineId string, ct *container.Container, usrdata *userdata.Userdata) {
 	usrdata.Environ["NSBOX_USER"] = usrdata.User.Username
 	usrdata.Environ["NSBOX_UID"] = usrdata.User.Uid
 
-	fullShellPath := filepath.Join(containerPath, stripLeadingSlash(usrdata.Shell))
+	fullShellPath := ct.StorageChild(stripLeadingSlash(usrdata.Shell))
 
 	if _, err := os.Stat(fullShellPath); err != nil {
 		usrdata.Environ["NSBOX_SHELL"] = "/bin/bash"
@@ -107,7 +108,7 @@ func setUserEnv(name, hostMachineId, containerPath string, usrdata *userdata.Use
 		usrdata.Environ["NSBOX_SHELL"] = usrdata.Shell
 	}
 
-	usrdata.Environ["NSBOX_CONTAINER"] = name
+	usrdata.Environ["NSBOX_CONTAINER"] = ct.Name
 	usrdata.Environ["NSBOX_HOST_MACHINE"] = hostMachineId
 }
 
@@ -177,7 +178,7 @@ func startVarlinkService(hostPrivPath string) (*net.Listener, error) {
 	return listener, err
 }
 
-func RunContainerDirectNspawn(name, containerPath string, usrdata *userdata.Userdata) error {
+func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdata) error {
 	builder, err := nspawn.NewBuilder()
 	if err != nil {
 		return err
@@ -185,13 +186,12 @@ func RunContainerDirectNspawn(name, containerPath string, usrdata *userdata.User
 
 	builder.Quiet = true
 	builder.AsPid2 = true
-	builder.MachineDirectory = containerPath
+	builder.MachineDirectory = ct.Storage()
 	builder.LinkJournal = "host"
-	builder.MachineName = name
+	builder.MachineName = ct.Name
 	builder.Hostname = "toolbox"
-	builder.MachineDirectory = containerPath
 
-	hostPrivPath := filepath.Join(containerPath, stripLeadingSlash(paths.InContainerPrivPath))
+	hostPrivPath := ct.StorageChild(stripLeadingSlash(paths.InContainerPrivPath))
 	if err := os.MkdirAll(hostPrivPath, 0755); err != nil {
 		return errors.Wrap(err, "failed to create private directory")
 	}
@@ -247,7 +247,7 @@ func RunContainerDirectNspawn(name, containerPath string, usrdata *userdata.User
 		return errors.Wrap(err, "failed to bind home")
 	}
 
-	setUserEnv(name, machineId, containerPath, usrdata)
+	setUserEnv(machineId, ct, usrdata)
 
 	if err := writeContainerFiles(hostPrivPath, usrdata); err != nil {
 		return errors.Wrap(err, "failed to write private container files")

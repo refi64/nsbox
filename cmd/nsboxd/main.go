@@ -6,11 +6,10 @@ package main
 
 import (
 	"flag"
+	"github.com/refi64/nsbox/internal/container"
+	"github.com/refi64/nsbox/internal/daemon"
 	"github.com/refi64/nsbox/internal/log"
-	"github.com/refi64/nsbox/internal/paths"
-	"github.com/refi64/nsbox/internal/run"
 	"github.com/refi64/nsbox/internal/userdata"
-	"os"
 )
 
 func main() {
@@ -22,9 +21,8 @@ func main() {
 		log.Fatal("invalid arguments")
 	}
 
-	containerName := flag.Arg(0)
-	containerPath := paths.ContainerStorage(containerName)
-	if _, err := os.Stat(containerPath); err != nil {
+	ct, err := container.Open(flag.Arg(0))
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -33,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := run.RunContainerDirectNspawn(containerName, containerPath, usrdata); err != nil {
+	if err := daemon.RunContainerDirectNspawn(ct, usrdata); err != nil {
 		log.Fatal(err)
 	}
 }

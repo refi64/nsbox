@@ -7,17 +7,21 @@ package ptyservice
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"golang.org/x/sys/unix"
 	"net"
 	"os"
-	"path/filepath"
 )
 
 func OpenPtyInContainer(name string) (*os.File, error) {
-	containerPath := paths.ContainerStorage(name)
-	ptySocketPath := filepath.Join(containerPath, paths.InContainerPrivPath, paths.PtyServiceSocketName)
+	ct, err := container.Open(name)
+	if err != nil {
+		return nil, err
+	}
+
+	ptySocketPath := ct.StorageChild(paths.InContainerPrivPath, paths.PtyServiceSocketName)
 
 	conn, err := net.Dial("unix", ptySocketPath)
 	if err != nil {

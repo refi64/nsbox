@@ -10,8 +10,8 @@ import (
 	"github.com/mholt/archiver"
 	"github.com/pkg/errors"
 	"github.com/refi64/go-lxtempdir"
+	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
-	"github.com/refi64/nsbox/internal/paths"
 	"io"
 	"net/http"
 	"net/url"
@@ -75,10 +75,12 @@ func downloadFile(url *url.URL, dest string) error {
 	return nil
 }
 
-func extractLayers(archive string, tmpdir string, containerPath string) error {
+func extractLayers(archive string, tmpdir string, ct *container.Container) error {
 	// We need to extract layer.tar, then extract its contents.
 
-	tmpContainerPath := containerPath + ".tmp"
+	containerPath := ct.Storage()
+	tmpContainerPath := ct.TempStorage()
+
 	if _, err := os.Stat(tmpContainerPath); err == nil {
 		log.Info("Deleting old container data...")
 		if err := os.RemoveAll(tmpContainerPath); err != nil {
@@ -126,9 +128,9 @@ func extractLayers(archive string, tmpdir string, containerPath string) error {
 }
 
 func CreateContainer(name string, version string) error {
-	var containerPath = paths.ContainerStorage(name)
-	if _, err := os.Stat(containerPath); err == nil {
-		log.Fatalf("container %s already exists", name)
+	ct, err := container.Create(name, container.Config{})
+	if err != nil {
+		return err
 	}
 
 	if version == "" {
@@ -165,7 +167,7 @@ func CreateContainer(name string, version string) error {
 		log.Fatal(err)
 	}
 
-	if err := extractLayers(imageDest, tmp.Path, containerPath); err != nil {
+	if err := extractLayers(imageDest, tmp.Path, ct); err != nil {
 		log.Fatal(err)
 	}
 
