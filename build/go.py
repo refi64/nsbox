@@ -45,7 +45,18 @@ def load_deps(args):
 
 
 def build(args):
-    process = subprocess.Popen([args.go, 'build', '-mod=vendor', '-o', args.out_bin, args.package])
+    command = [args.go, 'build', '-mod=vendor', '-o', args.out_bin]
+    env = os.environ.copy()
+
+    env['GOCACHE'] = args.go_cache
+
+    if args.static:
+        env['CGO_ENABLED'] = '0'
+        command.extend(['-ldflags', '-extldflags "-static"'])
+
+    command.append(args.package)
+
+    process = subprocess.Popen(command, env=env)
     ret = process.wait()
     if ret:
         sys.exit(ret)
@@ -54,10 +65,12 @@ def build(args):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--go')
+    parser.add_argument('--go-cache')
     parser.add_argument('--root', type=lambda x: Path(x).resolve())
     parser.add_argument('--package')
     parser.add_argument('--out-bin')
     parser.add_argument('--out-dep')
+    parser.add_argument('--static', action='store_true', default=False)
 
     args = parser.parse_args()
 
