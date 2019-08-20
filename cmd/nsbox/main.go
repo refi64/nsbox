@@ -89,12 +89,9 @@ func reexecWithEscalatedPrivileges() {
 		log.Fatal("failed to get executable path: ", err)
 	}
 
-	savedEnviron, err := usrdata.MarshalEnviron()
-	if err != nil {
-		log.Fatal("failed to marshal environ for redirect: ", err)
-	}
-
-	redirect := []string{redirector, self, "--environ", savedEnviron}
+	redirect := []string{redirector, "env"}
+	redirect = append(redirect, userdata.WhitelistedEnviron()...)
+	redirect = append(redirect, self)
 
 	// pkexec resets our working directory. Therefore, when re-exec'd, we need to pass our
 	// current directory. However, if a working directory was already given, we'd be using
@@ -110,12 +107,6 @@ func reexecWithEscalatedPrivileges() {
 
 func main() {
 	app.HelpFlag.Short('h')
-
-	if *environ != "" {
-		if err := usrdata.UnmarshalEnviron(*environ); err != nil {
-			panic(err)
-		}
-	}
 
 	// We parse first, that way the user isn't entering any credentials just to get an
 	// argument error.
