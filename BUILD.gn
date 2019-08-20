@@ -79,6 +79,10 @@ foreach(binary, binaries) {
     package = "github.com/refi64/nsbox/cmd/$binary"
     root = go_target_dir
     deps = [":gofiles", ":nsbox-varlink-interface"]
+
+    if (binary == "nsbox-host") {
+      static = true
+    }
   }
 }
 
