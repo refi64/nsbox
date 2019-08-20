@@ -5,7 +5,6 @@
 package userdata
 
 import (
-	"encoding/json"
 	"github.com/pkg/errors"
 	"fmt"
 	"os"
@@ -150,25 +149,4 @@ func BeneathSudo() (*Userdata, error) {
 	}
 
 	return userdataForUser(usr)
-}
-
-func (userdata *Userdata) MarshalEnviron() (string, error) {
-	data, err := json.Marshal(userdata.Environ)
-	if err != nil {
-		return "", errors.Wrap(err, "failed to serialize environ")
-	}
-
-	return string(data), nil
-}
-
-func (userdata *Userdata) UnmarshalEnviron(data string) error {
-	var environ map[string]string
-
-	err := json.Unmarshal([]byte(data), &environ)
-	if err != nil {
-		return errors.Wrap(err, "failed to deserialize environ")
-	}
-
-	userdata.Environ = environ
-	return nil
 }
