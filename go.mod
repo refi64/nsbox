@@ -13,7 +13,6 @@ require (
 	github.com/frankban/quicktest v1.4.1 // indirect
 	github.com/godbus/dbus v5.0.1+incompatible
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/kr/pty v1.1.1
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect

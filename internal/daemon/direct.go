@@ -9,7 +9,6 @@ package daemon
 import (
 	"bufio"
 	"fmt"
-	"github.com/kballard/go-shellquote"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
@@ -24,6 +23,14 @@ import (
 	"path/filepath"
 	"strings"
 )
+
+func getXdgRuntimeDir(usrdata *userdata.Userdata) (string, error) {
+	if value, ok := usrdata.Environ["XDG_RUNTIME_DIR"]; ok {
+		return value, nil
+	} else {
+		return "", errors.New("XDG_RUNTIME_DIR must be set")
+	}
+}
 
 func readMachineId() (id string, err error) {
 	file, err := os.Open("/etc/machine-id")
@@ -110,9 +117,13 @@ func setUserEnv(hostMachineId string, ct *container.Container, usrdata *userdata
 
 	usrdata.Environ["NSBOX_CONTAINER"] = ct.Name
 	usrdata.Environ["NSBOX_HOST_MACHINE"] = hostMachineId
+
+	if ct.Config.Boot {
+		usrdata.Environ["NSBOX_BOOTED"] = "1"
+	}
 }
 
-func writeContainerFiles(hostPrivPath string, usrdata *userdata.Userdata) error {
+func writeContainerFiles(ct *container.Container, hostPrivPath string, usrdata *userdata.Userdata) error {
 	supplementaryGroups, err := os.Create(filepath.Join(hostPrivPath, "supplementary-groups"))
 	if err != nil {
 		return err
@@ -136,7 +147,7 @@ func writeContainerFiles(hostPrivPath string, usrdata *userdata.Userdata) error 
 	defer sharedEnv.Close()
 
 	for name, value := range usrdata.Environ {
-		fmt.Fprintf(sharedEnv, "export %s=%s\n", name, shellquote.Join(value))
+		fmt.Fprintf(sharedEnv, "%s=%s\n", name, value)
 	}
 
 	return nil
@@ -179,17 +190,27 @@ func startVarlinkService(hostPrivPath string) (*net.Listener, error) {
 }
 
 func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdata) error {
+	xdgRuntimeDir, err := getXdgRuntimeDir(usrdata)
+	if err != nil {
+		return err
+	}
+
 	builder, err := nspawn.NewBuilder()
 	if err != nil {
 		return err
 	}
 
 	builder.Quiet = true
-	builder.AsPid2 = true
 	builder.MachineDirectory = ct.Storage()
 	builder.LinkJournal = "host"
 	builder.MachineName = ct.Name
 	builder.Hostname = "toolbox"
+
+	if ct.Config.Boot {
+		builder.Boot = true
+	} else {
+		builder.AsPid2 = true
+	}
 
 	hostPrivPath := ct.StorageChild(stripLeadingSlash(paths.InContainerPrivPath))
 	if err := os.MkdirAll(hostPrivPath, 0755); err != nil {
@@ -198,7 +219,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	builder.AddBindTo(hostPrivPath, "/run/host/nsbox")
 
-	scripts, err := paths.GetPathRelativeToInstallRoot("share", "nsbox", "scripts")
+	scripts, err := paths.GetPathRelativeToInstallRoot(paths.Share, "nsbox", "scripts")
 	if err != nil {
 		return errors.Wrap(err, "failed to locate scripts")
 	}
@@ -218,16 +239,41 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	}
 
 	builder.AddBind(filepath.Join("/var/log/journal", machineId))
-	builder.AddBind("/var/lib/systemd/coredump")
 
-	if value, ok := usrdata.Environ["XDG_RUNTIME_DIR"]; ok {
-		builder.AddBind(value)
-	}
+	if ct.Config.Boot {
+		// Bind the relevant directories by hand.
+		if value, ok := usrdata.Environ["WAYLAND_DISPLAY"]; ok {
+			builder.AddBind(filepath.Join(xdgRuntimeDir, value))
+		}
 
-	if value, ok := usrdata.Environ["DBUS_SYSTEM_BUS_ADDRESS"]; ok {
-		builder.AddBind(value)
+		pulse := filepath.Join(xdgRuntimeDir, "pulse")
+		if _, err := os.Stat(pulse); err == nil {
+			builder.AddBind(pulse)
+		}
+
+		dataDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, "nsbox", "data")
+		if err != nil {
+			return errors.Wrap(err, "failed to locate nsbox-init.service")
+		}
+
+		nsboxInit := filepath.Join(dataDir, "nsbox-init.service")
+		builder.AddBindTo(nsboxInit, "/usr/lib/systemd/system/nsbox-init.service")
+
+		nsboxTarget := filepath.Join(dataDir, "nsbox-container.target")
+		builder.AddBindTo(nsboxTarget, "/usr/lib/systemd/system/nsbox-container.target")
+
+		gettyOverride := filepath.Join(dataDir, "getty-override.conf")
+		builder.AddBindTo(gettyOverride, "/etc/systemd/system/console-getty.service.d/00-nsbox.conf")
 	} else {
-		builder.AddBind("/run/dbus")
+		// Binding coredumps for a booted container really doesn't make that much sense...
+		builder.AddBind("/var/lib/systemd/coredump")
+		builder.AddBind(xdgRuntimeDir)
+
+		if value, ok := usrdata.Environ["DBUS_SYSTEM_BUS_ADDRESS"]; ok {
+			builder.AddBind(value)
+		} else {
+			builder.AddBind("/run/dbus")
+		}
 	}
 
 	if _, err := os.Stat("/run/media"); err == nil {
@@ -249,7 +295,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	setUserEnv(machineId, ct, usrdata)
 
-	if err := writeContainerFiles(hostPrivPath, usrdata); err != nil {
+	if err := writeContainerFiles(ct, hostPrivPath, usrdata); err != nil {
 		return errors.Wrap(err, "failed to write private container files")
 	}
 
@@ -260,7 +306,12 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	defer (*varlinkListener).Close()
 
-	builder.Command = []string{"/run/host/nsbox/scripts/nsbox-init.sh"}
+	if ct.Config.Boot {
+		builder.Command = []string{"--", "--unit=nsbox-container.target"}
+	} else {
+		builder.Command = []string{"/run/host/nsbox/scripts/nsbox-init.sh"}
+	}
+
 	nspawnArgs := builder.Build()
 
 	log.Debug("running:", nspawnArgs)
@@ -268,6 +319,10 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	nspawnCmd := exec.Command(nspawnArgs[0], nspawnArgs[1:]...)
 	nspawnCmd.Stdout = os.Stdout
 	nspawnCmd.Stderr = os.Stderr
+
+	// We don't want nspawn notifying of start, since nsbox-init is responsible for that.
+	nspawnCmd.Env = os.Environ()
+	nspawnCmd.Env = append(nspawnCmd.Env, "NOTIFY_SOCKET=")
 
 	if err := nspawnCmd.Run(); err != nil {
 		return err

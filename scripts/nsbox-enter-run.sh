@@ -8,7 +8,7 @@ set -e
 trap 'echo "$BASH_SOURCE:$LINENO: $BASH_COMMAND" failed, sorry.' ERR
 
 unset SUDO_COMMAND SUDO_USER SUDO_UID SUDO_GID
-. /run/host/nsbox/shared-env
+. /run/host/nsbox/scripts/nsbox-apply-env.sh
 
 cwd="$1"
 shift 1

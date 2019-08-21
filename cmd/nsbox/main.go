@@ -5,6 +5,7 @@
 package main
 
 import (
+	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/create"
 	"github.com/refi64/nsbox/internal/daemon"
 	"github.com/refi64/nsbox/internal/kill"
@@ -60,6 +61,7 @@ var (
 	createContainer = createCommand.Flag("container", "The container name").
 		Short('c').Default(defaultContainerName).String()
 	createVersion = createCommand.Flag("version", "The Fedora version to use").Int()
+	createBoot = createCommand.Flag("boot", "Have the container run its own init").Bool()
 
 	runCommand = app.Command("run", "Run a container")
 	runExec = runCommand.Arg("exec", "The command to run inside the container").Strings()
@@ -69,7 +71,9 @@ var (
 	killCommand = app.Command("kill", "Kill a container")
 	killContainer = killCommand.Arg("container", "The container name").String()
 	killSignal = killCommand.Flag("signal", "The signal to kill with").
-		Default("SIGTERM").Enum("SIGTERM", "SIGKILL")
+		Enum("SIGTERM", "SIGKILL", "POWEROFF", "REBOOT")
+	killAll = killCommand.Flag("all", "Send to all processes, not just the leader").
+		Short('a').Bool()
 )
 
 func reexecWithEscalatedPrivileges() {
@@ -130,25 +134,28 @@ func main() {
 			version = string(*createVersion)
 		}
 
-		err = create.CreateContainer(*createContainer, version)
+		config := container.Config{
+			Boot: *createBoot,
+		}
+		err = create.CreateContainer(*createContainer, version, config)
 
 	case runCommand.FullCommand():
 		err = daemon.RunContainerViaTransientUnit(*runContainer, usrdata)
 		if err == nil {
-			if *workdir == "" {
-				*workdir = getWorkdir()
-			}
+		 if *workdir == "" {
+			 *workdir = getWorkdir()
+		 }
 
-			var exitCode int
-			exitCode, err = session.EnterContainer(*runContainer, *runExec, usrdata, *workdir)
+		 var exitCode int
+		 exitCode, err = session.EnterContainer(*runContainer, *runExec, usrdata, *workdir)
 
-			if err == nil {
-				os.Exit(exitCode)
-			}
+		 if err == nil {
+			 os.Exit(exitCode)
+		 }
 		}
 
 	case killCommand.FullCommand():
-		err = kill.KillContainer(*killContainer, *killSignal)
+		err = kill.KillContainer(*killContainer, *killSignal, *killAll)
 	}
 
 	if err != nil {

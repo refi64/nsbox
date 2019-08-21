@@ -78,7 +78,6 @@ func downloadFile(url *url.URL, dest string) error {
 func extractLayers(archive string, tmpdir string, ct *container.Container) error {
 	// We need to extract layer.tar, then extract its contents.
 
-	containerPath := ct.Storage()
 	tmpContainerPath := ct.TempStorage()
 
 	if _, err := os.Stat(tmpContainerPath); err == nil {
@@ -120,15 +119,28 @@ func extractLayers(archive string, tmpdir string, ct *container.Container) error
 
 	log.Info("Extracting container contents (please wait, this may take a while)...")
 	archiver.Unarchive(layerDest, tmpContainerPath)
-	os.Rename(tmpContainerPath, containerPath)
-
-	log.Info("Done!")
 
 	return nil
 }
 
-func CreateContainer(name string, version string) error {
-	ct, err := container.Create(name, container.Config{})
+func unmaskServices(ct *container.Container) error {
+	log.Info("Unmasking required services...")
+
+	maskedServices := []string{"console-getty.service", "systemd-logind.service"}
+
+	for _, service := range maskedServices {
+		path := ct.TempStorageChild("etc", "systemd", "system", service)
+		log.Debug("unmask", path)
+		if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+			return errors.Wrapf(err, "failed to unmask %s", service)
+		}
+	}
+
+	return nil
+}
+
+func CreateContainer(name string, version string, config container.Config) error {
+	ct, err := container.Create(name, config)
 	if err != nil {
 		return err
 	}
@@ -164,12 +176,24 @@ func CreateContainer(name string, version string) error {
 	imageDest := filepath.Join(tmp.Path, filepath.Base(imageUrl.Path))
 
 	if err := downloadFile(imageUrl, imageDest); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if err := extractLayers(imageDest, tmp.Path, ct); err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	if ct.Config.Boot {
+		if err := unmaskServices(ct); err != nil {
+			return err
+		}
+	}
+
+	if err := os.Rename(ct.TempStorage(), ct.Storage()); err != nil {
+		return errors.Wrap(err, "failed to rename temporary storage")
+	}
+
+	log.Info("Done!")
 
 	return nil
 }

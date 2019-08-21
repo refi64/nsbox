@@ -100,11 +100,15 @@ copy("install-private-exec") {
   deps = [":nsboxd", ":nsbox-host"]
 }
 
-copy("install-scripts") {
+copy("install-share") {
   sources = [
-    "scripts/nsbox-init.sh",
+    "data/getty-override.conf",
+    "data/nsbox-container.target",
+    "data/nsbox-init.service",
+    "scripts/nsbox-apply-env.sh",
     "scripts/nsbox-enter-run.sh",
     "scripts/nsbox-enter-setup.sh",
+    "scripts/nsbox-init.sh",
   ]
-  outputs = ["$install_dir/$share_dir/nsbox/scripts/{{source_file_part}}"]
+  outputs = ["$install_dir/$share_dir/nsbox/{{source}}"]
 }

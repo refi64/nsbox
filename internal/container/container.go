@@ -8,11 +8,13 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/paths"
+	"github.com/refi64/nsbox/internal/userdata"
 	"os"
 	"path/filepath"
 )
 
 type Config struct {
+	Boot bool
 }
 
 type Container struct {
@@ -79,12 +81,23 @@ func Open(name string) (*Container, error) {
 	}, nil
 }
 
+func (container Container) ApplyEnvironFilter(usrdata *userdata.Userdata) {
+	if container.Config.Boot {
+		delete(usrdata.Environ, "XDG_VTNR")
+	}
+}
+
 func (container Container) Storage() string {
 	return filepath.Join(container.Path, "storage")
 }
 
 func (container Container) StorageChild(children ...string) string {
 	parts := append([]string{container.Storage()}, children...)
+	return filepath.Join(parts...)
+}
+
+func (container Container) TempStorageChild(children ...string) string {
+	parts := append([]string{container.TempStorage()}, children...)
 	return filepath.Join(parts...)
 }
 

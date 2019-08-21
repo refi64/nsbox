@@ -14,8 +14,7 @@ type VarlinkHost struct {
 }
 
 func (host *VarlinkHost) NotifyStart(call devnsbox.VarlinkCall) error {
-	_, err := daemon.SdNotify(true, daemon.SdNotifyReady)
-	if err != nil {
+	if _, err := daemon.SdNotify(true, daemon.SdNotifyReady); err != nil {
 		return err
 	}
 

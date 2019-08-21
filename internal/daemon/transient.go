@@ -96,9 +96,12 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd, name string, usrdata *userdata.
 }
 
 func RunContainerViaTransientUnit(name string, usrdata *userdata.Userdata) error {
-	if _, err := container.Open(name); err != nil {
+	ct, err := container.Open(name)
+	if err != nil {
 		return err
 	}
+
+	ct.ApplyEnvironFilter(usrdata)
 
 	systemd, err := systemd1.NewSystemConnection()
 	if err != nil {

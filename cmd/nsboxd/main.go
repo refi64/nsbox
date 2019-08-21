@@ -31,6 +31,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	ct.ApplyEnvironFilter(usrdata)
+
 	if err := daemon.RunContainerDirectNspawn(ct, usrdata); err != nil {
 		log.Fatal(err)
 	}
