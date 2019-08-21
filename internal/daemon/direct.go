@@ -85,8 +85,14 @@ func bindHome(builder *nspawn.Builder, usrdata *userdata.Userdata) error {
 
 		builder.AddRecursiveBind(resolvedHomeParent)
 
+		relResolvedHomeParent, err := filepath.Rel(filepath.Dir(homeParent), resolvedHomeParent)
+		if err != nil {
+			return errors.Wrapf(err, "failed to make home parent %s relative", resolvedHomeParent)
+		}
+
 		usrdata.Environ["NSBOX_HOME_LINK_NAME"] = homeParent
 		usrdata.Environ["NSBOX_HOME_LINK_TARGET"] = resolvedHomeParent
+		usrdata.Environ["NSBOX_HOME_LINK_TARGET_REL"] = relResolvedHomeParent
 	} else {
 		builder.AddRecursiveBind(usrdata.User.HomeDir)
 	}

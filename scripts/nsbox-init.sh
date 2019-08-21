@@ -44,7 +44,7 @@ chmod 000 /etc/shadow
 
 if [[ -n "$NSBOX_HOME_LINK_NAME" ]]; then
   [[ -e "$NSBOX_HOME_LINK_NAME" ]] && rm -d "$NSBOX_HOME_LINK_NAME" ||:
-  ln -s "$NSBOX_HOME_LINK_TARGET" "$NSBOX_HOME_LINK_NAME"
+  ln -s "$NSBOX_HOME_LINK_TARGET_REL" "$NSBOX_HOME_LINK_NAME"
 fi
 
 ln -sf /var/log/journal/$NSBOX_HOST_MACHINE /run/host/journal
