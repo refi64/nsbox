@@ -6,15 +6,11 @@ package create
 
 import (
 	"bufio"
-	"gopkg.in/cheggaaa/pb.v1"
-	"github.com/mholt/archiver"
 	"github.com/pkg/errors"
 	"github.com/refi64/go-lxtempdir"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
-	"io"
-	"net/http"
-	"net/url"
+	"github.com/refi64/nsbox/internal/webutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -41,41 +37,7 @@ func getCurrentFedoraVersion() (string, error) {
 	return "", errors.New("failed to locate VERSION_ID= field in /etc/os-release")
 }
 
-func downloadFile(url *url.URL, dest string) error {
-	log.Infof("Downloading %s...\n", url, dest)
-
-	file, err := os.Create(dest)
-	if err != nil {
-		return errors.Wrap(err, "failed to create output file")
-	}
-
-	defer file.Close()
-
-	resp, err := http.Get(url.String())
-	if err != nil {
-		return errors.Wrap(err, "failed to open download connection")
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return errors.Errorf("unexpected response code %d", resp.StatusCode)
-	}
-
-	bar := pb.New(int(resp.ContentLength)).SetUnits(pb.U_BYTES)
-	bar.Start()
-	defer bar.Finish()
-
-	reader := bar.NewProxyReader(resp.Body)
-
-	if _, err := io.Copy(file, reader); err != nil {
-		return errors.Wrap(err, "failed to download file")
-	}
-
-	return nil
-}
-
-func extractLayers(archive string, tmpdir string, ct *container.Container) error {
+func extractLayers(archive, tmpdir string, ct *container.Container) error {
 	// We need to extract layer.tar, then extract its contents.
 
 	tmpContainerPath := ct.TempStorage()
@@ -87,40 +49,15 @@ func extractLayers(archive string, tmpdir string, ct *container.Container) error
 		}
 	}
 
-	log.Info("Extracting layer.tar...")
-
 	const layerTar = "layer.tar"
 	layerDest := filepath.Join(tmpdir, layerTar)
 
-	err := archiver.Walk(archive, func(file archiver.File) error {
-		if file.Name() == layerTar {
-			dest, err := os.Create(layerDest)
-			if err != nil {
-				return errors.Wrap(err, "failed to create layer.tar")
-			}
-
-			bar := pb.New(int(file.Size())).SetUnits(pb.U_BYTES)
-			bar.Start()
-			defer bar.Finish()
-
-			reader := bar.NewProxyReader(file)
-
-			if _, err := io.Copy(dest, reader); err != nil {
-				return errors.Wrap(err, "failed to extract layer.tar from image")
-			}
-		}
-
-		return nil
-	})
-
-	if err != nil {
+	if err := webutil.ExtractItemFromArchiveWithProgress(archive, layerTar, layerDest); err != nil {
 		return err
 	}
 
 	log.Info("Extracting container contents (please wait, this may take a while)...")
-	archiver.Unarchive(layerDest, tmpContainerPath)
-
-	return nil
+	return webutil.ExtractFullArchive(layerDest, tmpContainerPath)
 }
 
 func unmaskServices(ct *container.Container) error {
@@ -175,7 +112,7 @@ func CreateContainer(name string, version string, config container.Config) error
 
 	imageDest := filepath.Join(tmp.Path, filepath.Base(imageUrl.Path))
 
-	if err := downloadFile(imageUrl, imageDest); err != nil {
+	if err := webutil.DownloadFileWithProgress(imageUrl, imageDest); err != nil {
 		return err
 	}
 
