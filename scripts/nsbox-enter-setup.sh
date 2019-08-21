@@ -7,7 +7,7 @@
 set -e
 trap 'echo "$BASH_SOURCE:$LINENO: $BASH_COMMAND" failed, sorry.' ERR
 
-. /run/host/nsbox/shared-env
+. /run/host/nsbox/scripts/nsbox-apply-env.sh
 
 needed_packages=()
 
@@ -17,7 +17,7 @@ test -f /usr/share/man/man3/errno.3.gz || needed_packages+=(man-pages)
 
 if (( ${#needed_packages[@]} )); then
   echo "nsbox-enter: Installing: ${needed_packages[@]}"
-  # dnf install -y "${needed_packages[@]}"
+  dnf install -y "${needed_packages[@]}"
 fi
 
 exec sudo --user="$NSBOX_USER" /run/host/nsbox/scripts/nsbox-enter-run.sh "$@"

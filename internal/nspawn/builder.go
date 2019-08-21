@@ -22,6 +22,7 @@ type Builder struct {
 
 	Quiet bool
 	AsPid2 bool
+	Boot bool
 	MachineDirectory string
 	LinkJournal string
 	MachineName string
@@ -99,6 +100,10 @@ func (builder *Builder) Build() []string {
 
 	if builder.AsPid2 {
 		addArg(&args, "as-pid2")
+	}
+
+	if builder.Boot {
+		addArg(&args, "boot")
 	}
 
 	addArgValue(&args, "directory", builder.MachineDirectory)

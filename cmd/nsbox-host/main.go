@@ -5,6 +5,7 @@
 package main
 
 import (
+	"github.com/coreos/go-systemd/daemon"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
@@ -43,6 +44,12 @@ func startPtyServiceAndNotifyHost(name string) error {
 
 	if err := devnsbox.NotifyStart().Call(conn); err != nil {
 		return errors.Wrap(err, "failed to notify of start")
+	}
+
+	if os.Getenv("NOTIFY_SOCKET") != "" {
+		if _, err := daemon.SdNotify(true, daemon.SdNotifyReady); err != nil {
+			return err
+		}
 	}
 
 	select {}

@@ -7,7 +7,7 @@
 set -e
 trap 'echo "$BASH_SOURCE:$LINENO: $BASH_COMMAND" failed, sorry.; exit 1' ERR
 
-. /run/host/nsbox/shared-env
+. /run/host/nsbox/scripts/nsbox-apply-env.sh
 
 user="$NSBOX_USER"
 uid="$NSBOX_UID"
@@ -21,7 +21,7 @@ fi
 
 groups=$(cat /run/host/nsbox/supplementary-groups /etc/group | cut -d: -f3 | sort | uniq -d \
          | head -c -1 | tr '\n' ',')
-grep -q "$user" /etc/passwd && userdel "$user" ||:
+grep -q "^$user:" /etc/passwd && userdel "$user"
 rm -f /var/mail/"$user"
 useradd -MU -G "$groups" -u "$uid" -s "$shell" "$user"
 ln -sf "$shell" /run/host/login-shell
@@ -46,6 +46,6 @@ if [[ -n "$NSBOX_HOME_LINK_NAME" ]]; then
   ln -s "$NSBOX_HOME_LINK_TARGET" "$NSBOX_HOME_LINK_NAME"
 fi
 
-ln -s /var/log/journal/$NSBOX_HOST_MACHINE /run/host/journal
+ln -sf /var/log/journal/$NSBOX_HOST_MACHINE /run/host/journal
 
-nsbox-host service "$NSBOX_CONTAINER"
+exec nsbox-host service "$NSBOX_CONTAINER"
