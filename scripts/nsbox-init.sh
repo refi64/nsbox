@@ -32,14 +32,15 @@ if [[ -d /run/host/nsbox/mail ]]; then
 fi
 
 if grep -q "^$user" /etc/shadow; then
-  grep -v "$user" /etc/shadow > /etc/shadow.x
+  grep -v "^$user" /etc/shadow > /etc/shadow.x
   mv /etc/shadow{.x,}
-  chmod 000 /etc/shadow
 fi
 
 cp /etc/shadow{,.x}
 grep "^$user" /run/host/etc/shadow >> /etc/shadow.x
 mv /etc/shadow{.x,}
+
+chmod 000 /etc/shadow
 
 if [[ -n "$NSBOX_HOME_LINK_NAME" ]]; then
   [[ -e "$NSBOX_HOME_LINK_NAME" ]] && rm -d "$NSBOX_HOME_LINK_NAME" ||:
