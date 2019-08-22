@@ -207,6 +207,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	}
 
 	builder.Quiet = true
+	builder.KeepUnit = true
 	builder.MachineDirectory = ct.Storage()
 	builder.LinkJournal = "host"
 	builder.MachineName = ct.Name

@@ -23,6 +23,7 @@ type Builder struct {
 	Quiet bool
 	AsPid2 bool
 	Boot bool
+	KeepUnit bool
 	MachineDirectory string
 	LinkJournal string
 	MachineName string
@@ -104,6 +105,10 @@ func (builder *Builder) Build() []string {
 
 	if builder.Boot {
 		addArg(&args, "boot")
+	}
+
+	if builder.KeepUnit {
+		addArg(&args, "keep-unit")
 	}
 
 	addArgValue(&args, "directory", builder.MachineDirectory)
