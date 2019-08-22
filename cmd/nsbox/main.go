@@ -8,6 +8,7 @@ import (
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/create"
 	"github.com/refi64/nsbox/internal/daemon"
+	"github.com/refi64/nsbox/internal/inventory"
 	"github.com/refi64/nsbox/internal/kill"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
@@ -62,6 +63,11 @@ var (
 		Short('c').Default(defaultContainerName).String()
 	createVersion = createCommand.Flag("version", "The Fedora version to use").Int()
 	createBoot = createCommand.Flag("boot", "Have the container run its own init").Bool()
+
+	listCommand = app.Command("list", "List the installed containers")
+
+	infoCommand = app.Command("info", "Show info about a container")
+	infoContainer = infoCommand.Arg("container", "The container to show info about").String()
 
 	runCommand = app.Command("run", "Run a container")
 	runExec = runCommand.Arg("exec", "The command to run inside the container").Strings()
@@ -138,6 +144,18 @@ func main() {
 			Boot: *createBoot,
 		}
 		err = create.CreateContainer(*createContainer, version, config)
+
+	case listCommand.FullCommand():
+		var containers []*container.Container
+		containers, err := inventory.List()
+		if err == nil {
+			for _, ct := range containers {
+				log.Info(ct.Name)
+			}
+		}
+
+	case infoCommand.FullCommand():
+		err = container.OpenAndShowInfo(*infoContainer)
 
 	case runCommand.FullCommand():
 		err = daemon.RunContainerViaTransientUnit(*runContainer, usrdata)
