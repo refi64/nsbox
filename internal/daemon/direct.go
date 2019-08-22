@@ -7,8 +7,8 @@
 package daemon
 
 import (
-	"bufio"
 	"fmt"
+	sdutil "github.com/coreos/go-systemd/util"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
@@ -21,7 +21,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 )
 
 func getXdgRuntimeDir(usrdata *userdata.Userdata) (string, error) {
@@ -30,24 +29,6 @@ func getXdgRuntimeDir(usrdata *userdata.Userdata) (string, error) {
 	} else {
 		return "", errors.New("XDG_RUNTIME_DIR must be set")
 	}
-}
-
-func readMachineId() (id string, err error) {
-	file, err := os.Open("/etc/machine-id")
-	if err != nil {
-		return
-	}
-
-	defer file.Close()
-
-	reader := bufio.NewReader(file)
-	line, err := reader.ReadString('\n')
-	if err != nil {
-		return
-	}
-
-	id = strings.TrimSpace(line)
-	return
 }
 
 func bindLoopDevices(builder *nspawn.Builder) {
@@ -240,7 +221,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	builder.AddBindTo(nsboxUtil, "/usr/bin/nsbox-host")
 
-	machineId, err := readMachineId()
+	machineId, err := sdutil.GetMachineID()
 	if err != nil {
 		return errors.Wrap(err, "failed to read machine id")
 	}
