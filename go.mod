@@ -9,6 +9,7 @@ require (
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
+	github.com/dustin/go-humanize v1.0.0
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/frankban/quicktest v1.4.1 // indirect
 	github.com/godbus/dbus v5.0.1+incompatible
