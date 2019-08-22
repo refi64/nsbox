@@ -17,6 +17,7 @@ import (
 	"github.com/refi64/nsbox/internal/userdata"
 	"github.com/refi64/nsbox/internal/varlinkhost"
 	"github.com/varlink/go/varlink"
+	"golang.org/x/sys/unix"
 	"net"
 	"os"
 	"os/exec"
@@ -177,6 +178,10 @@ func startVarlinkService(hostPrivPath string) (*net.Listener, error) {
 }
 
 func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdata) error {
+	if err := ct.LockUntilProcessDeath(container.NoWaitForLock); err != nil {
+		return err
+	}
+
 	xdgRuntimeDir, err := getXdgRuntimeDir(usrdata)
 	if err != nil {
 		return err
@@ -311,6 +316,11 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	// We don't want nspawn notifying of start, since nsbox-init is responsible for that.
 	nspawnCmd.Env = os.Environ()
 	nspawnCmd.Env = append(nspawnCmd.Env, "NOTIFY_SOCKET=")
+
+	// Make sure nspawn dies if we do.
+	nspawnCmd.SysProcAttr = &unix.SysProcAttr{
+		Pdeathsig: unix.SIGTERM,
+	}
 
 	if err := nspawnCmd.Run(); err != nil {
 		return err

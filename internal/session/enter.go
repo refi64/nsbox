@@ -86,8 +86,7 @@ func convertStateToExitCode(state *os.ProcessState) int {
 	}
 }
 
-func EnterContainer(name string, command []string, usrdata *userdata.Userdata,
-					workdir string) (int, error) {
+func EnterContainer(name string, command []string, usrdata *userdata.Userdata, workdir string) (int, error) {
 	if len(command) == 0 {
 		command = []string{"/run/host/login-shell", "-l"}
 	}

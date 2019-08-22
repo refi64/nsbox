@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/userdata"
+	"golang.org/x/sys/unix"
 	"os"
 	"path/filepath"
 )
@@ -79,6 +80,32 @@ func Open(name string) (*Container, error) {
 		Path: path,
 		Config: &config,
 	}, nil
+}
+
+type LockWaitRequest int
+const (
+	WaitForLock LockWaitRequest = iota
+	NoWaitForLock
+)
+
+func (container Container) LockUntilProcessDeath(wait LockWaitRequest) error {
+	fd, err := unix.Open(container.Path, unix.O_DIRECTORY, 0)
+	if err != nil {
+		return errors.Wrap(err, "failed to open container directory")
+	}
+
+	operation := unix.LOCK_EX
+	if wait == NoWaitForLock {
+		operation |= unix.LOCK_NB
+	}
+
+	if err := unix.Flock(fd, operation); err != nil {
+		return errors.Wrap(err, "failed to lock container directory")
+	}
+
+	// Let the fd "leak"; Linux will close it anyway once we die, and it will let us
+	// easily hold the lock until process death.
+	return nil
 }
 
 func (container Container) ApplyEnvironFilter(usrdata *userdata.Userdata) {
