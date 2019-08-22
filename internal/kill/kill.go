@@ -87,5 +87,9 @@ func KillContainer(name, sigstr string, all bool) error {
 		return errors.Wrap(err, "failed to kill container")
 	}
 
+	if err := ct.LockUntilProcessDeath(container.WaitForLock); err != nil {
+		return err
+	}
+
 	return nil
 }
