@@ -34,9 +34,11 @@ declare_args() {
   # The system's data directory, relative to the system's prefix.
   share_dir = "share"
 
-  # The system's shared state directory. (Unlike the other *_dir options, this one
-  # should be an absolute path.)
+  # The system's shared state directory, which should be an absolute path.
   state_dir = "/var/lib"
+
+  # The system's config directory, which should be an absolute path.
+  config_dir = "/etc"
 }
 
 # We're not building any C/C++ code, so the toolchain only needs to define a few tools.

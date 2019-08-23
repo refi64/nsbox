@@ -6,6 +6,7 @@ package container
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/userdata"
@@ -130,4 +131,19 @@ func (container Container) TempStorageChild(children ...string) string {
 
 func (container Container) TempStorage() string {
 	return filepath.Join(container.Path, "storage.tmp")
+}
+
+func (container Container) ExportsLink(temp bool) string {
+	var name string
+	if temp {
+		name = "exports.tmp"
+	} else {
+		name = "exports"
+	}
+
+	return filepath.Join(container.Path, name)
+}
+
+func (container Container) ExportsInstance(n int) string {
+	return filepath.Join(container.Path, fmt.Sprintf("exports.%d", n))
 }

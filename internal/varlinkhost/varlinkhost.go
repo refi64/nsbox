@@ -6,6 +6,7 @@ package varlinkhost
 
 import (
 	"github.com/refi64/nsbox/internal/container"
+	"github.com/refi64/nsbox/internal/integration"
 	"github.com/refi64/nsbox/internal/log"
 	devnsbox "github.com/refi64/nsbox/internal/varlink"
 	"github.com/coreos/go-systemd/daemon"
@@ -14,7 +15,7 @@ import (
 type VarlinkHost struct {
 	devnsbox.VarlinkInterface
 
-	ct *container.Container
+	container *container.Container
 }
 
 func (host *VarlinkHost) NotifyStart(call devnsbox.VarlinkCall) error {
@@ -28,12 +29,17 @@ func (host *VarlinkHost) NotifyStart(call devnsbox.VarlinkCall) error {
 }
 
 func (host *VarlinkHost) NotifyDesktopUpdate(call devnsbox.VarlinkCall) error {
-	log.Debug("received NotifyDesktopUpdate() STUB")
+	log.Debug("received NotifyDesktopUpdate()")
+
+	if err := integration.UpdateDesktopFiles(host.container); err != nil {
+		log.Alert(err)
+		return err
+	}
 
 	return call.ReplyNotifyDesktopUpdate()
 }
 
 func New(ct *container.Container) *devnsbox.VarlinkInterface {
-	host := VarlinkHost{ct: ct}
+	host := VarlinkHost{container: ct}
 	return devnsbox.VarlinkNew(&host)
 }
