@@ -133,7 +133,7 @@ func EnterContainer(name string, command []string, usrdata *userdata.Userdata, w
 		}
 	}
 
-	args := []string{"nsenter", "-at", strconv.Itoa(int(leader)), "nsbox-host", "enter"}
+	args := []string{"nsenter", "-at", strconv.Itoa(int(leader)), "/run/host/nsbox/nsbox-host", "enter"}
 
 	ptyArgMap := []string{"stdin", "stdout", "stderr"}
 	for index, file := range stdio {
