@@ -1,0 +1,17 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+template("substitute_file") {
+  action(target_name) {
+    forward_variables_from(invoker, ["deps"])
+
+    sources = [invoker.source]
+    outputs = ["$target_out_dir/$target_name"]
+
+    script = "//build/substitute_file.py"
+    args = ["--source", rebase_path(invoker.source, root_build_dir),
+            "--dest", rebase_path(outputs[0], root_build_dir),
+            "--state", state_dir, "--libexec", libexec_dir, "--share", share_dir]
+  }
+}

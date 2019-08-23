@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import("//build/go.gni")
+import("//build/substitute_file.gni")
 import("//build/symlink.gni")
 
 install_dir = "$root_out_dir/install"
@@ -21,10 +22,15 @@ symlink("vendor_symlink") {
 }
 
 action("host_paths") {
+  # TODO: replace this with a substitute_file call.
   script = "//build/generate_host_paths.py"
   outputs = ["$go_target_dir/internal/paths/host_paths.go"]
   args = ["--state", state_dir, "--libexec", libexec_dir, "--share", share_dir,
           "--output", rebase_path(outputs[0])]
+}
+
+substitute_file("nsbox_profile") {
+  source = "//misc/profile.d-nsbox.sh"
 }
 
 copy("gofiles") {
@@ -40,6 +46,7 @@ copy("gofiles") {
     "internal/create/image_scraper.go",
     "internal/daemon/direct.go",
     "internal/daemon/transient.go",
+    "internal/integration/xdgdesktop.go",
     "internal/inventory/inventory.go",
     "internal/kill/kill.go",
     "internal/log/log.go",
@@ -96,6 +103,12 @@ copy("install-bin") {
   sources = get_target_outputs(":nsbox")
   outputs = ["$install_dir/$bin_dir/{{source_file_part}}"]
   deps = [":nsbox"]
+}
+
+copy("install-etc") {
+  sources = get_target_outputs(":nsbox_profile")
+  outputs = ["$install_dir/$config_dir/profile.d/nsbox.sh"]
+  deps = [":nsbox_profile"]
 }
 
 copy("install-private-exec") {
