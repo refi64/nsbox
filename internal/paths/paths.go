@@ -16,7 +16,8 @@ import (
 const InContainerPrivPath = "/var/lib/.nsbox-priv"
 const HostServiceSocketName = "host-service.sock"
 const PtyServiceSocketName = "pty-service.sock"
-const ContainerInventory = State + "/nsbox"
+const StorageRoot = State + "/nsbox"
+const ContainerInventory = StorageRoot + "/inventory"
 
 func ContainerData(name string) string {
 	return filepath.Join(ContainerInventory, name)
