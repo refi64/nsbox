@@ -1,5 +1,8 @@
 # nsbox
 
+**NOTE:** A major rewrite is underway, see the
+[go-rewrite branch](https://github.com/refi64/nsbox/tree/go-rewrite) for more info.
+
 ```
 usage: nsbox [-h] {create,run,kill,import} ...
 
