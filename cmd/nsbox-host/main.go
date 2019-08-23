@@ -30,17 +30,30 @@ var (
 	enterUid = enterCommand.Flag("uid", "").Int()
 	enterCwd = enterCommand.Flag("cwd", "").String()
 	enterExec = enterCommand.Arg("exec", "").Strings()
+
+	desktopUpdateCommand = app.Command("desktop-update", "Notify the host of updated desktop files")
 )
+
+func varlinkConnect() (*varlink.Connection, error) {
+	conn, err := varlink.NewConnection("unix:///run/host/nsbox/" + paths.HostServiceSocketName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to connect to host socket")
+	}
+
+	return conn, nil
+}
 
 func startPtyServiceAndNotifyHost(name string) error {
 	if err := ptyservice.StartPtyService(name); err != nil {
 		return errors.Wrap(err, "failed to start pty service")
 	}
 
-	conn, err := varlink.NewConnection("unix:///run/host/nsbox/" + paths.HostServiceSocketName)
+	conn, err := varlinkConnect()
 	if err != nil {
-		return errors.Wrap(err, "failed to connect to host socket")
+		return err
 	}
+
+	defer conn.Close()
 
 	if err := devnsbox.NotifyStart().Call(conn); err != nil {
 		return errors.Wrap(err, "failed to notify of start")
@@ -53,6 +66,21 @@ func startPtyServiceAndNotifyHost(name string) error {
 	}
 
 	select {}
+}
+
+func desktopUpdate() error {
+	conn, err := varlinkConnect()
+	if err != nil {
+		return err
+	}
+
+	defer conn.Close()
+
+	if err := devnsbox.NotifyDesktopUpdate().Call(conn); err != nil {
+		return errors.Wrap(err, "failed to send desktop update message")
+	}
+
+	return nil
 }
 
 func main() {
@@ -69,6 +97,9 @@ func main() {
 		if err == nil {
 			err = session.SetupContainerSession(*enterUid, *enterCwd, *enterExec)
 		}
+
+	case desktopUpdateCommand.FullCommand():
+		err = desktopUpdate()
 	}
 
 	if err != nil {

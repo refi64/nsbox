@@ -141,7 +141,7 @@ func writeContainerFiles(ct *container.Container, hostPrivPath string, usrdata *
 	return nil
 }
 
-func startVarlinkService(hostPrivPath string) (*net.Listener, error) {
+func startVarlinkService(ct *container.Container, hostPrivPath string) (*net.Listener, error) {
 	service, err := varlink.NewService(
 		"nsbox",
 		"nsbox",
@@ -153,7 +153,7 @@ func startVarlinkService(hostPrivPath string) (*net.Listener, error) {
 		return nil, errors.Wrap(err, "failed to create new varlink service")
 	}
 
-	host := varlinkhost.New()
+	host := varlinkhost.New(ct)
 	if err := service.RegisterInterface(host); err != nil {
 		return nil, errors.Wrap(err, "failed to register varlink interface")
 	}
@@ -292,7 +292,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		return errors.Wrap(err, "failed to write private container files")
 	}
 
-	varlinkListener, err := startVarlinkService(hostPrivPath)
+	varlinkListener, err := startVarlinkService(ct, hostPrivPath)
 	if err != nil {
 		return err
 	}
