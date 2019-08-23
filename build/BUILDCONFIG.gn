@@ -39,6 +39,15 @@ declare_args() {
 
   # The system's config directory, which should be an absolute path.
   config_dir = "/etc"
+
+  # Build the Fedora guest tools.
+  fedora_guest_tools = false
+
+  # The path to the rpmbuild executable.
+  rpmbuild_exe = "rpmbuild"
+
+  # The Fedora release to build for.
+  fedora_guest_tools_target_release = "30"
 }
 
 # We're not building any C/C++ code, so the toolchain only needs to define a few tools.

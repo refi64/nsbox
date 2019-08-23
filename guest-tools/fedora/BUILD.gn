@@ -1,0 +1,35 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+import("//build/symlink.gni")
+
+action("fedora_rpm") {
+  # Make sure you update in nsbox-guest-tools.spec as well!
+  version = "0.1"
+  release = "1"
+
+  fc = "fc$fedora_guest_tools_target_release"
+
+  topdir = "$target_gen_dir/rpmbuild"
+  srcdir = rebase_path(".")
+  absolute_topdir = rebase_path(topdir)
+
+  sources = ["nsbox-guest-tools.spec", "nsbox_trigger.py"]
+  outputs = ["$topdir/RPMS/noarch/nsbox-guest-tools-$version-$release.$fc.noarch.rpm",
+             "$topdir/SRPMS/nsbox-guest-tools-$version-$release.$fc.src.rpm"]
+
+  script = "//build/bin_proxy.py"
+  args = [".", "rpmbuild", "-ba", rebase_path(sources[0]), "--define", "_topdir $absolute_topdir",
+          "--define", "_sourcedir $srcdir"]
+}
+
+copy("fedora_rpm_install") {
+  sources = get_target_outputs(":fedora_rpm")
+  outputs = ["$root_build_dir/rpm/{{source_file_part}}"]
+  deps = [":fedora_rpm"]
+}
+
+group("fedora") {
+  deps = [":fedora_rpm"]
+}

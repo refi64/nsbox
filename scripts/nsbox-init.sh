@@ -49,4 +49,4 @@ fi
 
 ln -sf /var/log/journal/$NSBOX_HOST_MACHINE /run/host/journal
 
-exec nsbox-host service "$NSBOX_CONTAINER"
+exec /run/host/nsbox/nsbox-host service "$NSBOX_CONTAINER"

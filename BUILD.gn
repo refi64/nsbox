@@ -129,3 +129,13 @@ copy("install-share") {
   ]
   outputs = ["$install_dir/$share_dir/nsbox/{{source}}"]
 }
+
+group("nsbox-install-root") {
+  deps = [":install-bin", ":install-etc", ":install-private-exec", ":install-share"]
+}
+
+if (fedora_guest_tools) {
+  group("guest_tools") {
+    deps = ["//guest-tools/fedora"]
+  }
+}

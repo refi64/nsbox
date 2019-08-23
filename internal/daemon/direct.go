@@ -219,12 +219,12 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	builder.AddBindTo(scripts, filepath.Join(paths.InContainerPrivPath, "scripts"))
 
-	nsboxUtil, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, "nsbox", "nsbox-host")
+	nsboxHost, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, "nsbox", "nsbox-host")
 	if err != nil {
 		return errors.Wrap(err, "failed to locate nsbox-host")
 	}
 
-	builder.AddBindTo(nsboxUtil, "/usr/bin/nsbox-host")
+	builder.AddBindTo(nsboxHost, filepath.Join(paths.InContainerPrivPath, "nsbox-host"))
 
 	machineId, err := sdutil.GetMachineID()
 	if err != nil {
@@ -250,10 +250,10 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		}
 
 		nsboxInit := filepath.Join(dataDir, "nsbox-init.service")
-		builder.AddBindTo(nsboxInit, "/usr/lib/systemd/system/nsbox-init.service")
+		builder.AddBindTo(nsboxInit, "/etc/systemd/system/nsbox-init.service")
 
 		nsboxTarget := filepath.Join(dataDir, "nsbox-container.target")
-		builder.AddBindTo(nsboxTarget, "/usr/lib/systemd/system/nsbox-container.target")
+		builder.AddBindTo(nsboxTarget, "/etc/systemd/system/nsbox-container.target")
 
 		gettyOverride := filepath.Join(dataDir, "getty-override.conf")
 		builder.AddBindTo(gettyOverride, "/etc/systemd/system/console-getty.service.d/00-nsbox.conf")
