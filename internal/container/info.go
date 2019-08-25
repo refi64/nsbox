@@ -10,6 +10,7 @@ import (
 	"github.com/coreos/go-systemd/machine1"
 	"github.com/dustin/go-humanize"
 	"github.com/refi64/nsbox/internal/log"
+	"github.com/refi64/nsbox/internal/userdata"
 	"os"
 	"text/tabwriter"
 	"time"
@@ -66,8 +67,8 @@ func (ct Container) ShowInfo() error {
 	return nil
 }
 
-func OpenAndShowInfo(name string) error {
-	ct, err := Open(name)
+func OpenAndShowInfo(usrdata *userdata.Userdata, name string) error {
+	ct, err := Open(usrdata, name)
 	if err != nil {
 		return err
 	}

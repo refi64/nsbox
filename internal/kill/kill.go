@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
+	"github.com/refi64/nsbox/internal/userdata"
 	"golang.org/x/sys/unix"
 )
 
@@ -25,8 +26,8 @@ var (
 	REBOOT   = unix.SIGINT
 )
 
-func KillContainer(name, sigstr string, all bool) error {
-	ct, err := container.Open(name)
+func KillContainer(usrdata *userdata.Userdata, name, sigstr string, all bool) error {
+	ct, err := container.Open(usrdata, name)
 	if err != nil {
 		return err
 	}

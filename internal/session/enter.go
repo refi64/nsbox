@@ -10,6 +10,7 @@ import (
 	"github.com/coreos/go-systemd/machine1"
 	krpty "github.com/kr/pty"
 	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/ptyservice"
 	"github.com/refi64/nsbox/internal/userdata"
@@ -113,7 +114,12 @@ func EnterContainer(name string, command []string, usrdata *userdata.Userdata, w
 	var forwardPtyToWriter *os.File
 
 	if anyFileIsTerminal(stdio) {
-		pty, err = ptyservice.OpenPtyInContainer(name)
+		ct, err := container.Open(usrdata, name)
+		if err != nil {
+			return 0, err
+		}
+
+		pty, err = ptyservice.OpenPtyInContainer(ct)
 		if err != nil {
 			return 0, err
 		}
