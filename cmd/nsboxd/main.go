@@ -21,12 +21,12 @@ func main() {
 		log.Fatal("invalid arguments")
 	}
 
-	ct, err := container.Open(flag.Arg(0))
+	usrdata, err := userdata.BeneathSudo()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	usrdata, err := userdata.BeneathSudo()
+	ct, err := container.Open(usrdata, flag.Arg(0))
 	if err != nil {
 		log.Fatal(err)
 	}

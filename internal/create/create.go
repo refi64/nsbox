@@ -10,6 +10,7 @@ import (
 	"github.com/refi64/go-lxtempdir"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
+	"github.com/refi64/nsbox/internal/userdata"
 	"github.com/refi64/nsbox/internal/webutil"
 	"os"
 	"path/filepath"
@@ -76,8 +77,8 @@ func unmaskServices(ct *container.Container) error {
 	return nil
 }
 
-func CreateContainer(name string, version string, config container.Config) error {
-	ct, err := container.Create(name, config)
+func CreateContainer(usrdata *userdata.Userdata, name, version string, config container.Config) error {
+	ct, err := container.Create(usrdata, name, config)
 	if err != nil {
 		return err
 	}

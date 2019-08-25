@@ -8,6 +8,7 @@ package paths
 // build scripts (see BUILD.gn in the root directory).
 
 import (
+	"github.com/refi64/nsbox/internal/userdata"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,10 +18,13 @@ const InContainerPrivPath = "/var/lib/.nsbox-priv"
 const HostServiceSocketName = "host-service.sock"
 const PtyServiceSocketName = "pty-service.sock"
 const StorageRoot = State + "/nsbox"
-const ContainerInventory = StorageRoot + "/inventory"
 
-func ContainerData(name string) string {
-	return filepath.Join(ContainerInventory, name)
+func ContainerInventory(usrdata *userdata.Userdata) string {
+	return filepath.Join(StorageRoot, usrdata.User.Username, "inventory")
+}
+
+func ContainerData(usrdata *userdata.Userdata, name string) string {
+	return filepath.Join(ContainerInventory(usrdata), name)
 }
 
 func GetExecutablePath() (self string, err error) {

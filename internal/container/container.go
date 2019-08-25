@@ -27,8 +27,8 @@ type Container struct {
 
 const configJson = "config.json"
 
-func Create(name string, initialConfig Config) (*Container, error) {
-	path := paths.ContainerData(name)
+func Create(usrdata *userdata.Userdata, name string, initialConfig Config) (*Container, error) {
+	path := paths.ContainerData(usrdata, name)
 	configPath := filepath.Join(path, configJson)
 
 	if _, err := os.Stat(path); err != nil && os.IsExist(err) {
@@ -59,8 +59,8 @@ func Create(name string, initialConfig Config) (*Container, error) {
 	}, nil
 }
 
-func Open(name string) (*Container, error) {
-	path := paths.ContainerData(name)
+func Open(usrdata *userdata.Userdata, name string) (*Container, error) {
+	path := paths.ContainerData(usrdata, name)
 	configPath := filepath.Join(path, configJson)
 
 	file, err := os.Open(configPath)

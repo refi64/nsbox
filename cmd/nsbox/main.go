@@ -143,11 +143,11 @@ func main() {
 		config := container.Config{
 			Boot: *createBoot,
 		}
-		err = create.CreateContainer(*createContainer, version, config)
+		err = create.CreateContainer(usrdata, *createContainer, version, config)
 
 	case listCommand.FullCommand():
 		var containers []*container.Container
-		containers, err := inventory.List()
+		containers, err := inventory.List(usrdata)
 		if err == nil {
 			for _, ct := range containers {
 				log.Info(ct.Name)
@@ -155,7 +155,7 @@ func main() {
 		}
 
 	case infoCommand.FullCommand():
-		err = container.OpenAndShowInfo(*infoContainer)
+		err = container.OpenAndShowInfo(usrdata, *infoContainer)
 
 	case runCommand.FullCommand():
 		err = daemon.RunContainerViaTransientUnit(*runContainer, usrdata)
@@ -173,7 +173,7 @@ func main() {
 		}
 
 	case killCommand.FullCommand():
-		err = kill.KillContainer(*killContainer, *killSignal, *killAll)
+		err = kill.KillContainer(usrdata, *killContainer, *killSignal, *killAll)
 	}
 
 	if err != nil {

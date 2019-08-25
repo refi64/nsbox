@@ -9,16 +9,18 @@ import (
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
+	"github.com/refi64/nsbox/internal/userdata"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-func List() ([]*container.Container, error) {
+func List(usrdata *userdata.Userdata) ([]*container.Container, error) {
 	containers := []*container.Container{}
 
-	items, err := ioutil.ReadDir(paths.ContainerInventory)
+	inventory := paths.ContainerInventory(usrdata)
+	items, err := ioutil.ReadDir(inventory)
 	if err != nil {
 		if os.IsNotExist(err) {
 			log.Debug("container directory does not exist")
@@ -35,13 +37,13 @@ func List() ([]*container.Container, error) {
 			continue
 		}
 
-		stat, err := os.Stat(filepath.Join(paths.ContainerInventory, item.Name()))
+		stat, err := os.Stat(filepath.Join(inventory, item.Name()))
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to stat %s", item.Name())
 		}
 
 		if stat.Mode().IsDir() {
-			ct, err := container.Open(item.Name())
+			ct, err := container.Open(usrdata, item.Name())
 			if err != nil {
 				log.Alertf("warning: failed to open %s: %v", item.Name(), err)
 				continue

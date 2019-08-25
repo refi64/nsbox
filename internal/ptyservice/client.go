@@ -15,12 +15,7 @@ import (
 	"os"
 )
 
-func OpenPtyInContainer(name string) (*os.File, error) {
-	ct, err := container.Open(name)
-	if err != nil {
-		return nil, err
-	}
-
+func OpenPtyInContainer(ct *container.Container) (*os.File, error) {
 	ptySocketPath := ct.StorageChild(paths.InContainerPrivPath, paths.PtyServiceSocketName)
 
 	conn, err := net.Dial("unix", ptySocketPath)
