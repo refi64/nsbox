@@ -25,4 +25,16 @@ if [[ -d "$cwd" ]]; then
   cd "$cwd"
 fi
 
+if [[ -n "$NSBOX_BOOTED" ]]; then
+  # Booted systems have their own XDG_RUNTIME_DIR, we need to symlink relevant stuff inside.
+
+  if [[ -n "$WAYLAND_DISPLAY" && ! -e "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]]; then
+    ln -sf "/run/host/nsbox/usr-run/$WAYLAND_DISPLAY" "$XDG_RUNTIME_DIR"
+  fi
+
+  if [[ ! -e "$XDG_RUNTIME_DIR/pulse" ]]; then
+    ln -s "/run/host/nsbox/usr-run/pulse" "$XDG_RUNTIME_DIR"
+  fi
+fi
+
 exec "$@"
