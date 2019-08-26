@@ -13,6 +13,7 @@ import (
 	"golang.org/x/sys/unix"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -29,7 +30,19 @@ type Container struct {
 const configJson = "config.json"
 const StageSuffix = ".stage"
 
+func validateName(name string) error {
+	if matched, _ := regexp.MatchString(`^[a-zA-Z0-9_-]+$`, name); !matched {
+		return errors.Errorf("invalid container name: %s", name)
+	}
+
+	return nil
+}
+
 func CreateStaged(usrdata *userdata.Userdata, name string, initialConfig Config) (*Container, error) {
+	if err := validateName(name); err != nil {
+		return nil, err
+	}
+
 	path := paths.ContainerData(usrdata, name)
 	if _, err := os.Stat(filepath.Join(path, configJson)); err == nil {
 		return nil, errors.Errorf("container %s already exists", name)
@@ -70,6 +83,10 @@ func CreateStaged(usrdata *userdata.Userdata, name string, initialConfig Config)
 }
 
 func Open(usrdata *userdata.Userdata, name string) (*Container, error) {
+	if err := validateName(name); err != nil {
+		return nil, err
+	}
+
 	path := paths.ContainerData(usrdata, name)
 	configPath := filepath.Join(path, configJson)
 
