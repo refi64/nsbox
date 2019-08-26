@@ -13,6 +13,7 @@ import (
 	"golang.org/x/sys/unix"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type Config struct {
@@ -26,20 +27,29 @@ type Container struct {
 }
 
 const configJson = "config.json"
+const StageSuffix = ".stage"
 
-func Create(usrdata *userdata.Userdata, name string, initialConfig Config) (*Container, error) {
+func CreateStaged(usrdata *userdata.Userdata, name string, initialConfig Config) (*Container, error) {
 	path := paths.ContainerData(usrdata, name)
-	configPath := filepath.Join(path, configJson)
-
-	if _, err := os.Stat(path); err != nil && os.IsExist(err) {
+	if _, err := os.Stat(filepath.Join(path, configJson)); err == nil {
 		return nil, errors.Errorf("container %s already exists", name)
 	}
 
-	if err := os.MkdirAll(path, 0755); err != nil {
+	stagedPath := path + StageSuffix
+
+	if err := os.RemoveAll(stagedPath); err != nil && !os.IsNotExist(err) {
+		return nil, errors.Wrap(err, "failed to remove old staged container")
+	}
+
+	if err := os.MkdirAll(stagedPath, 0700); err != nil {
 		return nil, errors.Wrap(err, "failed to create container directory")
 	}
 
-	file, err := os.Create(configPath)
+	if err := os.MkdirAll(filepath.Join(stagedPath, "storage"), 0755); err != nil {
+		return nil, errors.Wrap(err, "failed to create container storage directory")
+	}
+
+	file, err := os.Create(filepath.Join(stagedPath, configJson))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create container config")
 	}
@@ -54,7 +64,7 @@ func Create(usrdata *userdata.Userdata, name string, initialConfig Config) (*Con
 
 	return &Container{
 		Name: name,
-		Path: path,
+		Path: stagedPath,
 		Config: &initialConfig,
 	}, nil
 }
@@ -124,13 +134,20 @@ func (container Container) StorageChild(children ...string) string {
 	return filepath.Join(parts...)
 }
 
-func (container Container) TempStorageChild(children ...string) string {
-	parts := append([]string{container.TempStorage()}, children...)
-	return filepath.Join(parts...)
+func (container Container) Staged() bool {
+	return strings.HasSuffix(container.Path, StageSuffix)
 }
 
-func (container Container) TempStorage() string {
-	return filepath.Join(container.Path, "storage.tmp")
+func (container Container) Rename(newname string) error {
+	return os.Rename(container.Path, filepath.Join(filepath.Dir(container.Path), newname))
+}
+
+func (container Container) Unstage() error {
+	if !container.Staged() {
+		panic("cannot unstage unstaged container (?)")
+	}
+
+	return container.Rename(container.Name)
 }
 
 func (container Container) ExportsLink(temp bool) string {
