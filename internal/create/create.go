@@ -8,6 +8,10 @@ import (
 	"bufio"
 	"github.com/pkg/errors"
 	"github.com/refi64/go-lxtempdir"
+	crename "github.com/google/go-containerregistry/pkg/name"
+	crev1 "github.com/google/go-containerregistry/pkg/v1"
+	creremote "github.com/google/go-containerregistry/pkg/v1/remote"
+	cretypes "github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/userdata"
@@ -38,36 +42,13 @@ func getCurrentFedoraVersion() (string, error) {
 	return "", errors.New("failed to locate VERSION_ID= field in /etc/os-release")
 }
 
-func extractLayers(archive, tmpdir string, ct *container.Container) error {
-	// We need to extract layer.tar, then extract its contents.
-
-	tmpContainerPath := ct.TempStorage()
-
-	if _, err := os.Stat(tmpContainerPath); err == nil {
-		log.Info("Deleting old container data...")
-		if err := os.RemoveAll(tmpContainerPath); err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	const layerTar = "layer.tar"
-	layerDest := filepath.Join(tmpdir, layerTar)
-
-	if err := webutil.ExtractItemFromArchiveWithProgress(archive, layerTar, layerDest); err != nil {
-		return err
-	}
-
-	log.Info("Extracting container contents (please wait, this may take a while)...")
-	return webutil.ExtractFullArchive(layerDest, tmpContainerPath)
-}
-
 func unmaskServices(ct *container.Container) error {
 	log.Info("Unmasking required services...")
 
 	maskedServices := []string{"console-getty.service", "systemd-logind.service"}
 
 	for _, service := range maskedServices {
-		path := ct.TempStorageChild("etc", "systemd", "system", service)
+		path := ct.StorageChild("etc", "systemd", "system", service)
 		log.Debug("unmask", path)
 		if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
 			return errors.Wrapf(err, "failed to unmask %s", service)
@@ -77,28 +58,35 @@ func unmaskServices(ct *container.Container) error {
 	return nil
 }
 
-func CreateContainer(usrdata *userdata.Userdata, name, version string, config container.Config) error {
-	ct, err := container.Create(usrdata, name, config)
+func downloadLayer(layer crev1.Layer, dest string) error {
+	mediaType, err := layer.MediaType()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to retrieve layer media type")
 	}
 
-	if version == "" {
-		var err error
-		version, err = getCurrentFedoraVersion()
-		if err != nil {
-			return err
-		}
+	if mediaType != cretypes.OCILayer && mediaType != cretypes.DockerLayer {
+		return errors.Errorf("unexpected layer type %s", mediaType)
 	}
 
-	imageUrl, err := scrapeLatestContainerImageUrl(version)
+	size, err := layer.Size()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to retrieve layer size")
 	}
 
+	reader, err := layer.Compressed()
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve compressed layer")
+	}
+
+	defer reader.Close()
+
+	return webutil.SaveReaderWithProgress(size, reader, dest)
+}
+
+func retrieveImage(refstr string, ct *container.Container) error {
 	tmp, err := lxtempdir.Create("", "nsbox-")
 	if err != nil {
-		return err
+	 return err
 	}
 
 	defer func() {
@@ -111,13 +99,63 @@ func CreateContainer(usrdata *userdata.Userdata, name, version string, config co
 		}
 	}()
 
-	imageDest := filepath.Join(tmp.Path, filepath.Base(imageUrl.Path))
+	ref, err := crename.ParseReference(refstr)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse image source reference")
+	}
 
-	if err := webutil.DownloadFileWithProgress(imageUrl, imageDest); err != nil {
+	image, err := creremote.Image(ref)
+	if err != nil {
+		return errors.Wrap(err, "failed to fetch image metadata")
+	}
+
+	manifest, err := image.Manifest()
+	if err != nil {
+		return errors.Wrap(err, "failed to fetch image manifest")
+	}
+
+	log.Infof("Downloading %d layer(s)...", len(manifest.Layers))
+
+	layerFiles := []string{}
+
+	for _, descr := range manifest.Layers {
+		layer, err := image.LayerByDigest(descr.Digest)
+		if err != nil {
+			return errors.Wrapf(err, "failed to fetch image layer %s", descr.Digest.String())
+		}
+
+		layerDest := filepath.Join(tmp.Path, descr.Digest.String() + ".tar.gz")
+		if err := downloadLayer(layer, layerDest); err != nil {
+			return err
+		}
+
+		layerFiles = append(layerFiles, layerDest)
+	}
+
+	log.Info("Extracting layer(s)...")
+
+	for _, file := range layerFiles {
+		webutil.ExtractFullArchive(file, ct.Storage())
+	}
+
+	return nil
+}
+
+func CreateContainer(usrdata *userdata.Userdata, name, version string, config container.Config) error {
+	ct, err := container.CreateStaged(usrdata, name, config)
+	if err != nil {
 		return err
 	}
 
-	if err := extractLayers(imageDest, tmp.Path, ct); err != nil {
+	if version == "" {
+		var err error
+		version, err = getCurrentFedoraVersion()
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := retrieveImage("registry.fedoraproject.org/fedora:" + version, ct); err != nil {
 		return err
 	}
 
@@ -127,11 +165,10 @@ func CreateContainer(usrdata *userdata.Userdata, name, version string, config co
 		}
 	}
 
-	if err := os.Rename(ct.TempStorage(), ct.Storage()); err != nil {
-		return errors.Wrap(err, "failed to rename temporary storage")
+	if err := ct.Unstage(); err != nil {
+		return err
 	}
 
 	log.Info("Done!")
-
 	return nil
 }

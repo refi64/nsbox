@@ -43,7 +43,6 @@ copy("gofiles") {
     "internal/container/container.go",
     "internal/container/info.go",
     "internal/create/create.go",
-    "internal/create/image_scraper.go",
     "internal/daemon/direct.go",
     "internal/daemon/transient.go",
     "internal/integration/xdgdesktop.go",

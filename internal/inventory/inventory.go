@@ -31,8 +31,7 @@ func List(usrdata *userdata.Userdata) ([]*container.Container, error) {
 	}
 
 	for _, item := range items {
-		if strings.HasSuffix(item.Name(), ".tmp") {
-			// Probably a leftover temp directory, just move on.
+		if strings.HasSuffix(item.Name(), container.StageSuffix) {
 			log.Debug("skipping item ", item.Name())
 			continue
 		}
