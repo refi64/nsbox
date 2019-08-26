@@ -95,12 +95,7 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd, name string, usrdata *userdata.
 	return nil
 }
 
-func RunContainerViaTransientUnit(name string, usrdata *userdata.Userdata) error {
-	ct, err := container.Open(usrdata, name)
-	if err != nil {
-		return err
-	}
-
+func RunContainerViaTransientUnit(ct *container.Container, usrdata *userdata.Userdata) error {
 	ct.ApplyEnvironFilter(usrdata)
 
 	systemd, err := systemd1.NewSystemConnection()
@@ -113,13 +108,13 @@ func RunContainerViaTransientUnit(name string, usrdata *userdata.Userdata) error
 		return err
 	}
 
-	if _, err := machined.GetMachine(name); err != nil {
+	if _, err := machined.GetMachine(ct.Name); err != nil {
 		nsboxd, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, "nsbox", "nsboxd")
 		if err != nil {
 			return errors.Wrap(err, "cannot locate nsboxd")
 		}
 
-		if err := startNsboxd(systemd, nsboxd, name, usrdata); err != nil {
+		if err := startNsboxd(systemd, nsboxd, ct.Name, usrdata); err != nil {
 			return errors.Wrap(err, "cannot start nsboxd")
 		}
 	}

@@ -82,12 +82,7 @@ func CreateStaged(usrdata *userdata.Userdata, name string, initialConfig Config)
 	}, nil
 }
 
-func Open(usrdata *userdata.Userdata, name string) (*Container, error) {
-	if err := validateName(name); err != nil {
-		return nil, err
-	}
-
-	path := paths.ContainerData(usrdata, name)
+func OpenPath(path, name string) (*Container, error) {
 	configPath := filepath.Join(path, configJson)
 
 	file, err := os.Open(configPath)
@@ -108,6 +103,15 @@ func Open(usrdata *userdata.Userdata, name string) (*Container, error) {
 		Path: path,
 		Config: &config,
 	}, nil
+}
+
+func Open(usrdata *userdata.Userdata, name string) (*Container, error) {
+	if err := validateName(name); err != nil {
+		return nil, err
+	}
+
+	path := paths.ContainerData(usrdata, name)
+	return OpenPath(path, name)
 }
 
 type LockWaitRequest int

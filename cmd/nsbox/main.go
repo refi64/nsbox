@@ -38,19 +38,8 @@ func getUserdata() *userdata.Userdata {
 	return usrdata
 }
 
-// Get the default working directory, again for default argument purposes.
-func getWorkdir() string {
-	cwd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
-	return cwd
-}
-
 var (
 	usrdata = getUserdata()
-	defaultContainerName = "toolbox-" + usrdata.User.Username
 
 	app = kingpin.New("nsbox", "A lightweight, systemd-nspawn-powered toolbox")
 	verbose = app.Flag("verbose", "Enable verbose mode").Short('v').Bool()
@@ -59,8 +48,7 @@ var (
 	workdir = app.Flag("workdir", "The working directory").Short('w').String()
 
 	createCommand = app.Command("create", "Create a new container")
-	createContainer = createCommand.Flag("container", "The container name").
-		Short('c').Default(defaultContainerName).String()
+	createContainer = createCommand.Arg("container", "The container name").String()
 	createVersion = createCommand.Flag("version", "The Fedora version to use").Int()
 	createBoot = createCommand.Flag("boot", "Have the container run its own init").Bool()
 
@@ -71,8 +59,7 @@ var (
 
 	runCommand = app.Command("run", "Run a container")
 	runExec = runCommand.Arg("exec", "The command to run inside the container").Strings()
-	runContainer = runCommand.Flag("container", "The container name").
-		Short('c').Default(defaultContainerName).String()
+	runContainer = runCommand.Flag("container", "The container name").Short('c').String()
 
 	killCommand = app.Command("kill", "Kill a container")
 	killContainer = killCommand.Arg("container", "The container name").String()
@@ -80,6 +67,10 @@ var (
 		Enum("SIGTERM", "SIGKILL", "POWEROFF", "REBOOT")
 	killAll = killCommand.Flag("all", "Send to all processes, not just the leader").
 		Short('a').Bool()
+
+	setDefaultCommand = app.Command("set-default", "Set the new default container")
+	setDefaultContainer = setDefaultCommand.Arg("container", "The new default container").
+		Default("").String()
 )
 
 func reexecWithEscalatedPrivileges() {
@@ -108,7 +99,12 @@ func reexecWithEscalatedPrivileges() {
 	// current directory. However, if a working directory was already given, we'd be using
 	// that anyway, so there's no need to be fancy.
 	if *workdir == "" {
-		redirect = append(redirect, "--workdir", getWorkdir())
+		cwd, err := os.Getwd()
+		if err != nil {
+			log.Fatal("failed to get cwd:", err)
+		}
+
+		redirect = append(redirect, "--workdir", cwd)
 	}
 
 	redirect = append(redirect, os.Args[1:]...)
@@ -158,22 +154,42 @@ func main() {
 		err = container.OpenAndShowInfo(usrdata, *infoContainer)
 
 	case runCommand.FullCommand():
-		err = daemon.RunContainerViaTransientUnit(*runContainer, usrdata)
+		var ct *container.Container
+
+		if *runContainer == "" {
+			ct, err = inventory.DefaultContainer(usrdata)
+
+			if ct == nil {
+				log.Fatal("no default container is set")
+			}
+		} else {
+			ct, err = container.Open(usrdata, *runContainer)
+		}
+
 		if err == nil {
-		 if *workdir == "" {
-			 *workdir = getWorkdir()
-		 }
+			if *workdir == "" {
+				*workdir, err = os.Getwd()
+			}
+		}
 
-		 var exitCode int
-		 exitCode, err = session.EnterContainer(*runContainer, *runExec, usrdata, *workdir)
+		if err == nil {
+			err = daemon.RunContainerViaTransientUnit(ct, usrdata)
+		}
 
-		 if err == nil {
-			 os.Exit(exitCode)
-		 }
+		if err == nil {
+			var exitCode int
+			exitCode, err = session.EnterContainer(ct, *runExec, usrdata, *workdir)
+
+			if err == nil {
+				os.Exit(exitCode)
+			}
 		}
 
 	case killCommand.FullCommand():
 		err = kill.KillContainer(usrdata, *killContainer, *killSignal, *killAll)
+
+	case setDefaultCommand.FullCommand():
+		err = inventory.SetDefaultContainer(usrdata, *setDefaultContainer)
 	}
 
 	if err != nil {
