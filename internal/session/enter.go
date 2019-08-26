@@ -87,12 +87,12 @@ func convertStateToExitCode(state *os.ProcessState) int {
 	}
 }
 
-func EnterContainer(name string, command []string, usrdata *userdata.Userdata, workdir string) (int, error) {
+func EnterContainer(ct *container.Container, command []string, usrdata *userdata.Userdata, workdir string) (int, error) {
 	if len(command) == 0 {
 		command = []string{"/run/host/login-shell", "-l"}
 	}
 
-	leader, err := getLeader(name)
+	leader, err := getLeader(ct.Name)
 	if err != nil {
 		return 0, err
 	}
@@ -114,11 +114,6 @@ func EnterContainer(name string, command []string, usrdata *userdata.Userdata, w
 	var forwardPtyToWriter *os.File
 
 	if anyFileIsTerminal(stdio) {
-		ct, err := container.Open(usrdata, name)
-		if err != nil {
-			return 0, err
-		}
-
 		pty, err = ptyservice.OpenPtyInContainer(ct)
 		if err != nil {
 			return 0, err

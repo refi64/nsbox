@@ -56,3 +56,37 @@ func List(usrdata *userdata.Userdata) ([]*container.Container, error) {
 
 	return containers, nil
 }
+
+func DefaultContainer(usrdata *userdata.Userdata) (*container.Container, error) {
+	path := paths.ContainerDefault(usrdata)
+
+	if _, err := os.Stat(path); err != nil && os.IsNotExist(err) {
+		return nil, nil
+	}
+
+	target, err := os.Readlink(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return container.OpenPath(path, filepath.Base(target))
+}
+
+func SetDefaultContainer(usrdata *userdata.Userdata, name string) error {
+	if name != "" {
+		ct, err := container.Open(usrdata, name)
+		if err != nil {
+			return err
+		}
+
+		if err := os.Symlink(ct.Path, paths.ContainerDefault(usrdata)); err != nil {
+			return errors.Wrap(err, "failed to symlink new default container")
+		}
+	} else {
+		if err := os.Remove(paths.ContainerDefault(usrdata)); err != nil && !os.IsNotExist(err) {
+			return errors.Wrap(err, "failed to unlink old default container")
+		}
+	}
+
+	return nil
+}

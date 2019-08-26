@@ -19,6 +19,10 @@ const HostServiceSocketName = "host-service.sock"
 const PtyServiceSocketName = "pty-service.sock"
 const StorageRoot = State + "/nsbox"
 
+func ContainerDefault(usrdata *userdata.Userdata) string {
+	return filepath.Join(StorageRoot, usrdata.User.Username, "default")
+}
+
 func ContainerInventory(usrdata *userdata.Userdata) string {
 	return filepath.Join(StorageRoot, usrdata.User.Username, "inventory")
 }

@@ -13,6 +13,7 @@ import (
 	creremote "github.com/google/go-containerregistry/pkg/v1/remote"
 	cretypes "github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/refi64/nsbox/internal/container"
+	"github.com/refi64/nsbox/internal/inventory"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/userdata"
 	"github.com/refi64/nsbox/internal/webutil"
@@ -167,6 +168,13 @@ func CreateContainer(usrdata *userdata.Userdata, name, version string, config co
 
 	if err := ct.Unstage(); err != nil {
 		return err
+	}
+
+	// Make this the new default container if there is none set.
+	if def, err := inventory.DefaultContainer(usrdata); err == nil && def == nil {
+		if err := inventory.SetDefaultContainer(usrdata, name); err != nil {
+			return errors.Wrap(err, "failed to set new default container")
+		}
 	}
 
 	log.Info("Done!")
