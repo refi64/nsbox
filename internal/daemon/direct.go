@@ -234,16 +234,9 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	builder.AddBind(filepath.Join("/var/log/journal", machineId))
 
 	if ct.Config.Boot {
+		// Bind the entire xdg runtime directory, then nsbox-init.sh will manually symlink
+		// stuff into the in-container runtime directory as needed.
 		builder.AddBindTo(xdgRuntimeDir, filepath.Join(paths.InContainerPrivPath, "usr-run"))
-		// Bind the relevant directories by hand.
-		// if value, ok := usrdata.Environ["WAYLAND_DISPLAY"]; ok {
-		//	 builder.AddBind(filepath.Join(xdgRuntimeDir, value))
-		// }
-
-		// pulse := filepath.Join(xdgRuntimeDir, "pulse")
-		// if _, err := os.Stat(pulse); err == nil {
-		//	 builder.AddBind(pulse)
-		// }
 
 		dataDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, "nsbox", "data")
 		if err != nil {
