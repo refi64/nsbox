@@ -12,6 +12,7 @@ trap 'echo "$BASH_SOURCE:$LINENO: $BASH_COMMAND" failed, sorry.' ERR
 needed_packages=()
 
 hash sudo &>/dev/null || needed_packages+=(sudo)
+test -f /usr/bin/hostname || needed_packages+=(hostname)
 test -f /etc/profile.d/vte.sh || needed_packages+=(vte-profile)
 test -f /usr/share/man/man3/errno.3.gz || needed_packages+=(man-pages)
 
