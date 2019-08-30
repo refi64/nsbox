@@ -1,7 +1,6 @@
 Name: nsbox-guest-tools
-# Make sure you update in BUILD.gn as well!
-Version: 0.1
-Release: 1%{?dist}
+Version: @VERSION
+Release: @RELEASE%{?dist}
 Summary: Tools for nsbox host integration
 License: MPL-2.0
 URL: https://nsbox.dev/
