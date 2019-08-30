@@ -1,11 +1,11 @@
 # nsbox
 
-nsbox is a lightweight, systemd-nspawn-powered pet container manager, aiming at supporting both:
+nsbox is a multi-purpose, nspawn-powered container manager aiming at supporting:
 
 - Lightweight pet containers, complete with host integration (like the rootless toolbox script).
 - machined-style booted containers.
-- Images built on the client system, so they don't rely on unofficial, external hosting, and
-  any enhancements to the base image can be applied to an already existing container.
+- "Upgradable" containers, in that any enhancements to nsbox won't require re-creating your
+  containers.
 - A plugin system for adding support for multiple distros.
 
 ## Current status

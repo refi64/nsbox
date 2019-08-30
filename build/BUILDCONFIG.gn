@@ -22,9 +22,6 @@ declare_args() {
   # The path to the Go binary.
   go_exe = "go"
 
-  # Override the complete Go build command. Only use this for packagers.
-  go_full_build_command = ""
-
   # The system's bin directory, relative to the system's prefix.
   bin_dir = "bin"
 
