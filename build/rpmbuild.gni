@@ -1,0 +1,33 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+template("rpmbuild") {
+  action(target_name) {
+    if (defined(invoker.package_name)) {
+      package_name = invoker.package_name
+    } else {
+      package_name = invoker.target_name
+    }
+
+    forward_variables_from(invoker, ["deps", "version", "release"])
+
+    fc = "fc$fedora_rpm_target_release"
+
+    topdir = "$target_gen_dir/rpmbuild"
+    srcdir = rebase_path(".")
+    absolute_topdir = rebase_path(topdir)
+
+    sources = [invoker.spec]
+    if (defined(invoker.sources)) {
+      sources += invoker.sources
+    }
+
+    outputs = ["$topdir/RPMS/noarch/$package_name-$version-$release.$fc.noarch.rpm",
+               "$topdir/SRPMS/$package_name-$version-$release.$fc.src.rpm"]
+
+    script = "//build/bin_proxy.py"
+    args = [".", "rpmbuild", "-ba", rebase_path(invoker.spec),
+            "--define", "_topdir $absolute_topdir", "--define", "_sourcedir $srcdir"]
+  }
+}

@@ -46,8 +46,8 @@ declare_args() {
   # The path to the rpmbuild executable.
   rpmbuild_exe = "rpmbuild"
 
-  # The Fedora release to build for.
-  fedora_guest_tools_target_release = "30"
+  # The Fedora release to build RPMs for.
+  fedora_rpm_target_release = "30"
 }
 
 # We're not building any C/C++ code, so the toolchain only needs to define a few tools.
