@@ -7,7 +7,12 @@ template("substitute_file") {
     forward_variables_from(invoker, ["deps"])
 
     sources = [invoker.source]
-    outputs = ["$target_out_dir/$target_name"]
+
+    if (defined(invoker.output)) {
+      outputs = [invoker.output]
+    } else {
+      outputs = ["$target_out_dir/$target_name"]
+    }
 
     script = "//build/substitute_file.py"
     args = ["--source", rebase_path(invoker.source, root_build_dir),
