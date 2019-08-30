@@ -15,8 +15,12 @@ template("substitute_file") {
     }
 
     script = "//build/substitute_file.py"
+
     args = ["--source", rebase_path(invoker.source, root_build_dir),
-            "--dest", rebase_path(outputs[0], root_build_dir),
-            "--state", state_dir, "--libexec", libexec_dir, "--share", share_dir]
+            "--dest", rebase_path(outputs[0], root_build_dir)]
+
+    foreach(var, invoker.vars) {
+      args += ["${var[0]}=${var[1]}"]
+    }
   }
 }

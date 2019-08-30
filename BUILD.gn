@@ -21,13 +21,21 @@ symlink("vendor_symlink") {
   value = rebase_path("//vendor", root_build_dir)
 }
 
+config_vars = [
+  ["LIBEXEC_DIR", libexec_dir],
+  ["SHARE_DIR", share_dir],
+  ["STATE_DIR", state_dir],
+]
+
 substitute_file("host_paths") {
   source = "//build/host_paths.template.go"
   output = "$go_target_dir/internal/paths/host_paths.go"
+  vars = config_vars
 }
 
 substitute_file("nsbox_profile") {
   source = "//misc/profile.d-nsbox.sh"
+  vars = config_vars
 }
 
 copy("gofiles") {

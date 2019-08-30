@@ -20,14 +20,11 @@ def main():
     parser.add_argument('--state')
     parser.add_argument('--libexec')
     parser.add_argument('--share')
+    parser.add_argument('vars', nargs=argparse.REMAINDER)
 
     args = parser.parse_args()
 
-    substitutions = {
-        'STATE_DIR': args.state,
-        'LIBEXEC_DIR': args.libexec,
-        'SHARE_DIR': args.share,
-    }
+    substitutions = dict(var.split('=', 1) for var in args.vars)
 
     with open(args.source) as source, open(args.dest, 'w') as dest:
         for line in source:
