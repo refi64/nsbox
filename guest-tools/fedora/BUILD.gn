@@ -3,24 +3,37 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import("//build/rpmbuild.gni")
+import("//build/substitute_file.gni")
 import("//build/symlink.gni")
 
-rpmbuild("fedora_rpm") {
-  package_name = "nsbox-guest-tools"
-  # Make sure you update in nsbox-guest-tools.spec as well!
-  version = "0.1"
-  release = "1"
+guest_tools_version = "0.1"
+guest_tools_release = "1"
 
-  spec = "nsbox-guest-tools.spec"
-  sources = ["nsbox_trigger.py"]
+substitute_file("nsbox-guest-tools.spec") {
+  source = "nsbox-guest-tools.spec"
+  vars = [
+    ["VERSION", guest_tools_version],
+    ["RELEASE", guest_tools_release],
+  ]
 }
 
-copy("fedora_rpm_install") {
-  sources = get_target_outputs(":fedora_rpm")
+rpmbuild("rpm") {
+  package_name = "nsbox-guest-tools"
+  version = guest_tools_version
+  release = guest_tools_release
+
+  substituted_spec = get_target_outputs(":nsbox-guest-tools.spec")
+  spec = substituted_spec[0]
+  sources = ["nsbox_trigger.py"]
+  deps = [":nsbox-guest-tools.spec"]
+}
+
+copy("install") {
+  sources = get_target_outputs(":rpm") + get_target_outputs(":nsbox-guest-tools.spec")
   outputs = ["$root_build_dir/rpm/{{source_file_part}}"]
-  deps = [":fedora_rpm"]
+  deps = [":rpm", ":nsbox-guest-tools.spec"]
 }
 
 group("fedora") {
-  deps = [":fedora_rpm_install"]
+  deps = [":install"]
 }
