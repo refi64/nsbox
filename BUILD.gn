@@ -21,12 +21,9 @@ symlink("vendor_symlink") {
   value = rebase_path("//vendor", root_build_dir)
 }
 
-action("host_paths") {
-  # TODO: replace this with a substitute_file call.
-  script = "//build/generate_host_paths.py"
-  outputs = ["$go_target_dir/internal/paths/host_paths.go"]
-  args = ["--state", state_dir, "--libexec", libexec_dir, "--share", share_dir,
-          "--output", rebase_path(outputs[0])]
+substitute_file("host_paths") {
+  source = "//build/host_paths.template.go"
+  output = "$go_target_dir/internal/paths/host_paths.go"
 }
 
 substitute_file("nsbox_profile") {
