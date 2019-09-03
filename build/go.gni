@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+go_target_dir = "$root_build_dir/gofiles"
+
 template("go_binary") {
   action(target_name) {
     forward_variables_from(invoker, ["deps"])
@@ -12,9 +14,9 @@ template("go_binary") {
     script = "//build/go.py"
     args = ["--go", go_exe, "--go-cache", rebase_path("$root_build_dir/gocache"),
             "--package", invoker.package,
-            "--root", rebase_path(invoker.root, root_build_dir),
-            "--out-bin", rebase_path(outputs[0], invoker.root),
-            "--out-dep", rebase_path(depfile, invoker.root)]
+            "--root", rebase_path(go_target_dir, root_build_dir),
+            "--out-bin", rebase_path(outputs[0], go_target_dir),
+            "--out-dep", rebase_path(depfile, go_target_dir)]
 
     if (defined(invoker.static) && invoker.static) {
       args += ["--static"]

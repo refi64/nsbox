@@ -7,7 +7,6 @@ import("//build/substitute_file.gni")
 import("//build/symlink.gni")
 
 install_dir = "$root_out_dir/install"
-go_target_dir = "$root_build_dir/gofiles"
 
 # XXX: So, since we need to be able to write out files into what appears to be the source tree,
 # but we can't actually (since GN does multiple build dirs, which is a feature that I would
@@ -21,21 +20,15 @@ symlink("vendor_symlink") {
   value = rebase_path("//vendor", root_build_dir)
 }
 
-config_vars = [
-  ["LIBEXEC_DIR", libexec_dir],
-  ["SHARE_DIR", share_dir],
-  ["STATE_DIR", state_dir],
-]
-
 substitute_file("host_paths") {
-  source = "//build/host_paths.template.go"
+  source = "internal/paths/host_paths.template.go"
   output = "$go_target_dir/internal/paths/host_paths.go"
-  vars = config_vars
+  vars = substitute_config_vars
 }
 
 substitute_file("nsbox_profile") {
   source = "//misc/profile.d-nsbox.sh"
-  vars = config_vars
+  vars = substitute_config_vars
 }
 
 copy("gofiles") {
@@ -74,7 +67,6 @@ copy("gofiles") {
 
 go_binary("varlink-go-interface-generator") {
   package = "github.com/varlink/go/cmd/varlink-go-interface-generator"
-  root = go_target_dir
   deps = [":gofiles"]
 }
 
@@ -94,7 +86,6 @@ binaries = ["nsbox", "nsboxd", "nsbox-host"]
 foreach(binary, binaries) {
   go_binary(binary) {
     package = "github.com/refi64/nsbox/cmd/$binary"
-    root = go_target_dir
     deps = [":gofiles", ":nsbox-varlink-interface"]
 
     if (binary == "nsbox-host") {
@@ -126,10 +117,10 @@ copy("install-share") {
     "data/getty-override.conf",
     "data/nsbox-container.target",
     "data/nsbox-init.service",
-    "scripts/nsbox-apply-env.sh",
-    "scripts/nsbox-enter-run.sh",
-    "scripts/nsbox-enter-setup.sh",
-    "scripts/nsbox-init.sh",
+    "data/scripts/nsbox-apply-env.sh",
+    "data/scripts/nsbox-enter-run.sh",
+    "data/scripts/nsbox-enter-setup.sh",
+    "data/scripts/nsbox-init.sh",
   ]
   outputs = ["$install_dir/$share_dir/nsbox/{{source}}"]
 }

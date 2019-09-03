@@ -212,7 +212,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	builder.AddBindTo(hostPrivPath, "/run/host/nsbox")
 
-	scripts, err := paths.GetPathRelativeToInstallRoot(paths.Share, "nsbox", "scripts")
+	scripts, err := paths.GetPathRelativeToInstallRoot(paths.Share, "nsbox", "data", "scripts")
 	if err != nil {
 		return errors.Wrap(err, "failed to locate scripts")
 	}
