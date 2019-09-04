@@ -19,8 +19,16 @@ template("substitute_file") {
     args = ["--source", rebase_path(invoker.source, root_build_dir),
             "--dest", rebase_path(outputs[0], root_build_dir)]
 
-    foreach(var, invoker.vars) {
-      args += ["${var[0]}=${var[1]}"]
+    if (defined(invoker.vars)) {
+      foreach(var, invoker.vars) {
+        args += ["--var", var[0], var[1]]
+      }
+    }
+
+    if (defined(invoker.file_vars)) {
+      foreach(file_var, invoker.file_vars) {
+        args += ["--file-var", file_var[0], rebase_path(file_var[1], root_build_dir)]
+      }
     }
   }
 }

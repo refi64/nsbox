@@ -17,14 +17,19 @@ def main():
 
     parser.add_argument('--source')
     parser.add_argument('--dest')
-    parser.add_argument('--state')
-    parser.add_argument('--libexec')
-    parser.add_argument('--share')
-    parser.add_argument('vars', nargs=argparse.REMAINDER)
+    parser.add_argument('--var', nargs=2, action='append', default=[], dest='vars')
+    parser.add_argument('--file-var', nargs=2, action='append', default=[], dest='file_vars')
 
     args = parser.parse_args()
 
-    substitutions = dict(var.split('=', 1) for var in args.vars)
+    substitutions = {}
+
+    for var, value in args.vars:
+        substitutions[var] = value
+
+    for var, path in args.file_vars:
+        with open(path) as fp:
+            substitutions[var] = fp.read()
 
     with open(args.source) as source, open(args.dest, 'w') as dest:
         for line in source:
