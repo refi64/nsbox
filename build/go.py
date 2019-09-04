@@ -5,27 +5,18 @@
 # Calls the go compiler, but also generates a Makefile-style .d file containing the Go package's
 # dependencies, that way GN can track them.
 
+from go_deps import go_list
+
 from pathlib import Path
 
 import argparse
-import json
 import os
 import subprocess
 import sys
 
 
 def load_deps(args):
-    process = subprocess.Popen([args.go, 'list', '-mod=vendor', '-json', '-deps', args.package],
-                               stdout=subprocess.PIPE, universal_newlines=True)
-    dep_json, _ = process.communicate()
-
-    if process.returncode:
-        return
-
-    # Change formatting to be in list form.
-    dep_json = '[' + dep_json.replace('\n}', '\n},').rstrip(',\n') + ']'
-
-    deps = json.loads(dep_json)
+    deps = go_list(args.go, args.package, vendor=True)
 
     with open(args.out_dep, 'w') as fp:
         for dep in deps:
