@@ -8,6 +8,22 @@ import("//build/symlink.gni")
 
 install_dir = "$root_out_dir/install"
 
+action("release_files") {
+  script = "//build/write_release.py"
+
+  if (is_stable_build) {
+    branch = "stable"
+  } else {
+    branch = "edge"
+  }
+
+  inputs = [".git/logs/HEAD"]
+  outputs = ["$target_out_dir/VERSION", "$target_out_dir/BRANCH"]
+  args = ["--head-file", rebase_path(inputs[0], root_build_dir), "--branch", branch,
+          "--out-version", rebase_path(outputs[0], root_build_dir),
+          "--out-branch", rebase_path(outputs[1], root_build_dir)]
+}
+
 # XXX: So, since we need to be able to write out files into what appears to be the source tree,
 # but we can't actually (since GN does multiple build dirs, which is a feature that I would
 # like to keep), then we need to instead copy ALL THE GO SOURCES over into the build tree.
@@ -112,7 +128,7 @@ copy("install-private-exec") {
   deps = [":nsboxd", ":nsbox-host"]
 }
 
-copy("install-share") {
+copy("install-share-data") {
   sources = [
     "data/getty-override.conf",
     "data/nsbox-container.target",
@@ -125,8 +141,20 @@ copy("install-share") {
   outputs = ["$install_dir/$share_dir/nsbox/{{source}}"]
 }
 
+copy("install-share-release") {
+  sources = get_target_outputs(":release_files")
+  deps = [":release_files"]
+  outputs = ["$install_dir/$share_dir/nsbox/release/{{source_file_part}}"]
+}
+
 group("nsbox-install-root") {
-  deps = [":install-bin", ":install-etc", ":install-private-exec", ":install-share"]
+  deps = [
+    ":install-bin",
+    ":install-etc",
+    ":install-private-exec",
+    ":install-share-data",
+    ":install-share-release",
+  ]
 }
 
 if (fedora_guest_tools) {
