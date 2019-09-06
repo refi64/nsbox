@@ -5,23 +5,25 @@
 # Writes the VERSION and RELEASE files for use by other targets.
 
 import argparse
+import json
 import time
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--version')
-    parser.add_argument('--branch')
-    parser.add_argument('--out-version')
-    parser.add_argument('--out-branch')
+    parser.add_argument('--head-file')
 
     args = parser.parse_args()
 
-    with open(args.out_version, 'w') as fp:
-        fp.write(args.version)
+    with open(args.head_file) as fp:
+        for line in map(str.strip, fp):
+            continue
 
-    with open(args.out_branch, 'w') as fp:
-        fp.write(args.branch)
+    heading, _ = line.split('\t')
+    _, unix_time, _ = heading.rsplit(' ', 2)
+
+    version = time.strftime('%y.%m.%d', time.gmtime(int(unix_time)))
+    print(version, end='')
 
 
 if __name__ == '__main__':

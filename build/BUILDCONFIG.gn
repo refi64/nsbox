@@ -40,6 +40,9 @@ declare_args() {
   # The system's config directory, which should be an absolute path.
   config_dir = "/etc"
 
+  # Build the Fedora package.
+  fedora_package = false
+
   # Build the Fedora guest tools.
   fedora_guest_tools = false
 
@@ -48,6 +51,12 @@ declare_args() {
 
   # The Fedora release to build RPMs for.
   fedora_rpm_target_release = "30"
+
+  # The version of GN to use for the built packages.
+  package_gn = "2f5276089c50cc76bc9282ec1246304c4dafc5b8"
+
+  # Override the release number for build purposes.
+  override_release_version = ""
 }
 
 # We're not building any C/C++ code, so the toolchain only needs to define a few tools.
@@ -59,3 +68,18 @@ substitute_config_vars = [
   ["SHARE_DIR", share_dir],
   ["STATE_DIR", state_dir],
 ]
+
+if (override_release_version != "") {
+  release_version = override_release_version
+} else {
+  release_version = exec_script("//build/parse_release.py",
+                                ["--head-file", rebase_path("//.git/logs/HEAD")],
+                                "string",
+                                ["//.git/logs/HEAD"])
+}
+
+if (is_stable_build) {
+  release_branch = "stable"
+} else {
+  release_branch = "edge"
+}

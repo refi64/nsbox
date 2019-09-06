@@ -8,18 +8,15 @@ import("//build/symlink.gni")
 
 install_dir = "$root_out_dir/install"
 
+pool("console") {
+  depth = 1
+}
+
 action("release_files") {
   script = "//build/write_release.py"
 
-  if (is_stable_build) {
-    branch = "stable"
-  } else {
-    branch = "edge"
-  }
-
-  inputs = [".git/logs/HEAD"]
-  outputs = ["$target_out_dir/VERSION", "$target_out_dir/BRANCH"]
-  args = ["--head-file", rebase_path(inputs[0], root_build_dir), "--branch", branch,
+  outputs = ["$root_out_dir/VERSION", "$root_out_dir/BRANCH"]
+  args = ["--version", release_version, "--branch", release_branch,
           "--out-version", rebase_path(outputs[0], root_build_dir),
           "--out-branch", rebase_path(outputs[1], root_build_dir)]
 }
@@ -157,8 +154,18 @@ group("nsbox-install-root") {
   ]
 }
 
+group("default") {
+  deps = [":nsbox-install-root"]
+}
+
+if (fedora_package) {
+  group("fedora") {
+    deps = ["//packaging/fedora"]
+  }
+}
+
 if (fedora_guest_tools) {
-  group("guest_tools") {
+  group("fedora_guest_tools") {
     deps = ["//guest-tools/fedora"]
   }
 }

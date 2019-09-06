@@ -1,0 +1,70 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+import("//build/rpmbuild.gni")
+import("//build/substitute_file.gni")
+import("//build/symlink.gni")
+
+action("archive") {
+  outputs = ["$target_out_dir/nsbox-sources.tar"]
+  depfile = "$target_gen_dir/nsbox-sources.d"
+
+  script = "//build/source_archive.py"
+  args = ["--root", rebase_path("//", root_build_dir),
+          "--out-tar", rebase_path(outputs[0], root_build_dir),
+          "--out-dep", rebase_path(depfile, root_build_dir)]
+}
+
+action("rpm_deps") {
+  script = "//build/gather_rpm_deps.py"
+  inputs = ["//go.mod"]
+  outputs = ["$target_gen_dir/deps.spec"]
+
+  args = ["--go", go_exe, "--output", rebase_path(outputs[0], root_build_dir),
+          "--source-offset", "2"]
+}
+
+substitute_file("nsbox.spec") {
+  # XXX: duplicated in //BUILD.gn. (Should we just be using a .gni file to handle this?)
+  release_files = ["$root_out_dir/VERSION", "$root_out_dir/BRANCH"]
+  rpm_deps_spec = get_target_outputs(":rpm_deps")
+
+  deps = ["//:release_files", ":rpm_deps"]
+
+  source = "nsbox.spec"
+
+  vars = [
+    ["GN", package_gn],
+  ]
+
+  file_vars = [
+    ["VERSION", release_files[0]],
+    ["BRANCH", release_files[1]],
+    ["SPECDEFS", rpm_deps_spec[0]],
+  ]
+}
+
+rpmbuild("rpm") {
+  package_name = "nsbox"
+  version = release_version
+  release = "1"
+  has_debug = true
+
+  archive_source = get_target_outputs(":archive")
+  substituted_spec = get_target_outputs(":nsbox.spec")
+
+  spec = substituted_spec[0]
+  sources = [archive_source[0]]
+  deps = [":archive", ":nsbox.spec"]
+}
+
+copy("install") {
+  sources = get_target_outputs(":rpm") + get_target_outputs(":nsbox.spec")
+  outputs = ["$root_build_dir/rpm/{{source_file_part}}"]
+  deps = [":rpm", ":nsbox.spec"]
+}
+
+group("fedora") {
+  deps = [":install"]
+}
