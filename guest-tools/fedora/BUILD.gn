@@ -19,6 +19,7 @@ substitute_file("nsbox-guest-tools.spec") {
 
 rpmbuild("rpm") {
   package_name = "nsbox-guest-tools"
+  noarch = true
   version = guest_tools_version
   release = guest_tools_release
 

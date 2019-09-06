@@ -3,32 +3,75 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 template("rpmbuild") {
+  if (defined(invoker.sources)) {
+    copy("${target_name}_sources") {
+      forward_variables_from(invoker, ["sources", "deps"])
+      outputs = ["$target_gen_dir/{{source_file_part}}"]
+    }
+  }
+
   action(target_name) {
+    pool = "//:console"
+
     if (defined(invoker.package_name)) {
       package_name = invoker.package_name
     } else {
       package_name = invoker.target_name
     }
 
-    forward_variables_from(invoker, ["deps", "version", "release"])
+    forward_variables_from(invoker, ["version", "release"])
+
+    deps = []
+    if (defined(invoker.sources)) {
+      deps += [":${target_name}_sources"]
+    }
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+
+    if (defined(invoker.noarch)) {
+      arch = "noarch"
+    } else {
+      if (target_cpu == "x86") {
+        arch = "x86"
+      } else if (target_cpu == "x64") {
+        arch = "x86_64"
+      } else if (target_cpu == "arm") {
+        arch = "armv7hl"
+      } else if (target_cpu == "arm64") {
+        arch = "aarch64"
+      } else if (target_cpu == "mipsel") {
+        arch = "mipsel"
+      } else {
+        assert(false, "unknown target arch $target_cpu")
+      }
+    }
 
     fc = "fc$fedora_rpm_target_release"
-
     topdir = "$target_gen_dir/rpmbuild"
-    srcdir = rebase_path(".")
+
     absolute_topdir = rebase_path(topdir)
 
     sources = [invoker.spec]
     if (defined(invoker.sources)) {
-      sources += invoker.sources
+      sources += get_target_outputs(":${target_name}_sources")
     }
 
-    outputs = ["$topdir/RPMS/noarch/$package_name-$version-$release.$fc.noarch.rpm",
+    outputs = ["$topdir/RPMS/$arch/$package_name-$version-$release.$fc.$arch.rpm",
                "$topdir/SRPMS/$package_name-$version-$release.$fc.src.rpm"]
+
+    if (defined(invoker.has_debug) && invoker.has_debug) {
+      outputs += ["$topdir/RPMS/$arch/$package_name-debuginfo-$version-$release.$fc.$arch.rpm",
+                  "$topdir/RPMS/$arch/$package_name-debugsource-$version-$release.$fc.$arch.rpm"]
+    }
 
     script = "//build/bin_proxy.py"
     args = [".", "rpmbuild", "-ba", rebase_path(invoker.spec),
-            "--define", "_topdir $absolute_topdir", "--define", "_sourcedir $srcdir",
-            "--undefine", "_disable_source_fetch"]
+            "--define", "_topdir $absolute_topdir", "--undefine", "_disable_source_fetch"]
+
+    if (defined(invoker.sources)) {
+      srcdir = rebase_path(get_label_info(":${target_name}_sources", "target_gen_dir"))
+      args += ["--define", "_sourcedir $srcdir"]
+    }
   }
 }
