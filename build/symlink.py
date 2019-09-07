@@ -9,7 +9,7 @@ import sys
 
 _, source, dest, stamp = sys.argv
 
-if os.path.exists(dest):
+if os.path.islink(dest):
     os.unlink(dest)
 
 os.makedirs(os.path.dirname(dest), exist_ok=True)

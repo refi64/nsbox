@@ -212,14 +212,14 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	builder.AddBindTo(hostPrivPath, "/run/host/nsbox")
 
-	scripts, err := paths.GetPathRelativeToInstallRoot(paths.Share, "nsbox", "data", "scripts")
+	scripts, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "data", "scripts")
 	if err != nil {
 		return errors.Wrap(err, "failed to locate scripts")
 	}
 
 	builder.AddBindTo(scripts, filepath.Join(paths.InContainerPrivPath, "scripts"))
 
-	nsboxHost, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, "nsbox", "nsbox-host")
+	nsboxHost, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, paths.ProductName, "nsbox-host")
 	if err != nil {
 		return errors.Wrap(err, "failed to locate nsbox-host")
 	}
@@ -238,7 +238,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		// stuff into the in-container runtime directory as needed.
 		builder.AddBindTo(xdgRuntimeDir, filepath.Join(paths.InContainerPrivPath, "usr-run"))
 
-		dataDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, "nsbox", "data")
+		dataDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "data")
 		if err != nil {
 			return errors.Wrap(err, "failed to locate nsbox-init.service")
 		}

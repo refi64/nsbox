@@ -109,7 +109,7 @@ func RunContainerViaTransientUnit(ct *container.Container, usrdata *userdata.Use
 	}
 
 	if _, err := machined.GetMachine(ct.Name); err != nil {
-		nsboxd, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, "nsbox", "nsboxd")
+		nsboxd, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, paths.ProductName, "nsboxd")
 		if err != nil {
 			return errors.Wrap(err, "cannot locate nsboxd")
 		}

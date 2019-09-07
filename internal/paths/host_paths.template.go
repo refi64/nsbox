@@ -6,3 +6,4 @@ package paths
 const State = "@STATE_DIR"
 const Libexec = "@LIBEXEC_DIR"
 const Share = "@SHARE_DIR"
+const ProductName = "@PRODUCT_NAME"
