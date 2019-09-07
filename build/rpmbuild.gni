@@ -57,12 +57,18 @@ template("rpmbuild") {
       sources += get_target_outputs(":${target_name}_sources")
     }
 
-    outputs = ["$topdir/RPMS/$arch/$package_name-$version-$release.$fc.$arch.rpm",
-               "$topdir/SRPMS/$package_name-$version-$release.$fc.src.rpm"]
-
+    binary_packages = [package_name]
     if (defined(invoker.has_debug) && invoker.has_debug) {
-      outputs += ["$topdir/RPMS/$arch/$package_name-debuginfo-$version-$release.$fc.$arch.rpm",
-                  "$topdir/RPMS/$arch/$package_name-debugsource-$version-$release.$fc.$arch.rpm"]
+      binary_packages += ["$package_name-debuginfo", "$package_name-debugsource"]
+    }
+
+    if (defined(invoker.extra_packages)) {
+      binary_packages += invoker.extra_packages
+    }
+
+    outputs = ["$topdir/SRPMS/$package_name-$version-$release.$fc.src.rpm"]
+    foreach(pkg, binary_packages) {
+      outputs += ["$topdir/RPMS/$arch/$pkg-$version-$release.$fc.$arch.rpm"]
     }
 
     script = "//build/bin_proxy.py"

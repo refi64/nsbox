@@ -30,13 +30,16 @@ action("release_files") {
 
 symlink("vendor_symlink") {
   name = "$go_target_dir/vendor"
-  value = rebase_path("//vendor", root_build_dir)
+  value = rebase_path("//vendor")
 }
 
 substitute_file("host_paths") {
   source = "internal/paths/host_paths.template.go"
   output = "$go_target_dir/internal/paths/host_paths.go"
-  vars = substitute_config_vars
+
+  vars = substitute_config_vars + [
+    ["PRODUCT_NAME", product_name]
+  ]
 }
 
 substitute_file("nsbox_profile") {
@@ -94,34 +97,47 @@ action("nsbox-varlink-interface") {
   deps = [":gofiles", ":varlink-go-interface-generator"]
 }
 
-binaries = ["nsbox", "nsboxd", "nsbox-host"]
+go_deps = [":gofiles", ":nsbox-varlink-interface"]
 
-foreach(binary, binaries) {
-  go_binary(binary) {
-    package = "github.com/refi64/nsbox/cmd/$binary"
-    deps = [":gofiles", ":nsbox-varlink-interface"]
+go_binary(product_name) {
+  package = "github.com/refi64/nsbox/cmd/nsbox"
+  deps = [":gofiles", ":nsbox-varlink-interface"]
+}
 
-    if (binary == "nsbox-host") {
-      static = true
-    }
-  }
+go_binary("nsboxd") {
+  package = "github.com/refi64/nsbox/cmd/nsboxd"
+  deps = go_deps
+}
+
+go_binary("nsbox-host") {
+  package = "github.com/refi64/nsbox/cmd/nsbox-host"
+  deps = go_deps
+  static = true
 }
 
 copy("install-bin") {
-  sources = get_target_outputs(":nsbox")
+  sources = get_target_outputs(":$product_name")
   outputs = ["$install_dir/$bin_dir/{{source_file_part}}"]
-  deps = [":nsbox"]
+  deps = [":$product_name"]
+}
+
+if (!is_stable_build) {
+  symlink("install-bin-edge-alias") {
+    name = "$install_dir/$bin_dir/nsbox"
+    value = "./nsbox-edge"
+    deps = [":nsbox-edge"]
+  }
 }
 
 copy("install-etc") {
   sources = get_target_outputs(":nsbox_profile")
-  outputs = ["$install_dir/$config_dir/profile.d/nsbox.sh"]
+  outputs = ["$install_dir/$config_dir/profile.d/$product_name.sh"]
   deps = [":nsbox_profile"]
 }
 
 copy("install-private-exec") {
   sources = get_target_outputs(":nsboxd") + get_target_outputs(":nsbox-host")
-  outputs = ["$install_dir/$libexec_dir/nsbox/{{source_file_part}}"]
+  outputs = ["$install_dir/$libexec_dir/$product_name/{{source_file_part}}"]
   deps = [":nsboxd", ":nsbox-host"]
 }
 
@@ -135,13 +151,13 @@ copy("install-share-data") {
     "data/scripts/nsbox-enter-setup.sh",
     "data/scripts/nsbox-init.sh",
   ]
-  outputs = ["$install_dir/$share_dir/nsbox/{{source}}"]
+  outputs = ["$install_dir/$share_dir/$product_name/{{source}}"]
 }
 
 copy("install-share-release") {
   sources = get_target_outputs(":release_files")
   deps = [":release_files"]
-  outputs = ["$install_dir/$share_dir/nsbox/release/{{source_file_part}}"]
+  outputs = ["$install_dir/$share_dir/$product_name/release/{{source_file_part}}"]
 }
 
 group("nsbox-install-root") {
@@ -152,6 +168,10 @@ group("nsbox-install-root") {
     ":install-share-data",
     ":install-share-release",
   ]
+
+  if (!is_stable_build) {
+    deps += [":install-bin-edge-alias"]
+  }
 }
 
 group("default") {

@@ -36,20 +36,25 @@ substitute_file("nsbox.spec") {
 
   vars = [
     ["GN", package_gn],
+    ["PRODUCT_NAME", product_name],
   ]
 
   file_vars = [
     ["VERSION", release_files[0]],
-    ["BRANCH", release_files[1]],
     ["SPECDEFS", rpm_deps_spec[0]],
   ]
 }
 
 rpmbuild("rpm") {
-  package_name = "nsbox"
+  package_name = product_name
+
   version = release_version
   release = "1"
   has_debug = true
+
+  if (!is_stable_build) {
+    extra_packages = ["nsbox-edge-alias"]
+  }
 
   archive_source = get_target_outputs(":archive")
   substituted_spec = get_target_outputs(":nsbox.spec")

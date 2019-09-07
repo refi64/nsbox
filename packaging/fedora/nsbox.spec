@@ -14,7 +14,7 @@
 # nsbox-host has missing build-ids due to being static.
 %global _missing_build_ids_terminate_build 0
 
-Name: nsbox
+Name: @PRODUCT_NAME
 Version: @VERSION
 Release: 1%{?dist}
 Summary: A multi-purpose, nspawn-powered container manager
@@ -34,6 +34,13 @@ Source1: https://gn.googlesource.com/gn/+archive/@GN.tar.gz#/gn.tar.gz
 
 %description
 nsbox is a multi-purpose, nspawn-powered container manager.
+
+%if "%{name}" == "nsbox-edge"
+%package alias
+Summary: Alias for nsbox-edge
+%description alias
+Installs the nsbox alias for nsbox-edge.
+%endif
 
 %prep
 rm -rf %{name}-%{version}
@@ -81,6 +88,9 @@ share_dir = "%{reldatadir}"
 state_dir = "%{_sharedstatedir}"
 config_dir = "%{_sysconfdir}"
 override_release_version = "@VERSION"
+%if "%{name}" != "nsbox-edge"
+is_stable_build = true
+%endif
 EOF
 gn/out/gn gen out
 ninja -C out
@@ -92,16 +102,21 @@ cp -r out/install/{%{relbindir},%{rellibexecdir},%{reldatadir}} %{buildroot}/%{_
 chmod -R g-w %{buildroot}
 
 %files
+%{_bindir}/%{name}
+%{_sysconfdir}/profile.d/%{name}.sh
+%{_libexecdir}/%{name}/nsbox-host
+%{_libexecdir}/%{name}/nsboxd
+%{_datadir}/%{name}/data/getty-override.conf
+%{_datadir}/%{name}/data/nsbox-container.target
+%{_datadir}/%{name}/data/nsbox-init.service
+%{_datadir}/%{name}/data/scripts/nsbox-apply-env.sh
+%{_datadir}/%{name}/data/scripts/nsbox-enter-run.sh
+%{_datadir}/%{name}/data/scripts/nsbox-enter-setup.sh
+%{_datadir}/%{name}/data/scripts/nsbox-init.sh
+%{_datadir}/%{name}/release/VERSION
+%{_datadir}/%{name}/release/BRANCH
+
+%if "%{name}" == "nsbox-edge"
+%files alias
 %{_bindir}/nsbox
-%{_sysconfdir}/profile.d/nsbox.sh
-%{_libexecdir}/nsbox/nsbox-host
-%{_libexecdir}/nsbox/nsboxd
-%{_datadir}/nsbox/data/getty-override.conf
-%{_datadir}/nsbox/data/nsbox-container.target
-%{_datadir}/nsbox/data/nsbox-init.service
-%{_datadir}/nsbox/data/scripts/nsbox-apply-env.sh
-%{_datadir}/nsbox/data/scripts/nsbox-enter-run.sh
-%{_datadir}/nsbox/data/scripts/nsbox-enter-setup.sh
-%{_datadir}/nsbox/data/scripts/nsbox-init.sh
-%{_datadir}/nsbox/release/VERSION
-%{_datadir}/nsbox/release/BRANCH
+%endif
