@@ -5,6 +5,7 @@
 package log
 
 import (
+	"flag"
 	"fmt"
 	"os"
 )
@@ -18,6 +19,10 @@ import (
 // non-TTY (the journal), etc.
 
 var verbose bool
+
+func SetFlags(fs *flag.FlagSet) {
+	fs.BoolVar(&verbose, "verbose", verbose, "Be verbose")
+}
 
 func Verbose() bool {
 	return verbose

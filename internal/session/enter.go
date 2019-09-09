@@ -136,18 +136,20 @@ func EnterContainer(ct *container.Container, command []string, usrdata *userdata
 
 	args := []string{"nsenter", "-at", strconv.Itoa(int(leader)), "/run/host/nsbox/nsbox-host", "enter"}
 
+	if log.Verbose() {
+		args = append(args, "-verbose")
+	}
+
 	ptyArgMap := []string{"stdin", "stdout", "stderr"}
 	for index, file := range stdio {
 		if !fileIsTerminal(file) {
 			continue
 		}
 
-		args = append(args, fmt.Sprintf("--%s=%s", ptyArgMap[index], pty.Name()))
+		args = append(args, fmt.Sprintf("-%s=%s", ptyArgMap[index], pty.Name()))
 	}
 
-	args = append(args, fmt.Sprintf("--uid=%d", os.Getuid()), fmt.Sprintf("--cwd=%s", workdir))
-	// TODO: figure out how to stop parsing after an argument.
-	args = append(args, "--")
+	args = append(args, fmt.Sprintf("-uid=%d", os.Getuid()), fmt.Sprintf("-cwd=%s", workdir))
 
 	// Add the environment variables.
 	args = append(args, "env")

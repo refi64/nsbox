@@ -28,15 +28,15 @@ func (host *VarlinkHost) NotifyStart(call devnsbox.VarlinkCall) error {
 	return call.ReplyNotifyStart()
 }
 
-func (host *VarlinkHost) NotifyDesktopUpdate(call devnsbox.VarlinkCall) error {
-	log.Debug("received NotifyDesktopUpdate()")
+func (host *VarlinkHost) NotifyReloadExports(call devnsbox.VarlinkCall) error {
+	log.Debug("received NotifyReloadExports()")
 
 	if err := integration.UpdateDesktopFiles(host.container); err != nil {
 		log.Alert(err)
 		return err
 	}
 
-	return call.ReplyNotifyDesktopUpdate()
+	return call.ReplyNotifyReloadExports()
 }
 
 func New(ct *container.Container) *devnsbox.VarlinkInterface {

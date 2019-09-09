@@ -14,6 +14,7 @@ require (
 	github.com/godbus/dbus v5.0.1+incompatible
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-containerregistry v0.0.0-20190820205713-31e00cede111
+	github.com/google/subcommands v1.0.1
 	github.com/kr/pty v1.1.1
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect

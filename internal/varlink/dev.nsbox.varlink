@@ -6,5 +6,5 @@ interface dev.nsbox
 # Notify the host that the container is fully initialized.
 method NotifyStart() -> ()
 
-# Notify the host that the XDG desktop files inside the container may have been updated.
-method NotifyDesktopUpdate() -> ()
+# Notify the host that potentially exported files have been updated.
+method NotifyReloadExports() -> ()
