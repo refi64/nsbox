@@ -12,6 +12,7 @@ import (
 
 type nsboxHostApp struct {}
 
+func (app *nsboxHostApp) PreexecHook(fs *flag.FlagSet) {}
 func (app *nsboxHostApp) SetGlobalFlags(fs *flag.FlagSet) {}
 
 func main() {

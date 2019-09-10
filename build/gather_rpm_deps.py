@@ -22,7 +22,6 @@ FEDORA_REPO_AVAILABLE_DEPS = {
     'golang.org/x/crypto',
     'golang.org/x/sync',
     'golang.org/x/sys',
-    'gopkg.in/alecthomas/kingpin.v2',
     'gopkg.in/cheggaaa/pb.v1',
 }
 

@@ -11,6 +11,7 @@ import (
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/userdata"
 	"golang.org/x/sys/unix"
+	"strings"
 )
 
 // Package unix doesn't provide SIGRTMIN.
@@ -18,15 +19,50 @@ import (
 // #include <signal.h>
 import "C"
 
-// systemd sends SIGRTMIN + 4 to signify poweroff and SIGINT for reboot.
+type Signal unix.Signal
 
 var (
-	SIGRTMIN = unix.Signal(C.SIGRTMIN)
-	POWEROFF = unix.Signal(int(SIGRTMIN) + 4)
-	REBOOT   = unix.SIGINT
+	SigDefault  = Signal(0)
+	// systemd sends SIGRTMIN + 4 to signify poweroff and SIGINT for reboot.
+	SigPoweroff = Signal(C.SIGRTMIN + 4)
+	SigReboot   = Signal(unix.SIGINT)
+	SigTerm     = Signal(unix.SIGTERM)
+	SigKill			= Signal(unix.SIGKILL)
+
+	sigToString = map[Signal]string{
+		SigDefault:  "default",
+		SigPoweroff: "poweroff",
+		SigReboot:   "reboot",
+		SigTerm: 		 "sigterm",
+		SigKill:     "sigkill",
+	}
+
+	stringToSig = map[string]Signal{
+		"default" : SigDefault,
+		"poweroff": SigPoweroff,
+		"reboot"  : SigReboot,
+		"term"    : SigTerm,
+		"sigterm" : SigTerm,
+		"kill"    : SigKill,
+		"sigkill" : SigKill,
+	}
 )
 
-func KillContainer(usrdata *userdata.Userdata, name, sigstr string, all bool) error {
+func (sig Signal) String() string {
+	return sigToString[sig]
+}
+
+func (sig *Signal) Set(value string) error {
+	newSig, ok := stringToSig[strings.ToLower(value)]
+	if !ok {
+		return errors.New("does not exist")
+	}
+
+	*sig = newSig
+	return nil
+}
+
+func KillContainer(usrdata *userdata.Userdata, name string, signal Signal, all bool) error {
 	ct, err := container.Open(usrdata, name)
 	if err != nil {
 		return err
@@ -36,38 +72,20 @@ func KillContainer(usrdata *userdata.Userdata, name, sigstr string, all bool) er
 		return errors.New("-a/--all is not supported for booted containers")
 	}
 
-	var signal unix.Signal
-
-	if sigstr == "" {
+	if signal == SigDefault {
 		if ct.Config.Boot {
-			sigstr = "POWEROFF"
+			signal = SigPoweroff
 		} else {
-			sigstr = "SIGTERM"
+			signal = SigTerm
 		}
 	}
 
-	if sigstr == "POWEROFF" || sigstr == "REBOOT" {
+	if signal == SigPoweroff || signal == SigReboot {
 		if !ct.Config.Boot {
 			return errors.New("cannot send POWEROFF/REBOOT to a non-booted container")
 		}
-
-		if sigstr == "POWEROFF" {
-			signal = POWEROFF
-		} else {
-			signal = REBOOT
-		}
-	} else {
-		if ct.Config.Boot {
-			return errors.New("only POWEROFF/REBOOT may be sent to a booted container")
-		}
-
-		if sigstr == "SIGTERM" {
-			signal = unix.SIGTERM
-		} else if sigstr == "SIGKILL" {
-			signal = unix.SIGKILL
-		} else {
-			panic("invalid signal string: " + sigstr)
-		}
+	} else if ct.Config.Boot {
+		return errors.New("only POWEROFF/REBOOT may be sent to a booted container")
 	}
 
 	machined, err := machine1.New()
@@ -84,7 +102,7 @@ func KillContainer(usrdata *userdata.Userdata, name, sigstr string, all bool) er
 
 	log.Debugf("sending signal %d to %s", int(signal), who)
 
-	if err := machined.KillMachine(name, who, signal); err != nil {
+	if err := machined.KillMachine(name, who, unix.Signal(signal)); err != nil {
 		return errors.Wrap(err, "failed to kill container")
 	}
 

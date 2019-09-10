@@ -73,7 +73,7 @@ func DefaultContainer(usrdata *userdata.Userdata) (*container.Container, error) 
 }
 
 func SetDefaultContainer(usrdata *userdata.Userdata, name string) error {
-	if name != "" {
+	if name != "" && name != "-" {
 		ct, err := container.Open(usrdata, name)
 		if err != nil {
 			return err

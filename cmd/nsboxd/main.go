@@ -13,9 +13,8 @@ import (
 )
 
 func main() {
-	verbose := flag.Bool("verbose", false, "verbose mode")
+	log.SetFlags(flag.CommandLine)
 	flag.Parse()
-	log.SetVerbose(*verbose)
 
 	if flag.NArg() != 1 {
 		log.Fatal("invalid arguments")

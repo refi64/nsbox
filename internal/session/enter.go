@@ -137,7 +137,7 @@ func EnterContainer(ct *container.Container, command []string, usrdata *userdata
 	args := []string{"nsenter", "-at", strconv.Itoa(int(leader)), "/run/host/nsbox/nsbox-host", "enter"}
 
 	if log.Verbose() {
-		args = append(args, "-verbose")
+		args = append(args, "-v")
 	}
 
 	ptyArgMap := []string{"stdin", "stdout", "stderr"}

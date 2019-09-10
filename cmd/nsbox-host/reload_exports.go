@@ -38,7 +38,7 @@ func (*reloadExportsCommand) Name() string {
 }
 
 func (*reloadExportsCommand) Synopsis() string {
-	return "Reload all the files exported to the host."
+	return "reload all the files exported to the host."
 }
 
 func (*reloadExportsCommand) Usage() string {
@@ -50,10 +50,10 @@ func (*reloadExportsCommand) Usage() string {
 func (*reloadExportsCommand) SetFlags(fs *flag.FlagSet) {
 }
 
-func (*reloadExportsCommand) Execute(fs *flag.FlagSet) subcommands.ExitStatus {
-	if !args.ExpectArgs(fs) {
-		return subcommands.ExitUsageError
-	}
+func (*reloadExportsCommand) ParsePositional(fs *flag.FlagSet) error {
+	return args.ExpectArgs(fs)
+}
 
+func (*reloadExportsCommand) Execute(_ args.App, fs *flag.FlagSet) subcommands.ExitStatus {
 	return args.HandleError(reloadExports())
 }

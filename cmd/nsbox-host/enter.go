@@ -7,6 +7,7 @@ package main
 import (
 	"flag"
 	"github.com/google/subcommands"
+	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/args"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/session"
@@ -44,14 +45,21 @@ func (cmd *enterCommand) SetFlags(fs *flag.FlagSet) {
 	fs.StringVar(&cmd.cwd, "cwd", "", "")
 }
 
-func (cmd *enterCommand) Execute(fs *flag.FlagSet) subcommands.ExitStatus {
+func (cmd *enterCommand) ParsePositional(fs *flag.FlagSet) error {
 	if fs.NArg() == 0 {
-		log.Alert("expected a command")
-		return subcommands.ExitUsageError
+		return errors.New("expected a command")
 	}
 
 	if cmd.stdin == "" || cmd.stdout == "" || cmd.stderr == "" || cmd.cwd == "" || cmd.uid == -1 {
-		log.Alert("missing arguments")
+		return errors.New("missing arguments")
+	}
+
+	return nil
+}
+
+func (cmd *enterCommand) Execute(_ args.App, fs *flag.FlagSet) subcommands.ExitStatus {
+	if fs.NArg() == 0 {
+		log.Alert("expected a command")
 		return subcommands.ExitUsageError
 	}
 

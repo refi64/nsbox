@@ -21,7 +21,7 @@ import (
 var verbose bool
 
 func SetFlags(fs *flag.FlagSet) {
-	fs.BoolVar(&verbose, "verbose", verbose, "Be verbose")
+	fs.BoolVar(&verbose, "v", verbose, "Be verbose")
 }
 
 func Verbose() bool {

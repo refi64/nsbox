@@ -40,7 +40,9 @@ func startPtyServiceAndNotifyHost(name string) error {
 	select {}
 }
 
-type serviceCommand struct {}
+type serviceCommand struct {
+	container string
+}
 
 func newServiceCommand(app args.App) subcommands.Command {
 	return args.WrapSimpleCommand(app, &serviceCommand{})
@@ -61,12 +63,10 @@ func (*serviceCommand) Usage() string {
 func (*serviceCommand) SetFlags(fs *flag.FlagSet) {
 }
 
-func (*serviceCommand) Execute(fs *flag.FlagSet) subcommands.ExitStatus {
-	var container string
+func (cmd *serviceCommand) ParsePositional(fs *flag.FlagSet) error {
+	return args.ExpectArgs(fs, &cmd.container)
+}
 
-	if !args.ExpectArgs(fs, &container) {
-		return subcommands.ExitUsageError
-	}
-
-	return args.HandleError(startPtyServiceAndNotifyHost(container))
+func (cmd *serviceCommand) Execute(_ args.App, fs *flag.FlagSet) subcommands.ExitStatus {
+	return args.HandleError(startPtyServiceAndNotifyHost(cmd.container))
 }

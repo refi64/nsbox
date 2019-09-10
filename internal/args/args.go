@@ -8,11 +8,13 @@ import (
 	"flag"
 	"context"
 	"github.com/google/subcommands"
+	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
 	"os"
 )
 
 type App interface {
+	PreexecHook(fs *flag.FlagSet)
 	SetGlobalFlags(fs *flag.FlagSet)
 }
 
@@ -27,7 +29,8 @@ type SimpleCommand interface {
 	Synopsis() string
 	Usage() string
 	SetFlags(fs *flag.FlagSet)
-	Execute(fs *flag.FlagSet) subcommands.ExitStatus
+	ParsePositional(fs *flag.FlagSet) error
+	Execute(app App, fs *flag.FlagSet) subcommands.ExitStatus
 }
 
 type simpleCommandWrapper struct {
@@ -57,21 +60,26 @@ func (wrapper *simpleCommandWrapper) SetFlags(fs *flag.FlagSet) {
 }
 
 func (wrapper *simpleCommandWrapper) Execute(_ context.Context, fs *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-	return wrapper.simple.Execute(fs)
+	if err := wrapper.simple.ParsePositional(fs); err != nil {
+		log.Alert(err)
+		fs.Usage()
+		return subcommands.ExitUsageError
+	}
+
+	wrapper.app.PreexecHook(fs)
+	return wrapper.simple.Execute(wrapper.app, fs)
 }
 
-func ExpectArgs(fs *flag.FlagSet, args ...*string) bool {
+func ExpectArgs(fs *flag.FlagSet, args ...*string) error {
 	if fs.NArg() != len(args) {
-		log.Alertf("expected %d arg(s), got %d", len(args), fs.NArg())
-		fs.Usage()
-		return false
+		return errors.Errorf("expected %d arg(s), got %d", len(args), fs.NArg())
 	}
 
 	for i, arg := range fs.Args() {
 		*args[i] = arg
 	}
 
-	return true
+	return nil
 }
 
 func HandleError(err error) subcommands.ExitStatus {

@@ -56,7 +56,7 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd, name string, usrdata *userdata.
 		systemd1.PropType("notify"),
 		systemd1.PropDescription("nsbox " + name),
 		systemd1.PropExecStart(
-			[]string{nsboxd, fmt.Sprint("-verbose=", log.Verbose()), name},
+			[]string{nsboxd, fmt.Sprint("-v=", log.Verbose()), name},
 			false,
 		),
 		systemd1.Property{
