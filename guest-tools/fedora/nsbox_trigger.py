@@ -15,4 +15,4 @@ class NsboxTrigger(dnf.Plugin):
 
     def transaction(self):
         logger.debug('Notifying nsbox host of updates...')
-        subprocess.run(['nsbox-host', 'desktop-update'])
+        subprocess.run(['nsbox-host', 'reload-exports'])
