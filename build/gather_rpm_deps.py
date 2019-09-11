@@ -119,7 +119,13 @@ class SourceGatherEngine:
                 and all(isinstance(src, RepoSource) for src in self._pkg_sources[parent.name]))):
             source = RepoSource(imports=[child['ImportPath'] for child in module.child_deps],
                                 f31_only=module.name in F31_ONLY_REPO_DEPS,
-                                indirect=module.indirect, url=module.name)
+                                # Don't treat it as indirect unless its parent is also in the
+                                # repos, otherwise we will omit dependencies for vendored
+                                # sources.
+                                indirect=module.indirect
+                                            and any(isinstance(source, RepoSource)
+                                                    for source in self._pkg_sources[parent.name]),
+                                url=module.name)
             self._pkg_sources[module.name].append(source)
 
             found = True

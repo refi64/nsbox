@@ -23,7 +23,9 @@ URL: https://nsbox.dev/
 BuildRequires: gcc
 BuildRequires: gcc-c++
 BuildRequires: golang
+BuildRequires: go-compilers-golang-compiler
 BuildRequires: python3
+BuildRequires: systemd-devel
 %if 0%{?fedora} >= 31
 BuildRequires: go-rpm-macros
 %endif
@@ -71,14 +73,19 @@ EOF
 chmod +x build/go-shim.sh
 
 %build
+%set_build_flags
+export CC=gcc
+export CXX=g++
+
 cd gn
 # last_commit_position.h generation wants Git, so write it manually.
 python3 build/gen.py --no-last-commit-position --no-static-libstdc++
 # XXX: this sort-of works, it's good enough for our purposes.
 echo -e '#pragma once\n#define LAST_COMMIT_POSITION "@GN"' > out/last_commit_position.h
-ninja -C out
+ninja -C out gn
 cd ..
 
+unset LDFLAGS
 mkdir -p out
 cat >out/args.gn <<EOF
 go_exe = "$PWD/build/go-shim.sh"
