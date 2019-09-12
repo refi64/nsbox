@@ -7,22 +7,18 @@ import("//build/rpmbuild.gni")
 import("//build/substitute_file.gni")
 import("//build/symlink.gni")
 
-guest_tools_version = "0.1"
-guest_tools_release = "1"
-
 substitute_file("nsbox-guest-tools.spec") {
   source = "nsbox-guest-tools.spec"
   vars = [
-    ["VERSION", guest_tools_version],
-    ["RELEASE", guest_tools_release],
+    ["VERSION", release_version],
   ]
 }
 
 rpmbuild("rpm") {
   package_name = "nsbox-guest-tools"
   noarch = true
-  version = guest_tools_version
-  release = guest_tools_release
+  version = release_version
+  release = "1"
 
   substituted_spec = get_target_outputs(":nsbox-guest-tools.spec")
   spec = substituted_spec[0]
