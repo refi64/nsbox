@@ -233,6 +233,13 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	builder.AddBind(filepath.Join("/var/log/journal", machineId))
 
+	releaseDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "release")
+	if err != nil {
+		return errors.Wrap(err, "failed to locate release files")
+	}
+
+	builder.AddBindTo(releaseDir, filepath.Join(paths.InContainerPrivPath, "release"))
+
 	if ct.Config.Boot {
 		// Bind the entire xdg runtime directory, then nsbox-init.sh will manually symlink
 		// stuff into the in-container runtime directory as needed.
