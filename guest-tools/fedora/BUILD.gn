@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import("//build/copy_target_outputs.gni")
 import("//build/rpmbuild.gni")
 import("//build/substitute_file.gni")
 import("//build/symlink.gni")
@@ -29,10 +30,9 @@ rpmbuild("rpm") {
   deps = [":nsbox-guest-tools.spec"]
 }
 
-copy("install") {
-  sources = get_target_outputs(":rpm") + get_target_outputs(":nsbox-guest-tools.spec")
-  outputs = ["$root_build_dir/rpm/{{source_file_part}}"]
+copy_target_outputs("install") {
   deps = [":rpm", ":nsbox-guest-tools.spec"]
+  outputs = ["$root_build_dir/rpm/{{source_file_part}}"]
 }
 
 group("fedora") {

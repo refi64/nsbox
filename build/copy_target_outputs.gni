@@ -1,0 +1,24 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+template("copy_target_outputs") {
+  all_copy_targets = []
+
+  foreach(dep, invoker.deps) {
+    copy_target = "${target_name}_" + string_replace(dep, "/", "_")
+    copy_target = string_replace(copy_target, ":", "_")
+
+    all_copy_targets += [":$copy_target"]
+
+    copy(copy_target) {
+      sources = get_target_outputs(dep)
+      forward_variables_from(invoker, ["outputs"])
+      deps = [dep]
+    }
+  }
+
+  group(target_name) {
+    deps = all_copy_targets
+  }
+}

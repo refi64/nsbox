@@ -29,7 +29,7 @@ template("rpmbuild") {
       deps += invoker.deps
     }
 
-    if (defined(invoker.noarch)) {
+    if (defined(invoker.noarch) && invoker.noarch) {
       arch = "noarch"
     } else {
       if (target_cpu == "x86") {
