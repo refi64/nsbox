@@ -1,0 +1,15 @@
+name: 'Push prebuilt spec files'
+description: 'Push prebuilt spec files to the nsbox-bot spec files repository'
+inputs:
+  branch:
+    description: 'The build branch'
+    required: true
+  token:
+    description: 'The nsbox-bot Git access token'
+    required: true
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - '${{ inputs.branch }}'
+    - '${{ inputs.token }}'
