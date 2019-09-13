@@ -10,8 +10,6 @@ jobs:
   push:
     name: Push the spec files
     runs-on: ubuntu-latest
-    container:
-      image: fedora:30
     steps:
       - name: 'Checkout the nsbox repo'
         uses: actions/checkout@v1
