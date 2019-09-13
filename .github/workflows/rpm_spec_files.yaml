@@ -2,7 +2,7 @@ name: Push prebuilt spec files
 on:
   push:
     branches:
-      master
+      - master
   # schedule:
     # - cron: '0 0 * * *'
 
@@ -16,7 +16,7 @@ jobs:
       - name: 'Checkout the nsbox repo'
         uses: actions/checkout@v1
       - name: 'Run the push'
-        uses: actions/rpm_spec_files
+        uses: ./.github/actions/rpm_spec_files
         with:
           branch: edge
           token: '${{ secrets.RPM_SPEC_FILES_TOKEN }}'
