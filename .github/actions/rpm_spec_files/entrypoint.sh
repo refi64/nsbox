@@ -19,6 +19,8 @@ ninja -C out rpm/nsbox{,-guest-tools}.spec
 git clone https://nsbox-bot:"$git_token"@github.com/nsbox-bot/rpm-spec-files -b $git_branch
 cp out/rpm/*.spec rpm-spec-files
 cd rpm-spec-files
+git config user.email 'github@nsbox.dev'
+git config user.name 'nsbox-bot'
 git add .
 git commit -am "Automated push at $(date)"
 git push
