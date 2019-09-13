@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ex
+
 branch="$1"
 git_token="$2"
 
