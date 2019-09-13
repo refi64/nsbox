@@ -1,7 +1,10 @@
 name: Push prebuilt spec files
 on:
-  schedule:
-    - cron: '0 0 * * *'
+  push:
+    branches:
+      master
+  # schedule:
+    # - cron: '0 0 * * *'
 
 jobs:
   push:
