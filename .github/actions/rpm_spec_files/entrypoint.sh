@@ -13,7 +13,7 @@ else
   git_branch=master
 fi
 
-gn gen out --args="${gn_args[@]}"
+gn gen out --args="${gn_args[*]}"
 ninja -C out rpm/nsbox{,-guest-tools}.spec
 
 git clone https://nsbox-bot:"$git_token"@github.com/nsbox-bot/rpm-spec-files -b $git_branch
