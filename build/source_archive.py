@@ -22,6 +22,9 @@ def main():
                                    check=True, stdout=subprocess.PIPE, universal_newlines=True)
     files = files_process.stdout.splitlines()
 
+    # XXX: Avoid a weird issue where the out dependency file's parent dirs don't exist yet.
+    os.makedirs(os.path.dirname(args.out_dep), exist_ok=True)
+
     with tarfile.open(args.out_tar, 'w') as tar, open(args.out_dep, 'w') as dep:
         for line in files:
             tar.add(line, os.path.join(args.prefix, os.path.relpath(line, args.root)))
