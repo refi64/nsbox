@@ -22,14 +22,15 @@ License: MPL-2.0
 URL: https://nsbox.dev/
 BuildRequires: gcc
 BuildRequires: gcc-c++
-BuildRequires: golang
-BuildRequires: go-compilers-golang-compiler
-BuildRequires: python3
-BuildRequires: systemd-devel
 %if 0%{?fedora} >= 31
 BuildRequires: go-rpm-macros
+%else
+BuildRequires: go-compilers-golang-compiler
 %endif
+BuildRequires: golang
 BuildRequires: ninja-build
+BuildRequires: python3
+BuildRequires: systemd-devel
 Source0: nsbox-sources.tar
 Source1: https://gn.googlesource.com/gn/+archive/@GN.tar.gz#/gn.tar.gz
 @SPECDEFS
