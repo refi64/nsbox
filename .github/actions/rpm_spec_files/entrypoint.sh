@@ -1,9 +1,9 @@
 #!/bin/bash
 
-set -ex
-
 branch="$1"
 git_token="$2"
+
+set -ex
 
 gn_args=(fedora_package=true fedora_guest_tools=true)
 if [[ "$branch" == "stable" ]]; then
