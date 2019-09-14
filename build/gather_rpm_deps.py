@@ -42,8 +42,13 @@ F31_ONLY_REPO_DEPS = {
     'github.com/mholt/archiver',
 
     # ...and archiver's deps:
+    'github.com/andybalholm/brotli',
+    'github.com/golang/gddo',
     'github.com/golang/snappy',
     'github.com/dsnet/compress',
+    'github.com/klauspost/compress',
+    'github.com/klauspost/cpuid',
+    'github.com/klauspost/pgzip',
     'github.com/nwaples/rardecode',
     'github.com/pierrec/lz4',
     'github.com/xi2/xz',
