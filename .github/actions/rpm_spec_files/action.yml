@@ -4,7 +4,6 @@ inputs:
   branch:
     description: 'The build branch'
     required: true
-    default: test
   token:
     description: 'The nsbox-bot Git access token'
     required: true
