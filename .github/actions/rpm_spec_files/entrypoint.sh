@@ -10,6 +10,7 @@ if [[ "$branch" == "stable" ]]; then
   git_branch=stable
   gn_args+=(is_stable_build=true)
 else
+  echo "BRANCH: x${branch}x"
   git_branch=master
 fi
 
