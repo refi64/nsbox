@@ -14,7 +14,7 @@ require (
 	github.com/kr/pty v1.1.1
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
-	github.com/mholt/archiver v0.0.0-20190623220050-33320f6f7306
+	github.com/mholt/archiver v3.2.0+incompatible
 	github.com/pierrec/lz4 v2.2.6+incompatible // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/refi64/go-lxtempdir v0.0.0-20190815193640-e8f0a4e7825f

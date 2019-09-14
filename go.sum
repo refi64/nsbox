@@ -79,8 +79,8 @@ github.com/mattn/go-isatty v0.0.8 h1:HLtExJ+uU2HOZ+wI0Tt5DtUDrx8yhUqDcp7fYERX4CE
 github.com/mattn/go-isatty v0.0.8/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hdxcsrc5s=
 github.com/mattn/go-runewidth v0.0.4 h1:2BvfKmzob6Bmd4YsL0zygOqfdFnK7GR4QL06Do4/p7Y=
 github.com/mattn/go-runewidth v0.0.4/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
-github.com/mholt/archiver v0.0.0-20190623220050-33320f6f7306 h1:2yQuFFnrXIMjKXppON/w1iJSeWmFv20GpgQ1Wiw1DQY=
-github.com/mholt/archiver v0.0.0-20190623220050-33320f6f7306/go.mod h1:48kRcjM6Z8eoKi5ZnSUvzZnwWvChaJNgBriqQqmqyA0=
+github.com/mholt/archiver v3.2.0+incompatible h1:1Uy33PCUFUZaYrPmxqCBWFg/m1xc8Eji4bsHa9bYxVU=
+github.com/mholt/archiver v3.2.0+incompatible/go.mod h1:48kRcjM6Z8eoKi5ZnSUvzZnwWvChaJNgBriqQqmqyA0=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v0.0.0-20180320133207-05fbef0ca5da/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
