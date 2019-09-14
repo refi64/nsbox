@@ -71,6 +71,7 @@ else
 fi
 EOF
 
+sed -i 's/GO111MODULE=off//g' build/go-shim.sh
 chmod +x build/go-shim.sh
 
 %build
