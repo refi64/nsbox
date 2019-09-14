@@ -65,7 +65,7 @@ rpmbuild("rpm") {
 }
 
 copy_target_outputs("install") {
-  deps = [":rpm", ":nsbox.spec"]
+  deps = [":rpm", ":nsbox.spec", ":archive"]
   outputs = ["$root_build_dir/rpm/{{source_file_part}}"]
 }
 
