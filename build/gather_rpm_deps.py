@@ -31,17 +31,12 @@ MANUALLY_DOWNLOADED_DEPS = {
     'github.com/google/subcommands',
     'github.com/refi64/go-lxtempdir',
     'github.com/varlink/go',
-}
 
-F31_ONLY_REPO_DEPS = {
-    'github.com/google/go-cmp',
-
-    # Too old in F30.
-    'github.com/godbus/dbus',
-    'github.com/kr/pty',
+    # Technically in the F31 repos, but trying to balance their go.mod with F31's deps is a
+    # total mess, so I just cop out.
     'github.com/mholt/archiver',
 
-    # ...and archiver's deps:
+    # archiver deps.
     'github.com/andybalholm/brotli',
     'github.com/golang/gddo',
     'github.com/golang/snappy',
@@ -53,6 +48,14 @@ F31_ONLY_REPO_DEPS = {
     'github.com/pierrec/lz4',
     'github.com/xi2/xz',
     'github.com/ulikunitz/xz',
+}
+
+F31_ONLY_REPO_DEPS = {
+    'github.com/google/go-cmp',
+
+    # Too old in F30.
+    'github.com/godbus/dbus',
+    'github.com/kr/pty',
 
     'k8s.io/apimachinery',
     'k8s.io/klog',
