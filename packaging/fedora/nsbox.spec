@@ -52,7 +52,7 @@ rm -rf %{name}-%{version}
 %{?setup_go_archives_pre_f31_only}
 
 %setup -q -c -T -n %{name}-%{version}/gn -a 1
-%setup -q -c -D
+%setup -q -D
 
 %setup_go_repo_links
 

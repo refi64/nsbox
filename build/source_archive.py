@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-from pathlib import Path
-
 import argparse
 import os.path
 import subprocess
@@ -13,6 +11,7 @@ import tarfile
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--root')
+    parser.add_argument('--prefix')
     parser.add_argument('--out-tar')
     parser.add_argument('--out-dep')
 
@@ -25,8 +24,7 @@ def main():
 
     with tarfile.open(args.out_tar, 'w') as tar, open(args.out_dep, 'w') as dep:
         for line in files:
-            path = Path(line).resolve()
-            tar.add(line, os.path.relpath(line, args.root))
+            tar.add(line, os.path.join(args.prefix, os.path.relpath(line, args.root)))
             print(f'{os.path.relpath(args.out_tar, dep_parent)}:',
                   os.path.relpath(line, dep_parent), file=dep)
             print(file=dep)
