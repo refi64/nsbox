@@ -87,6 +87,7 @@ func main() {
 	subcommands.Register(newCreateCommand(app), "")
 	subcommands.Register(newInfoCommand(app), "")
 	subcommands.Register(newKillCommand(app), "")
+	subcommands.Register(newListCommand(app), "")
 	subcommands.Register(newRunCommand(app), "")
 	subcommands.Register(newSetDefaultCommand(app), "")
 
