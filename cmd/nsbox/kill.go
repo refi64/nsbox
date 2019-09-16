@@ -18,7 +18,7 @@ type killCommand struct {
 }
 
 func newKillCommand(app args.App) subcommands.Command {
-	return args.WrapSimpleCommand(app, &killCommand{})
+	return args.WrapSimpleCommand(app, &killCommand{signal: kill.SigPoweroff})
 }
 
 func (*killCommand) Name() string {

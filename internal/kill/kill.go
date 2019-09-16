@@ -11,6 +11,7 @@ import (
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/userdata"
 	"golang.org/x/sys/unix"
+	"os"
 	"strings"
 )
 
@@ -22,27 +23,17 @@ import "C"
 type Signal unix.Signal
 
 var (
-	SigDefault  = Signal(0)
 	// systemd sends SIGRTMIN + 4 to signify poweroff and SIGINT for reboot.
 	SigPoweroff = Signal(C.SIGRTMIN + 4)
-	SigReboot   = Signal(unix.SIGINT)
-	SigTerm     = Signal(unix.SIGTERM)
 	SigKill			= Signal(unix.SIGKILL)
 
 	sigToString = map[Signal]string{
-		SigDefault:  "default",
 		SigPoweroff: "poweroff",
-		SigReboot:   "reboot",
-		SigTerm: 		 "sigterm",
 		SigKill:     "sigkill",
 	}
 
 	stringToSig = map[string]Signal{
-		"default" : SigDefault,
 		"poweroff": SigPoweroff,
-		"reboot"  : SigReboot,
-		"term"    : SigTerm,
-		"sigterm" : SigTerm,
 		"kill"    : SigKill,
 		"sigkill" : SigKill,
 	}
@@ -72,38 +63,39 @@ func KillContainer(usrdata *userdata.Userdata, name string, signal Signal, all b
 		return errors.New("-a/--all is not supported for booted containers")
 	}
 
-	if signal == SigDefault {
-		if ct.Config.Boot {
-			signal = SigPoweroff
-		} else {
-			signal = SigTerm
-		}
-	}
-
-	if signal == SigPoweroff || signal == SigReboot {
-		if !ct.Config.Boot {
-			return errors.New("cannot send POWEROFF/REBOOT to a non-booted container")
-		}
-	} else if ct.Config.Boot {
-		return errors.New("only POWEROFF/REBOOT may be sent to a booted container")
-	}
-
 	machined, err := machine1.New()
 	if err != nil {
 		return err
 	}
 
-	var who string
+	log.Debugf("sending signal %d to %s", int(signal))
+
+	// machined's SELinux policies don't allow us to ask it to kill the leader process of a
+	// container that machined didn't start. However, when "all" is given, machined just
+	// forwards the kill request to systemd, which can kill any cgroup associated with a
+	// systemd service. That means for "all", we can just forward the request to machined,
+	// but otherwise, we need to send the kill signal ourselves.
+
 	if all {
-		who = "all"
+		if err := machined.KillMachine(name, "all", unix.Signal(signal)); err != nil {
+			return errors.Wrap(err, "failed to ask machined to kill container")
+		}
 	} else {
-		who = "leader"
-	}
+		props, err := machined.DescribeMachine(name)
+		if err != nil {
+			return errors.Wrap(err, "failed to describe machine")
+		}
 
-	log.Debugf("sending signal %d to %s", int(signal), who)
+		leader, err := os.FindProcess(int(props["Leader"].(uint32)))
+		if err != nil {
+			return errors.Wrap(err, "failed to find leader process")
+		}
 
-	if err := machined.KillMachine(name, who, unix.Signal(signal)); err != nil {
-		return errors.Wrap(err, "failed to kill container")
+		log.Debug("leader process is", leader.Pid)
+
+		if err := leader.Signal(unix.Signal(signal)); err != nil {
+			return errors.Wrap(err, "failed to signal leader process")
+		}
 	}
 
 	if err := ct.LockUntilProcessDeath(container.WaitForLock); err != nil {
