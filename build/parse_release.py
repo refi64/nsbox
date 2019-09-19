@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-# Writes the VERSION and RELEASE files for use by other targets.
+# Parses the date of the latest git commit to generate the version.
 
 import argparse
 import json
