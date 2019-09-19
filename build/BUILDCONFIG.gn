@@ -64,6 +64,7 @@ set_default_toolchain("//build/minimal-toolchain")
 
 # Define some common substitution vars that build files will use.
 substitute_config_vars = [
+  ["CONFIG_DIR", config_dir],
   ["LIBEXEC_DIR", libexec_dir],
   ["SHARE_DIR", share_dir],
   ["STATE_DIR", state_dir],

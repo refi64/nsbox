@@ -13,12 +13,6 @@ user="$NSBOX_USER"
 uid="$NSBOX_UID"
 shell="$NSBOX_SHELL"
 
-mkdir -p /etc/nsbox-state
-if [[ ! -f /etc/nsbox-state/remove-nodocs ]]; then
-  sed -i '/tsflags=nodocs/d' /etc/dnf/dnf.conf
-  touch /etc/nsbox-state/remove-nodocs
-fi
-
 groups=$(cat /run/host/nsbox/supplementary-groups /etc/group | cut -d: -f3 | sort | uniq -d \
          | head -c -1 | tr '\n' ',')
 grep -q "^$user:" /etc/passwd && userdel "$user"

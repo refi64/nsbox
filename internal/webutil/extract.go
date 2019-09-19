@@ -12,6 +12,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	"os/exec"
 )
 
 func ExtractItemFromArchiveWithProgress(archive, item, dest string) error {
@@ -39,6 +41,10 @@ func ExtractItemFromArchiveWithProgress(archive, item, dest string) error {
 	})
 }
 
-func ExtractFullArchive(archive, destdir string) error {
-	return archiver.Unarchive(archive, destdir)
+func ExtractFullTarArchive(archive, destdir string) error {
+	cmd := exec.Command("tar", "-C", destdir, "-xf", archive)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
 }

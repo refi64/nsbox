@@ -13,8 +13,9 @@ import (
 )
 
 type createCommand struct {
+	image string
 	name string
-	version int
+	tar string
 	boot bool
 }
 
@@ -31,34 +32,27 @@ func (*createCommand) Synopsis() string {
 }
 
 func (*createCommand) Usage() string {
-	return `create [-boot] [-version version] <container>:
-	Creates a new container with the given name. You can provide an initial container config
-	to it by passing various arguments.
+	return `create [-boot] [-tar <tar>] <image> <container>:
+	Creates a new container with the given name from the given image. You can provide an initial
+	container config to it by passing various arguments.
 `
 }
 
 func (cmd *createCommand) SetFlags(fs *flag.FlagSet) {
-	fs.IntVar(&cmd.version, "version", 0, "The Fedora version to use (default is the host version)")
+	fs.StringVar(&cmd.tar, "tar", "", "Override the image contents with this tar file")
 	fs.BoolVar(&cmd.boot, "boot", false, "Make the container a booted container")
 }
 
 func (cmd *createCommand) ParsePositional(fs *flag.FlagSet) error {
-	return args.ExpectArgs(fs, &cmd.name)
+	return args.ExpectArgs(fs, &cmd.image, &cmd.name)
 }
 
 func (cmd *createCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.ExitStatus {
-	var version string
-
-	if cmd.version == 0 {
-		version = ""
-	} else {
-		version = string(cmd.version)
-	}
-
 	config := container.Config{
+		Image: cmd.image,
 		Boot: cmd.boot,
 	}
 
-	err := create.CreateContainer(app.(*nsboxApp).usrdata, cmd.name, version, config)
+	err := create.CreateContainer(app.(*nsboxApp).usrdata, cmd.name, cmd.tar, config)
 	return args.HandleError(err)
 }

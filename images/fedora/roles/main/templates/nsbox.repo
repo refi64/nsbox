@@ -1,0 +1,9 @@
+[copr:copr.fedorainfracloud.org:refi64:{{ nsbox_product_name }}]
+name=Copr repo for nsbox-edge owned by refi64
+baseurl=https://copr-be.cloud.fedoraproject.org/results/refi64/{{ nsbox_product_name }}/fedora-$releasever-$basearch/
+type=rpm-md
+gpgcheck=1
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/refi64/{{ nsbox_product_name }}/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1

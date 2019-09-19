@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
+	"github.com/refi64/nsbox/internal/image"
 	"github.com/refi64/nsbox/internal/nspawn"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/userdata"
@@ -225,6 +226,13 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	}
 
 	builder.AddBindTo(nsboxHost, filepath.Join(paths.InContainerPrivPath, "nsbox-host"))
+
+	img, err := image.Open(ct.Config.Image)
+	if err != nil {
+		return errors.Wrap(err, "failed to get container base image path")
+	}
+
+	builder.AddBindTo(img.RootPath, filepath.Join(paths.InContainerPrivPath, "image"))
 
 	machineId, err := sdutil.GetMachineID()
 	if err != nil {

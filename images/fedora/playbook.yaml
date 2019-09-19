@@ -1,0 +1,8 @@
+- hosts: all
+  gather_facts: false
+  vars:
+    ansible_bender:
+      layering: false
+
+  roles:
+    - main

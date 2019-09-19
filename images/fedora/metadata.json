@@ -1,0 +1,5 @@
+{
+  "base": "registry.fedoraproject.org/fedora:{image_tag}",
+  "remote_target": "quay.io/nsbox/fedora:{image_tag}",
+  "requires_tag": true
+}

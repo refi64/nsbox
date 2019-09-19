@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/userdata"
 	"golang.org/x/sys/unix"
@@ -18,6 +19,7 @@ import (
 )
 
 type Config struct {
+	Image string
 	Boot bool
 }
 
@@ -96,6 +98,11 @@ func OpenPath(path, name string) (*Container, error) {
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&config); err != nil {
 		return nil, errors.Wrap(err, "failed to parse container config")
+	}
+
+	if config.Image == "" {
+		log.Alertf("WARNING: container has no image set; assuming legacy fedora:30")
+		config.Image = "fedora:30"
 	}
 
 	return &Container{

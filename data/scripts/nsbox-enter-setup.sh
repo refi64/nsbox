@@ -9,24 +9,35 @@ trap 'echo "$BASH_SOURCE:$LINENO: $BASH_COMMAND" failed, sorry.' ERR
 
 . /run/host/nsbox/scripts/nsbox-apply-env.sh
 
-needed_packages=()
+latest_image=/run/host/nsbox/image
+ansible_stamp=/var/lib/nsbox-container-state/ansible.stamp
 
-hash sudo &>/dev/null || needed_packages+=(sudo)
-test -f /usr/bin/hostname || needed_packages+=(hostname)
-test -f /etc/profile.d/vte.sh || needed_packages+=(vte-profile)
-test -f /usr/share/man/man3/errno.3.gz || needed_packages+=(man-pages)
+# If the playbook has been modified since it was last run (or was never run), re-run it.
+if [[ ! -f $ansible_stamp ]] || \
+    # This works by checking if any image file is newer than our stamp file. If so,
+    # find will run "false", which results in a non-zero return code.
+    ! find /run/host/nsbox/image -newermm $ansible_stamp -exec false {} +; then
+  # XXX: duplicated from nsbox-bender.py.
+  branch="$(cat /run/host/nsbox/release/BRANCH)"
+  version="$(cat /run/host/nsbox/release/VERSION)"
 
-if [[ ! -s /usr/bin/nsbox-host ]]; then
-  echo "nsbox-enter: Installing: dnf-plugins-core"
-  dnf install -y dnf-plugins-core
+  if [[ "$branch" == "edge" ]]; then
+    product_name="nsbox-edge"
+  else
+    product_name="nsbox"
+  fi
 
-  dnf copr enable -y refi64/nsbox-guest-tools
-  needed_packages+=(nsbox-guest-tools)
-fi
+  extra_vars=()
+  extra_vars+=(ansible_python_interpreter=/usr/bin/python3)
+  extra_vars+=(nsbox_branch=$branch)
+  extra_vars+=(nsbox_version=$version)
+  extra_vars+=(nsbox_product_name=$product_name)
 
-if (( ${#needed_packages[@]} )); then
-  echo "nsbox-enter: Installing: ${needed_packages[@]}"
-  dnf install -y "${needed_packages[@]}"
+  ANSIBLE_STDOUT_CALLBACK=default ansible-playbook --connection=local --inventory=localhost, \
+    --extra-vars "${extra_vars[*]}" /run/host/nsbox/image/playbook.yaml
+
+  mkdir -p $(dirname $ansible_stamp)
+  touch $ansible_stamp
 fi
 
 exec sudo --user="$NSBOX_USER" /run/host/nsbox/scripts/nsbox-enter-run.sh "$@"

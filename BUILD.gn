@@ -71,6 +71,7 @@ copy("gofiles") {
     "internal/daemon/direct.go",
     "internal/daemon/transient.go",
     "internal/integration/xdgdesktop.go",
+    "internal/image/image.go",
     "internal/inventory/inventory.go",
     "internal/kill/kill.go",
     "internal/log/log.go",
@@ -165,6 +166,16 @@ copy("install-share-data") {
   outputs = ["$install_dir/$share_dir/$product_name/{{source}}"]
 }
 
+copy("install-share-images") {
+  sources = [
+    "images/fedora/metadata.json",
+    "images/fedora/playbook.yaml",
+    "images/fedora/roles/main/tasks/main.yaml",
+    "images/fedora/roles/main/templates/nsbox.repo",
+  ]
+  outputs = ["$install_dir/$share_dir/$product_name/{{source}}"]
+}
+
 copy("install-share-release") {
   sources = get_target_outputs(":release_files")
   deps = [":release_files"]
@@ -177,6 +188,7 @@ group("nsbox-install-root") {
     ":install-etc",
     ":install-private-exec",
     ":install-share-data",
+    ":install-share-images",
     ":install-share-release",
   ]
 

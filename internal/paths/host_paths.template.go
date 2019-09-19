@@ -3,7 +3,9 @@
 
 package paths
 
-const State = "@STATE_DIR"
+const Config = "@CONFIG_DIR"
 const Libexec = "@LIBEXEC_DIR"
 const Share = "@SHARE_DIR"
+const State = "@STATE_DIR"
+
 const ProductName = "@PRODUCT_NAME"

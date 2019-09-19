@@ -1,0 +1,32 @@
+- name: Unmask required services
+  file:
+    path: '/etc/systemd/system/{{ item }}'
+    state: absent
+  loop:
+    - console-getty.service
+    - systemd-logind.service
+
+- name: Require the documentation to be installed
+  lineinfile:
+    path: /etc/dnf/dnf.conf
+    line: tsflags=nodocs
+    state: absent
+
+- name: Add the guest tools repo
+  template:
+    src: nsbox.repo
+    dest: /etc/yum.repos.d/{{ nsbox_product_name }}.repo
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install required packages
+  dnf:
+    name:
+      - ansible
+      - findutils
+      - hostname
+      - man-pages
+      - nsbox-guest-tools
+      - sudo
+      - vte-profile
