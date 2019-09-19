@@ -5,8 +5,8 @@
 package args
 
 import (
-	"flag"
 	"context"
+	"flag"
 	"github.com/google/subcommands"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
@@ -34,7 +34,7 @@ type SimpleCommand interface {
 }
 
 type simpleCommandWrapper struct {
-	app App
+	app    App
 	simple SimpleCommand
 }
 

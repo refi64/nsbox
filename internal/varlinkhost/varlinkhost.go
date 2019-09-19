@@ -5,11 +5,11 @@
 package varlinkhost
 
 import (
+	"github.com/coreos/go-systemd/daemon"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/integration"
 	"github.com/refi64/nsbox/internal/log"
 	devnsbox "github.com/refi64/nsbox/internal/varlink"
-	"github.com/coreos/go-systemd/daemon"
 )
 
 type VarlinkHost struct {

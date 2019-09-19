@@ -18,7 +18,7 @@ import (
 
 type runCommand struct {
 	container string
-	command []string
+	command   []string
 }
 
 func newRunCommand(app args.App) subcommands.Command {

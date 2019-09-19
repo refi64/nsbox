@@ -11,8 +11,8 @@ import (
 	sdutil "github.com/coreos/go-systemd/util"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
-	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/image"
+	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/nspawn"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/userdata"
@@ -60,7 +60,7 @@ func bindHome(builder *nspawn.Builder, usrdata *userdata.Userdata) error {
 	}
 
 	// Need to handle Silverblue-esque /home symlinks specially.
-	if info.Mode() & os.ModeSymlink != 0 {
+	if info.Mode()&os.ModeSymlink != 0 {
 		resolvedHomeParent, err := filepath.EvalSymlinks(homeParent)
 		if err != nil {
 			return errors.Wrap(err, "failed to resolve home parent")

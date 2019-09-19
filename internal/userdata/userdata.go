@@ -5,8 +5,8 @@
 package userdata
 
 import (
-	"github.com/pkg/errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"os"
 	"os/exec"
 	"os/user"
@@ -15,10 +15,10 @@ import (
 
 // Encapsulates data about the user's session that we're representing.
 type Userdata struct {
-	User *user.User
-	Shell string
+	User     *user.User
+	Shell    string
 	GroupIds []string
-	Environ map[string]string
+	Environ  map[string]string
 }
 
 func getUserShell(usr *user.User) (string, error) {
@@ -31,7 +31,7 @@ func getUserShell(usr *user.User) (string, error) {
 
 	out := string(outBytes)
 	idx := strings.LastIndex(out, ":")
-	if idx == -1 || idx == len(out) - 1 {
+	if idx == -1 || idx == len(out)-1 {
 		return "", errors.New("failed to split getent output")
 	}
 
@@ -42,33 +42,33 @@ func getUserShell(usr *user.User) (string, error) {
 // Like os.Environ, but only returns ssome whitelisted environment variables.
 func WhitelistedEnviron() []string {
 	whitelist := []string{
-        "COLORTERM",
-        "DBUS_SESSION_BUS_ADDRESS",
-        "DBUS_SYSTEM_BUS_ADDRESS",
-        "DESKTOP_SESSION",
-        "DISPLAY",
-        "LANG",
-        "SHELL",
-        "SSH_AUTH_SOCK",
-        "TERM",
-        "VTE_VERSION",
-        "WAYLAND_DISPLAY",
-        "XDG_CURRENT_DESKTOP",
-        "XDG_DATA_DIRS",
-        "XDG_MENU_PREFIX",
-        "XDG_RUNTIME_DIR",
-        "XDG_SEAT",
-        "XDG_SESSION_DESKTOP",
-        "XDG_SESSION_ID",
-        "XDG_SESSION_TYPE",
-        "XDG_VTNR",
+		"COLORTERM",
+		"DBUS_SESSION_BUS_ADDRESS",
+		"DBUS_SYSTEM_BUS_ADDRESS",
+		"DESKTOP_SESSION",
+		"DISPLAY",
+		"LANG",
+		"SHELL",
+		"SSH_AUTH_SOCK",
+		"TERM",
+		"VTE_VERSION",
+		"WAYLAND_DISPLAY",
+		"XDG_CURRENT_DESKTOP",
+		"XDG_DATA_DIRS",
+		"XDG_MENU_PREFIX",
+		"XDG_RUNTIME_DIR",
+		"XDG_SEAT",
+		"XDG_SESSION_DESKTOP",
+		"XDG_SESSION_ID",
+		"XDG_SESSION_TYPE",
+		"XDG_VTNR",
 	}
 
 	result := make([]string, 0)
 
 	for _, env := range os.Environ() {
 		for _, whitelisted := range whitelist {
-			if strings.HasPrefix(env, whitelisted + "=") {
+			if strings.HasPrefix(env, whitelisted+"=") {
 				result = append(result, env)
 			}
 		}
@@ -109,10 +109,10 @@ func userdataForUser(usr *user.User) (*Userdata, error) {
 	}
 
 	return &Userdata{
-		User: usr,
-		Shell: shell,
+		User:     usr,
+		Shell:    shell,
 		GroupIds: groupIds,
-		Environ: parseEnviron(),
+		Environ:  parseEnviron(),
 	}, nil
 }
 

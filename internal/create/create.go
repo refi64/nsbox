@@ -5,13 +5,13 @@
 package create
 
 import (
-	"github.com/pkg/errors"
-	"github.com/refi64/go-lxtempdir"
 	crename "github.com/google/go-containerregistry/pkg/name"
 	crev1 "github.com/google/go-containerregistry/pkg/v1"
 	creremote "github.com/google/go-containerregistry/pkg/v1/remote"
 	cretarball "github.com/google/go-containerregistry/pkg/v1/tarball"
 	cretypes "github.com/google/go-containerregistry/pkg/v1/types"
+	"github.com/pkg/errors"
+	"github.com/refi64/go-lxtempdir"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/image"
 	"github.com/refi64/nsbox/internal/inventory"
@@ -50,12 +50,12 @@ func fetchLayer(layer crev1.Layer, dest string) error {
 func saveImageToContainer(img *image.Image, ct *container.Container, tarOverride string) error {
 	tmp, err := lxtempdir.Create("", "nsbox-")
 	if err != nil {
-	 return err
+		return err
 	}
 
 	defer func() {
 		if err := os.RemoveAll(tmp.Path); err != nil {
-		 log.Info("failed to remove temporary directory: ", err)
+			log.Info("failed to remove temporary directory: ", err)
 		}
 
 		if err := tmp.Close(); err != nil {
@@ -104,7 +104,7 @@ func saveImageToContainer(img *image.Image, ct *container.Container, tarOverride
 			return errors.Wrapf(err, "failed to fetch image layer %s", descr.Digest.String())
 		}
 
-		layerDest := filepath.Join(tmp.Path, descr.Digest.String() + ".tar.gz")
+		layerDest := filepath.Join(tmp.Path, descr.Digest.String()+".tar.gz")
 		log.Debug("Fetch layer", layerDest)
 
 		if err := fetchLayer(layer, layerDest); err != nil {

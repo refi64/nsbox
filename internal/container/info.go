@@ -53,7 +53,7 @@ func (ct Container) ShowInfo() error {
 
 	if machineProps != nil {
 		usec := machineProps["Timestamp"].(uint64)
-		tm := time.Unix(int64(usec) / int64(time.Second / time.Microsecond), 0)
+		tm := time.Unix(int64(usec)/int64(time.Second/time.Microsecond), 0)
 		fmt.Fprintf(writer, "Running:\t since %s (%s)\n", tm.Format(time.RFC1123), humanize.Time(tm))
 	} else {
 		fmt.Fprintln(writer, "Running:\t no")

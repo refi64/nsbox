@@ -14,11 +14,11 @@ import (
 )
 
 type enterCommand struct {
-	stdin string
+	stdin  string
 	stdout string
 	stderr string
-	uid int
-	cwd string
+	uid    int
+	cwd    string
 }
 
 func newEnterCommand(app args.App) subcommands.Command {

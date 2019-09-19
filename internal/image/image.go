@@ -10,16 +10,16 @@ import (
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"io/ioutil"
-	"path/filepath"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 type Image struct {
-	RootPath string
-	Base string `json:"base"`
+	RootPath     string
+	Base         string `json:"base"`
 	RemoteTarget string `json:"remote_target"`
-	RequiresTag bool `json:"requires_tag"`
+	RequiresTag  bool   `json:"requires_tag"`
 }
 
 func readReleaseInfo() (string, string, error) {
@@ -32,7 +32,7 @@ func readReleaseInfo() (string, string, error) {
 	var version string
 
 	releaseFiles := map[string]*string{
-		"BRANCH": &branch,
+		"BRANCH":  &branch,
 		"VERSION": &version,
 	}
 

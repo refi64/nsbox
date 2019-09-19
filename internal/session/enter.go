@@ -97,9 +97,9 @@ func EnterContainer(ct *container.Container, command []string, usrdata *userdata
 		return 0, err
 	}
 
-    // XXX: Okay so PTY handling is a royal mess. nsenter doesn't give us a pty *at all*.
-    // Therefore, the plan of action is to ask machined for a pty inside the machine, and let
-    // nsbox-enter know where to redirect what.
+	// XXX: Okay so PTY handling is a royal mess. nsenter doesn't give us a pty *at all*.
+	// Therefore, the plan of action is to ask machined for a pty inside the machine, and let
+	// nsbox-enter know where to redirect what.
 
 	// Do not touch this code. If you do, and it breaks, you will be haunted by the ghost of
 	// several thousand headless terminals that were spawned and killed during the course of

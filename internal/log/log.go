@@ -37,7 +37,7 @@ func Info(args ...interface{}) {
 }
 
 func Infof(format string, args ...interface{}) {
-	fmt.Printf(format + "\n", args...)
+	fmt.Printf(format+"\n", args...)
 }
 
 func Debug(args ...interface{}) {
@@ -57,7 +57,7 @@ func Alert(args ...interface{}) {
 }
 
 func Alertf(format string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, format + "\n", args...)
+	fmt.Fprintf(os.Stderr, format+"\n", args...)
 }
 
 func Fatal(args ...interface{}) {

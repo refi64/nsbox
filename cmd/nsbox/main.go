@@ -18,7 +18,7 @@ import (
 
 type nsboxApp struct {
 	usrdata *userdata.Userdata
-	sudo bool
+	sudo    bool
 	workdir string
 }
 

@@ -7,10 +7,10 @@ package daemon
 
 import (
 	"fmt"
-	godbus "github.com/godbus/dbus"
 	systemd1 "github.com/coreos/go-systemd/dbus"
 	"github.com/coreos/go-systemd/machine1"
 	"github.com/coreos/go-systemd/sdjournal"
+	godbus "github.com/godbus/dbus"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
@@ -60,11 +60,11 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd, name string, usrdata *userdata.
 			false,
 		),
 		systemd1.Property{
-			Name: "Environment",
+			Name:  "Environment",
 			Value: godbus.MakeVariant(env),
 		},
 		systemd1.Property{
-			Name: "NotifyAccess",
+			Name:  "NotifyAccess",
 			Value: godbus.MakeVariant("all"),
 		},
 	}

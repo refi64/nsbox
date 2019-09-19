@@ -25,7 +25,7 @@ type Signal unix.Signal
 var (
 	// systemd sends SIGRTMIN + 4 to signify poweroff and SIGINT for reboot.
 	SigPoweroff = Signal(C.SIGRTMIN + 4)
-	SigKill			= Signal(unix.SIGKILL)
+	SigKill     = Signal(unix.SIGKILL)
 
 	sigToString = map[Signal]string{
 		SigPoweroff: "poweroff",
@@ -34,8 +34,8 @@ var (
 
 	stringToSig = map[string]Signal{
 		"poweroff": SigPoweroff,
-		"kill"    : SigKill,
-		"sigkill" : SigKill,
+		"kill":     SigKill,
+		"sigkill":  SigKill,
 	}
 )
 

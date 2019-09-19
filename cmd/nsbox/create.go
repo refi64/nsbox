@@ -14,9 +14,9 @@ import (
 
 type createCommand struct {
 	image string
-	name string
-	tar string
-	boot bool
+	name  string
+	tar   string
+	boot  bool
 }
 
 func newCreateCommand(app args.App) subcommands.Command {
@@ -50,7 +50,7 @@ func (cmd *createCommand) ParsePositional(fs *flag.FlagSet) error {
 func (cmd *createCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.ExitStatus {
 	config := container.Config{
 		Image: cmd.image,
-		Boot: cmd.boot,
+		Boot:  cmd.boot,
 	}
 
 	err := create.CreateContainer(app.(*nsboxApp).usrdata, cmd.name, cmd.tar, config)

@@ -18,24 +18,24 @@ import (
 func startPtyServiceAndNotifyHost(name string) error {
 	if err := ptyservice.StartPtyService(name); err != nil {
 		return errors.Wrap(err, "failed to start pty service")
-  }
+	}
 
 	conn, err := varlinkConnect()
 	if err != nil {
 		return err
-  }
+	}
 
 	defer conn.Close()
 
 	if err := devnsbox.NotifyStart().Call(conn); err != nil {
 		return errors.Wrap(err, "failed to notify of start")
-  }
+	}
 
 	if os.Getenv("NOTIFY_SOCKET") != "" {
 		if _, err := daemon.SdNotify(true, daemon.SdNotifyReady); err != nil {
 			return err
-	 }
-  }
+		}
+	}
 
 	select {}
 }
@@ -49,15 +49,15 @@ func newServiceCommand(app args.App) subcommands.Command {
 }
 
 func (*serviceCommand) Name() string {
-	return "service";
+	return "service"
 }
 
 func (*serviceCommand) Synopsis() string {
-	return "INTERNAL COMMAND - starts the PTY service";
+	return "INTERNAL COMMAND - starts the PTY service"
 }
 
 func (*serviceCommand) Usage() string {
-	return "INTERNAL COMMAND - why the heck do you care about the usage, just DON'T USE IT\n";
+	return "INTERNAL COMMAND - why the heck do you care about the usage, just DON'T USE IT\n"
 }
 
 func (*serviceCommand) SetFlags(fs *flag.FlagSet) {

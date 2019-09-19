@@ -10,9 +10,9 @@ import (
 	"github.com/refi64/nsbox/internal/args"
 )
 
-type nsboxHostApp struct {}
+type nsboxHostApp struct{}
 
-func (app *nsboxHostApp) PreexecHook(fs *flag.FlagSet) {}
+func (app *nsboxHostApp) PreexecHook(fs *flag.FlagSet)    {}
 func (app *nsboxHostApp) SetGlobalFlags(fs *flag.FlagSet) {}
 
 func main() {

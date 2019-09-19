@@ -13,8 +13,8 @@ import (
 
 type killCommand struct {
 	container string
-	signal kill.Signal
-	all bool
+	signal    kill.Signal
+	all       bool
 }
 
 func newKillCommand(app args.App) subcommands.Command {

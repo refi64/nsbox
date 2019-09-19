@@ -14,7 +14,7 @@ func varlinkConnect() (*varlink.Connection, error) {
 	conn, err := varlink.NewConnection("unix:///run/host/nsbox/" + paths.HostServiceSocketName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to host socket")
-  }
+	}
 
 	return conn, nil
 }

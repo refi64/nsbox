@@ -27,7 +27,7 @@ func reloadExports() error {
 	return nil
 }
 
-type reloadExportsCommand struct {}
+type reloadExportsCommand struct{}
 
 func newReloadExportsCommand(app args.App) subcommands.Command {
 	return args.WrapSimpleCommand(app, &reloadExportsCommand{})

@@ -5,10 +5,10 @@
 package webutil
 
 import (
-	"gopkg.in/cheggaaa/pb.v1"
 	"github.com/mholt/archiver"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
+	"gopkg.in/cheggaaa/pb.v1"
 	"io"
 	"os"
 	"path/filepath"

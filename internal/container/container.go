@@ -20,12 +20,12 @@ import (
 
 type Config struct {
 	Image string
-	Boot bool
+	Boot  bool
 }
 
 type Container struct {
-	Name string
-	Path string
+	Name   string
+	Path   string
 	Config *Config
 }
 
@@ -78,8 +78,8 @@ func CreateStaged(usrdata *userdata.Userdata, name string, initialConfig Config)
 	}
 
 	return &Container{
-		Name: name,
-		Path: stagedPath,
+		Name:   name,
+		Path:   stagedPath,
 		Config: &initialConfig,
 	}, nil
 }
@@ -106,8 +106,8 @@ func OpenPath(path, name string) (*Container, error) {
 	}
 
 	return &Container{
-		Name: name,
-		Path: path,
+		Name:   name,
+		Path:   path,
 		Config: &config,
 	}, nil
 }
@@ -122,6 +122,7 @@ func Open(usrdata *userdata.Userdata, name string) (*Container, error) {
 }
 
 type LockWaitRequest int
+
 const (
 	WaitForLock LockWaitRequest = iota
 	NoWaitForLock

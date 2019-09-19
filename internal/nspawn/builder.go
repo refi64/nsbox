@@ -20,16 +20,16 @@ type BindMount struct {
 type Builder struct {
 	nspawn string
 
-	Quiet bool
-	AsPid2 bool
-	Boot bool
-	KeepUnit bool
+	Quiet            bool
+	AsPid2           bool
+	Boot             bool
+	KeepUnit         bool
 	MachineDirectory string
-	LinkJournal string
-	MachineName string
-	Hostname string
-	Binds []BindMount
-	Command []string
+	LinkJournal      string
+	MachineName      string
+	Hostname         string
+	Binds            []BindMount
+	Command          []string
 }
 
 func NewBuilder() (*Builder, error) {
@@ -61,18 +61,18 @@ func (builder *Builder) AddRecursiveBindTo(host string, dest string) {
 
 func (builder *Builder) AddBindFull(host string, dest string, recursive bool) {
 	builder.Binds = append(builder.Binds, BindMount{
-		Host: host,
-		Dest: dest,
+		Host:      host,
+		Dest:      dest,
 		Recursive: recursive,
 	})
 }
 
 func addArg(target *[]string, arg string) {
-	*target = append(*target, "--" + arg)
+	*target = append(*target, "--"+arg)
 }
 
 func addArgValue(target *[]string, arg, value string) {
-	addArg(target, arg + "=" + value)
+	addArg(target, arg+"="+value)
 }
 
 func maybeAddArgValue(target *[]string, arg string, value string) {

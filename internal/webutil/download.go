@@ -5,8 +5,8 @@
 package webutil
 
 import (
-	"github.com/refi64/nsbox/internal/log"
 	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/log"
 	"gopkg.in/cheggaaa/pb.v1"
 	"io"
 	"net/http"
