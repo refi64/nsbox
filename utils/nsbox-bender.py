@@ -15,16 +15,16 @@ import sys
 
 
 def get_nsbox_release_info():
-    release_files = Path(__file__).parent / 'release'
+    release_files = Path(__file__).parent.parent / 'release'
 
     try:
-        with (release_files / 'version').open() as fp:
+        with (release_files / 'VERSION').open() as fp:
             nsbox_version = fp.read().strip()
     except FileNotFoundError:
         nsbox_version = None
 
     try:
-        with (release_files / 'branch').open() as fp:
+        with (release_files / 'BRANCH').open() as fp:
             nsbox_branch = fp.read().strip()
     except FileNotFoundError:
         nsbox_branch = None
@@ -72,7 +72,7 @@ def export_image(metadata, target, builder):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Build an image')
+    parser = argparse.ArgumentParser(prog='nsbox-bender', description='Build an image')
 
     parser.add_argument('image', help='The path to the image directory to build', type=Path)
     parser.add_argument('--debug', action='store_true')

@@ -31,6 +31,7 @@ BuildRequires: golang
 BuildRequires: ninja-build
 BuildRequires: python3
 BuildRequires: systemd-devel
+Requires: tar
 Source0: nsbox-sources.tar
 Source1: https://gn.googlesource.com/gn/+archive/@GN.tar.gz#/gn.tar.gz
 @SPECDEFS
@@ -38,11 +39,27 @@ Source1: https://gn.googlesource.com/gn/+archive/@GN.tar.gz#/gn.tar.gz
 %description
 nsbox is a multi-purpose, nspawn-powered container manager.
 
+%package bender
+Summary: Build images for nsbox
+Requires: ansible-bender
+Requires: podman
+Requires: python3
+%description bender
+nsbox-bender is a script built on top of ansible-bender to build base images for your nsbox
+containers.
+
 %if "%{name}" == "nsbox-edge"
+
 %package alias
 Summary: Alias for nsbox-edge
 %description alias
 Installs the nsbox alias for nsbox-edge.
+
+%package bender-alias
+Summary: Alias for nsbox-edge-bender
+%description bender-alias
+Installs the nsbox-bender alias for nsbox-edge-bender.
+
 %endif
 
 %prep
@@ -122,10 +139,23 @@ chmod -R g-w %{buildroot}
 %{_datadir}/%{name}/data/scripts/nsbox-enter-run.sh
 %{_datadir}/%{name}/data/scripts/nsbox-enter-setup.sh
 %{_datadir}/%{name}/data/scripts/nsbox-init.sh
+%{_datadir}/%{name}/images/fedora/metadata.json
+%{_datadir}/%{name}/images/fedora/playbook.yaml
+%{_datadir}/%{name}/images/fedora/roles/main/tasks/main.yaml
+%{_datadir}/%{name}/images/fedora/roles/main/templates/nsbox.repo
 %{_datadir}/%{name}/release/VERSION
 %{_datadir}/%{name}/release/BRANCH
 
+%files bender
+%{_bindir}/%{name}-bender
+%{_datadir}/%{name}/python/%{name}-bender.py*
+
 %if "%{name}" == "nsbox-edge"
+
 %files alias
 %{_bindir}/nsbox
+
+%files bender-alias
+%{_bindir}/nsbox-bender
+
 %endif

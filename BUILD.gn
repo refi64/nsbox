@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import("//build/go.gni")
+import("//build/python_binary.gni")
 import("//build/substitute_file.gni")
 import("//build/symlink.gni")
 
@@ -127,10 +128,16 @@ go_binary("nsbox-host") {
   static = true
 }
 
+python_binary("$product_name-bender") {
+  source = "//utils/nsbox-bender.py"
+  output = "$install_dir/$bin_dir/$target_name"
+  python_files_dir = "$install_dir/$share_dir/$product_name/python"
+}
+
 copy("install-bin") {
   sources = get_target_outputs(":$product_name")
   outputs = ["$install_dir/$bin_dir/{{source_file_part}}"]
-  deps = [":$product_name"]
+  deps = [":$product_name", ":$product_name-bender"]
 }
 
 if (!is_stable_build) {
@@ -138,6 +145,12 @@ if (!is_stable_build) {
     name = "$install_dir/$bin_dir/nsbox"
     value = "./nsbox-edge"
     deps = [":nsbox-edge"]
+  }
+
+  symlink("install-bin-edge-bender-alias") {
+    name = "$install_dir/$bin_dir/nsbox-bender"
+    value = "./nsbox-edge-bender"
+    deps = [":nsbox-edge-bender"]
   }
 }
 
@@ -193,7 +206,10 @@ group("nsbox-install-root") {
   ]
 
   if (!is_stable_build) {
-    deps += [":install-bin-edge-alias"]
+    deps += [
+      ":install-bin-edge-alias",
+      ":install-bin-edge-bender-alias",
+    ]
   }
 }
 
