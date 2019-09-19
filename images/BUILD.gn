@@ -1,1 +1,47 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+template("nsbox_image") {
+  action(target_name) {
+    pool = "//:console"
+
+    forward_variables_from(invoker, ["deps"])
+
+    image_root = rebase_path(invoker.image, root_build_dir)
+
+    script = "//utils/nsbox-bender.py"
+    outputs = ["$root_out_dir/images/$target_name.tar"]
+    args = [
+      "--force-color",
+      "--export", rebase_path(outputs[0], root_build_dir),
+      "--override-nsbox-version", release_version,
+      "--override-nsbox-branch", release_branch,
+      "$image_root:${invoker.tag}",
+    ]
+
+    sources = [
+      "${invoker.image}/metadata.json",
+      "${invoker.image}/playbook.yaml",
+    ]
+
+    if (defined(invoker.role_files)) {
+      foreach(file, invoker.role_files) {
+        sources += ["${invoker.image}/roles/$file"]
+      }
+    }
+  }
+}
+
+nsbox_image("fedora-30") {
+  image = "fedora"
+  tag = "30"
+  role_files = [
+    "main/tasks/main.yaml",
+    "main/templates/nsbox.repo",
+  ]
+}
+
+group("images") {
+  deps = [":fedora-30"]
+}

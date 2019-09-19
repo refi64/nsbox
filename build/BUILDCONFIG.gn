@@ -40,7 +40,7 @@ declare_args() {
   # The system's config directory, which should be an absolute path.
   config_dir = "/etc"
 
-  # Build the Fedora package.
+  # Enable build the Fedora package.
   fedora_package = false
 
   # Build the Fedora guest tools.

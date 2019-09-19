@@ -228,3 +228,7 @@ if (fedora_guest_tools) {
     deps = ["//guest-tools/fedora"]
   }
 }
+
+group("images") {
+  deps = ["//images"]
+}
