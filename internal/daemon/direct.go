@@ -99,6 +99,7 @@ func setUserEnv(hostMachineId string, ct *container.Container, usrdata *userdata
 	fullShellPath := ct.StorageChild(stripLeadingSlash(usrdata.Shell))
 
 	if _, err := os.Stat(fullShellPath); err != nil {
+		log.Debugf("Failed to stat shell %s: %v", fullShellPath, err)
 		usrdata.Environ["NSBOX_SHELL"] = "/bin/bash"
 	} else {
 		usrdata.Environ["NSBOX_SHELL"] = usrdata.Shell

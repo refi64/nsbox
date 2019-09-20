@@ -35,7 +35,7 @@ func getUserShell(usr *user.User) (string, error) {
 		return "", errors.New("failed to split getent output")
 	}
 
-	shell := out[idx+1:]
+	shell := strings.TrimSpace(out[idx+1:])
 	return shell, nil
 }
 
