@@ -7,7 +7,7 @@ URL: https://nsbox.dev/
 BuildArch: noarch
 Provides: dnf-plugin-nsbox = %{version}-%{release}
 BuildRequires: python3-devel
-Requires: python3-dnf
+Requires: python3-dnf-plugins-core
 Source0: nsbox_trigger.py
 
 %description
