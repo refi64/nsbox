@@ -1,12 +1,11 @@
 #!/bin/bash
 
-branch="$1"
-git_token="$2"
+git_token="$1"
 
 set -ex
 
 gn_args=(fedora_package=true fedora_guest_tools=true)
-if [[ "$branch" == "stable" ]]; then
+if [[ "$GITHUB_REF" == "*/stable" ]]; then
   git_branch=stable
   gn_args+=(is_stable_build=true)
 else

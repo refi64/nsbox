@@ -16,5 +16,4 @@ jobs:
       - name: 'Run the push'
         uses: ./.github/actions/rpm_spec_files
         with:
-          branch: edge
           token: '${{ secrets.RPM_SPEC_FILES_TOKEN }}'
