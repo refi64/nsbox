@@ -33,15 +33,22 @@ template("nsbox_image") {
   }
 }
 
-nsbox_image("fedora-30") {
-  image = "fedora"
-  tag = "30"
-  role_files = [
-    "main/tasks/main.yaml",
-    "main/templates/nsbox.repo",
-  ]
+fedora_versions = ["30", "31"]
+
+foreach(version, fedora_versions) {
+  nsbox_image("fedora-$version") {
+    image = "fedora"
+    tag = version
+    role_files = [
+      "main/tasks/main.yaml",
+      "main/templates/nsbox.repo",
+    ]
+  }
 }
 
 group("images") {
-  deps = [":fedora-30"]
+  deps = []
+  foreach(version, fedora_versions) {
+    deps += [":fedora-$version"]
+  }
 }
