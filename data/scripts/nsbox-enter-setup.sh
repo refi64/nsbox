@@ -34,7 +34,7 @@ if [[ ! -f $ansible_stamp ]] || \
   extra_vars+=(nsbox_product_name=$product_name)
 
   ANSIBLE_STDOUT_CALLBACK=default ansible-playbook --connection=local --inventory=localhost, \
-    --extra-vars "${extra_vars[*]}" /run/host/nsbox/image/playbook.yaml
+    --extra-vars "${extra_vars[*]}" --skip-tags bend /run/host/nsbox/image/playbook.yaml
 
   mkdir -p $(dirname $ansible_stamp)
   touch $ansible_stamp
