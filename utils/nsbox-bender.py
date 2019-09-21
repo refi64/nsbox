@@ -36,14 +36,15 @@ def read_metadata(image, extra_vars):
     with (image / 'metadata.json').open() as fp:
         metadata = json.load(fp)
 
-    if 'base' not in metadata or 'remote_target' not in metadata:
-        sys.exit('Metadata must specify base and remote_target.')
+    if 'base' not in metadata or 'remote_target' not in metadata or 'valid_tags' not in metadata:
+        sys.exit('Metadata must specify base, remote_target, and valid_tags.')
 
-    if not all(isinstance(metadata.get(key), str) for key in ('base', 'remote_target')):
+    if not all(isinstance(metadata[key], str) for key in ('base', 'remote_target')):
         sys.exit('Metadata base and remote_target must be strings.')
 
-    if not isinstance(metadata.get('requires_tag'), bool):
-        sys.exit('Metadata requires_tag must be a bool.')
+    if (not isinstance(metadata['valid_tags'], list)
+            or not all(isinstance(tag, str) for tag in metadata['valid_tags'])):
+        sys.exit('Metadata valid_tags must be a list of strings.')
 
     for key in 'base', 'remote_target':
         metadata[key] = metadata[key].format(**extra_vars)
@@ -118,7 +119,7 @@ def main():
     # XXX: Similar code to internal/image/image.go.
 
     extra_vars = {
-        'image_tag': image_tag,
+        'image_tag': image_tag or '',
         'nsbox_branch': nsbox_branch,
         'nsbox_product_name': product_name,
         'nsbox_version': nsbox_version,
@@ -126,11 +127,13 @@ def main():
 
     metadata = read_metadata(image, extra_vars)
 
-    if metadata.get('requires_tag', False):
+    if metadata['valid_tags']:
         if image_tag is None:
-            sys.exit('Metadata set requires_tag but no tag was given.')
+            sys.exit('Metadata requires a tag but none was given.')
+        elif image_tag not in metadata['valid_tags']:
+            sys.exit(f'Invalid tag (valid choices are {", ".join(metadata["valid_tags"])})')
     elif image_tag is not None:
-        sys.exit('Metadata did not set requires_tag but a tag was given.')
+        sys.exit('Metadata does not allow any tags but one was given.')
 
     command = ['ansible-bender', 'build', f'--builder={args.builder}']
 
