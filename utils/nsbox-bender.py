@@ -135,6 +135,15 @@ def main():
     elif image_tag is not None:
         sys.exit('Metadata does not allow any tags but one was given.')
 
+    base = metadata['base']
+
+    if base == '@local':
+        base = metadata['remote_target'] + '-bud'
+
+        run([args.builder, 'bud' if args.builder == 'buildah' else 'build',
+             *(f'--build-arg={k.upper()}={v}' for k, v in extra_vars.items()),
+             f'--tag={base}', str(args.image)])
+
     command = ['ansible-bender', 'build', f'--builder={args.builder}']
 
     if args.debug:
@@ -149,7 +158,7 @@ def main():
                     + f'--extra-vars="{" ".join(map("=".join, extra_vars.items()))}"')
     command.append(str(image / 'playbook.yaml'))
 
-    command.extend(map(metadata.__getitem__, ('base', 'remote_target')))
+    command.extend((base, metadata['remote_target']))
 
     env = os.environ.copy()
     env['ANSIBLE_STDOUT_CALLBACK'] = 'default'
