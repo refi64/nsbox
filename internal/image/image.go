@@ -17,9 +17,9 @@ import (
 
 type Image struct {
 	RootPath     string
-	Base         string `json:"base"`
-	RemoteTarget string `json:"remote_target"`
-	RequiresTag  bool   `json:"requires_tag"`
+	Base         string   `json:"base"`
+	RemoteTarget string   `json:"remote_target"`
+	ValidTags    []string `json:"valid_tags"`
 }
 
 func readReleaseInfo() (string, string, error) {
@@ -88,9 +88,20 @@ func openImageAtPath(path, tag string) (*Image, error) {
 
 	// XXX: Similar code to nsbox-bender.py.
 
-	if image.RequiresTag {
+	if len(image.ValidTags) != 0 {
 		if tag == "" {
 			return nil, errors.New("image requires a tag")
+		}
+
+		isValidTag := false
+		for _, validTag := range image.ValidTags {
+			if validTag == tag {
+				isValidTag = true
+			}
+		}
+
+		if !isValidTag {
+			return nil, errors.New("image does not accept this tag")
 		}
 	} else {
 		if tag != "" {

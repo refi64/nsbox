@@ -14,27 +14,27 @@ import (
 )
 
 // Stored as a map to make membership tests fast.
-var whitelistedEnvNames = map[string]interface{} {
-	"COLORTERM": nil,
+var whitelistedEnvNames = map[string]interface{}{
+	"COLORTERM":                nil,
 	"DBUS_SESSION_BUS_ADDRESS": nil,
-	"DBUS_SYSTEM_BUS_ADDRESS": nil,
-	"DESKTOP_SESSION": nil,
-	"DISPLAY": nil,
-	"LANG": nil,
-	"SHELL": nil,
-	"SSH_AUTH_SOCK": nil,
-	"TERM": nil,
-	"VTE_VERSION": nil,
-	"WAYLAND_DISPLAY": nil,
-	"XDG_CURRENT_DESKTOP": nil,
-	"XDG_DATA_DIRS": nil,
-	"XDG_MENU_PREFIX": nil,
-	"XDG_RUNTIME_DIR": nil,
-	"XDG_SEAT": nil,
-	"XDG_SESSION_DESKTOP": nil,
-	"XDG_SESSION_ID": nil,
-	"XDG_SESSION_TYPE": nil,
-	"XDG_VTNR": nil,
+	"DBUS_SYSTEM_BUS_ADDRESS":  nil,
+	"DESKTOP_SESSION":          nil,
+	"DISPLAY":                  nil,
+	"LANG":                     nil,
+	"SHELL":                    nil,
+	"SSH_AUTH_SOCK":            nil,
+	"TERM":                     nil,
+	"VTE_VERSION":              nil,
+	"WAYLAND_DISPLAY":          nil,
+	"XDG_CURRENT_DESKTOP":      nil,
+	"XDG_DATA_DIRS":            nil,
+	"XDG_MENU_PREFIX":          nil,
+	"XDG_RUNTIME_DIR":          nil,
+	"XDG_SEAT":                 nil,
+	"XDG_SESSION_DESKTOP":      nil,
+	"XDG_SESSION_ID":           nil,
+	"XDG_SESSION_TYPE":         nil,
+	"XDG_VTNR":                 nil,
 }
 
 // Encapsulates data about the user's session that we're representing.
