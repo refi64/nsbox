@@ -13,6 +13,30 @@ import (
 	"strings"
 )
 
+// Stored as a map to make membership tests fast.
+var whitelistedEnvNames = map[string]interface{} {
+	"COLORTERM": nil,
+	"DBUS_SESSION_BUS_ADDRESS": nil,
+	"DBUS_SYSTEM_BUS_ADDRESS": nil,
+	"DESKTOP_SESSION": nil,
+	"DISPLAY": nil,
+	"LANG": nil,
+	"SHELL": nil,
+	"SSH_AUTH_SOCK": nil,
+	"TERM": nil,
+	"VTE_VERSION": nil,
+	"WAYLAND_DISPLAY": nil,
+	"XDG_CURRENT_DESKTOP": nil,
+	"XDG_DATA_DIRS": nil,
+	"XDG_MENU_PREFIX": nil,
+	"XDG_RUNTIME_DIR": nil,
+	"XDG_SEAT": nil,
+	"XDG_SESSION_DESKTOP": nil,
+	"XDG_SESSION_ID": nil,
+	"XDG_SESSION_TYPE": nil,
+	"XDG_VTNR": nil,
+}
+
 // Encapsulates data about the user's session that we're representing.
 type Userdata struct {
 	User     *user.User
@@ -39,38 +63,26 @@ func getUserShell(usr *user.User) (string, error) {
 	return shell, nil
 }
 
-// Like os.Environ, but only returns ssome whitelisted environment variables.
-func WhitelistedEnviron() []string {
-	whitelist := []string{
-		"COLORTERM",
-		"DBUS_SESSION_BUS_ADDRESS",
-		"DBUS_SYSTEM_BUS_ADDRESS",
-		"DESKTOP_SESSION",
-		"DISPLAY",
-		"LANG",
-		"SHELL",
-		"SSH_AUTH_SOCK",
-		"TERM",
-		"VTE_VERSION",
-		"WAYLAND_DISPLAY",
-		"XDG_CURRENT_DESKTOP",
-		"XDG_DATA_DIRS",
-		"XDG_MENU_PREFIX",
-		"XDG_RUNTIME_DIR",
-		"XDG_SEAT",
-		"XDG_SESSION_DESKTOP",
-		"XDG_SESSION_ID",
-		"XDG_SESSION_TYPE",
-		"XDG_VTNR",
-	}
+// Checks if the given environment variable is on the execution whitelist.
+func IsWhitelisted(name string) bool {
+	_, ok := whitelistedEnvNames[name]
+	return ok
+}
 
+// Little helper to split environment variables.
+func SplitEnv(env string) (string, string) {
+	parts := strings.SplitN(env, "=", 2)
+	return parts[0], parts[1]
+}
+
+// Like os.Environ, but only returns some whitelisted environment variables.
+func WhitelistedEnviron() []string {
 	result := make([]string, 0)
 
 	for _, env := range os.Environ() {
-		for _, whitelisted := range whitelist {
-			if strings.HasPrefix(env, whitelisted+"=") {
-				result = append(result, env)
-			}
+		name, _ := SplitEnv(env)
+		if IsWhitelisted(name) {
+			result = append(result, env)
 		}
 	}
 

@@ -48,6 +48,13 @@ substitute_file("nsbox_profile") {
   vars = substitute_config_vars
 }
 
+substitute_file("nsbox_policy") {
+  source = "//misc/dev.nsbox.policy"
+  vars = [
+    ["NSBOX_INVOKER", "$prefix/$libexec_dir/$product_name/nsbox-invoker"],
+  ]
+}
+
 copy("gofiles") {
   sources = [
     "go.mod",
@@ -60,6 +67,7 @@ copy("gofiles") {
     "cmd/nsbox/run.go",
     "cmd/nsbox/set_default.go",
     "cmd/nsboxd/main.go",
+    "cmd/nsbox-invoker/main.go",
     "cmd/nsbox-host/enter.go",
     "cmd/nsbox-host/main.go",
     "cmd/nsbox-host/reload_exports.go",
@@ -122,6 +130,11 @@ go_binary("nsboxd") {
   deps = go_deps
 }
 
+go_binary("nsbox-invoker") {
+  package = "github.com/refi64/nsbox/cmd/nsbox-invoker"
+  deps = go_deps
+}
+
 go_binary("nsbox-host") {
   package = "github.com/refi64/nsbox/cmd/nsbox-host"
   deps = go_deps
@@ -160,10 +173,24 @@ copy("install-etc") {
   deps = [":nsbox_profile"]
 }
 
+copy("install-polkit-actions") {
+  sources = get_target_outputs(":nsbox_policy")
+  outputs = ["$install_dir/$share_dir/polkit-1/actions/dev.nsbox.policy"]
+  deps = [":nsbox_policy"]
+}
+
+copy("install-polkit-rules") {
+  sources = ["//misc/dev.nsbox.rules"]
+  outputs = ["$install_dir/$share_dir/polkit-1/rules.d/dev.nsbox.rules"]
+}
+
 copy("install-private-exec") {
-  sources = get_target_outputs(":nsboxd") + get_target_outputs(":nsbox-host")
+  deps = [":nsboxd", ":nsbox-invoker", ":nsbox-host"]
+  sources = []
+  foreach(dep, deps) {
+    sources += get_target_outputs(dep)
+  }
   outputs = ["$install_dir/$libexec_dir/$product_name/{{source_file_part}}"]
-  deps = [":nsboxd", ":nsbox-host"]
 }
 
 copy("install-share-data") {
@@ -199,6 +226,8 @@ group("nsbox-install-root") {
   deps = [
     ":install-bin",
     ":install-etc",
+    ":install-polkit-actions",
+    ":install-polkit-rules",
     ":install-private-exec",
     ":install-share-data",
     ":install-share-images",

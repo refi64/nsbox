@@ -6,6 +6,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/google/subcommands"
 	"github.com/refi64/nsbox/internal/args"
 	"github.com/refi64/nsbox/internal/log"
@@ -22,7 +23,7 @@ type nsboxApp struct {
 	workdir string
 }
 
-func (app *nsboxApp) PreexecHook(fs *flag.FlagSet) {
+func (app *nsboxApp) PreexecHook(cmd subcommands.Command, fs *flag.FlagSet) {
 	if os.Getuid() == 0 {
 		return
 	}
@@ -39,17 +40,21 @@ func (app *nsboxApp) PreexecHook(fs *flag.FlagSet) {
 		log.Fatalf("failed to locate %s: %v", redirector, err)
 	}
 
-	self, err := paths.GetExecutablePath()
+	invokerPath, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, paths.ProductName, "nsbox-invoker")
 	if err != nil {
-		log.Fatal("failed to get executable path:", err)
+		log.Fatal("failed to get invoker path:", err)
 	}
 
-	redirect := []string{redirector, "env", "--"}
+	redirect := []string{redirector, invokerPath, cmd.Name()}
 	redirect = append(redirect, userdata.WhitelistedEnviron()...)
-	redirect = append(redirect, self)
+	redirect = append(redirect, "::")
 
-	redirect = append(redirect, "-workdir", app.workdir)
-	redirect = append(redirect, os.Args[1:]...)
+	fs.VisitAll(func(f *flag.Flag) {
+		redirect = append(redirect, fmt.Sprintf("-%s=%s", f.Name, f.Value.String()))
+	})
+
+	redirect = append(redirect, "--")
+	redirect = append(redirect, fs.Args()...)
 
 	err = unix.Exec(redirectorPath, redirect, os.Environ())
 	log.Fatal("failed to exec redirect", err)

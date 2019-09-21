@@ -54,7 +54,8 @@ func GetPathRelativeToInstallRoot(subpaths ...string) (string, error) {
 
 	parts := []string{filepath.Dir(self), ".."}
 
-	if strings.HasSuffix(self, "nsboxd") {
+	// XXX: this is kinda hacked in.
+	if strings.HasSuffix(self, "nsboxd") || strings.HasSuffix(self, "nsbox-invoker") {
 		// nsboxd is in ROOT/libexec/nsbox, so a level further down than the nsbox CLI.
 		parts = append(parts, "..")
 	}

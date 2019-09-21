@@ -3,6 +3,7 @@
 
 package paths
 
+const Bin = "@BIN_DIR"
 const Config = "@CONFIG_DIR"
 const Libexec = "@LIBEXEC_DIR"
 const Share = "@SHARE_DIR"

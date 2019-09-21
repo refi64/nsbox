@@ -14,7 +14,7 @@ import (
 )
 
 type App interface {
-	PreexecHook(fs *flag.FlagSet)
+	PreexecHook(cmd subcommands.Command, fs *flag.FlagSet)
 	SetGlobalFlags(fs *flag.FlagSet)
 }
 
@@ -66,7 +66,7 @@ func (wrapper *simpleCommandWrapper) Execute(_ context.Context, fs *flag.FlagSet
 		return subcommands.ExitUsageError
 	}
 
-	wrapper.app.PreexecHook(fs)
+	wrapper.app.PreexecHook(wrapper, fs)
 	return wrapper.simple.Execute(wrapper.app, fs)
 }
 
