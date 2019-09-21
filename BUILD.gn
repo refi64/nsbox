@@ -208,6 +208,10 @@ copy("install-share-data") {
 
 copy("install-share-images") {
   sources = [
+    "images/arch/Dockerfile",
+    "images/arch/metadata.json",
+    "images/arch/playbook.yaml",
+    "images/arch/roles/main/tasks/main.yaml",
     "images/fedora/metadata.json",
     "images/fedora/playbook.yaml",
     "images/fedora/roles/main/tasks/main.yaml",

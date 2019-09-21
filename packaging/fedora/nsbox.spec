@@ -141,6 +141,10 @@ chmod -R g-w %{buildroot}
 %{_datadir}/%{name}/data/scripts/nsbox-enter-run.sh
 %{_datadir}/%{name}/data/scripts/nsbox-enter-setup.sh
 %{_datadir}/%{name}/data/scripts/nsbox-init.sh
+%{_datadir}/%{name}/images/arch/Dockerfile
+%{_datadir}/%{name}/images/arch/metadata.json
+%{_datadir}/%{name}/images/arch/playbook.yaml
+%{_datadir}/%{name}/images/arch/roles/main/tasks/main.yaml
 %{_datadir}/%{name}/images/fedora/metadata.json
 %{_datadir}/%{name}/images/fedora/playbook.yaml
 %{_datadir}/%{name}/images/fedora/roles/main/tasks/main.yaml

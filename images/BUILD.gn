@@ -17,8 +17,13 @@ template("nsbox_image") {
       "--export", rebase_path(outputs[0], root_build_dir),
       "--override-nsbox-version", release_version,
       "--override-nsbox-branch", release_branch,
-      "$image_root:${invoker.tag}",
     ]
+
+    if (defined(invoker.tag) && invoker.tag != "") {
+      args += ["$image_root:${invoker.tag}"]
+    } else {
+      args += [image_root]
+    }
 
     sources = [
       "${invoker.image}/metadata.json",
@@ -30,13 +35,17 @@ template("nsbox_image") {
         sources += ["${invoker.image}/roles/$file"]
       }
     }
+
+    if (defined(invoker.local) && invoker.local) {
+      sources += ["${invoker.image}/Dockerfile"]
+    }
   }
 }
 
 fedora_versions = ["30", "31"]
 
 foreach(version, fedora_versions) {
-  nsbox_image("fedora-$version") {
+  nsbox_image("fedora-$version-image") {
     image = "fedora"
     tag = version
     role_files = [
@@ -46,9 +55,17 @@ foreach(version, fedora_versions) {
   }
 }
 
+nsbox_image("arch-image") {
+  image = "arch"
+  local = true
+  role_files = [
+    "main/tasks/main.yaml",
+  ]
+}
+
 group("images") {
-  deps = []
+  deps = [":arch-image"]
   foreach(version, fedora_versions) {
-    deps += [":fedora-$version"]
+    deps += [":fedora-$version-image"]
   }
 }

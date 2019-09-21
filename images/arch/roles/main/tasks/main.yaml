@@ -1,0 +1,11 @@
+- name: Update the package cache
+  pacman:
+    update_cache: yes
+  tags: bend
+
+- name: Install required packages
+  pacman:
+    name:
+      - inetutils
+      - sudo
+      - vte-common
