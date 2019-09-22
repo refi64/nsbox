@@ -61,7 +61,7 @@ func (app *nsboxApp) PreexecHook(cmd subcommands.Command, fs *flag.FlagSet) {
 }
 
 func (app *nsboxApp) SetGlobalFlags(fs *flag.FlagSet) {
-	fs.BoolVar(&app.sudo, "sudo", app.sudo, "Use sudo for privilege escalation over polkit")
+	fs.BoolVar(&app.sudo, "sudo", app.sudo, "Use sudo for privilege escalation instead of polkit")
 	fs.StringVar(&app.workdir, "workdir", app.workdir, "Run from the given directory")
 }
 
