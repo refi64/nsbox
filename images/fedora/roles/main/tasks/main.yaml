@@ -33,5 +33,6 @@
 
 - name: Clear the dnf cache
   shell: 'dnf clean all'
-  warn: false
+  args:
+    warn: false
   tags: bend
