@@ -43,7 +43,7 @@ func main() {
 		log.Fatal("end of environment not found")
 	}
 
-	nsbox, err := paths.GetPathRelativeToInstallRoot(paths.Bin, "nsbox")
+	nsbox, err := paths.GetPathRelativeToInstallRoot(paths.Bin, paths.ProductName)
 	if err != nil {
 		log.Fatal("failed to find nsbox binary:", err)
 	}
