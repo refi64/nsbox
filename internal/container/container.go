@@ -148,6 +148,18 @@ func (container Container) LockUntilProcessDeath(wait LockWaitRequest) error {
 	return nil
 }
 
+func (container Container) LockAndDelete(wait LockWaitRequest) error {
+	if err := container.LockUntilProcessDeath(wait); err != nil {
+		return err
+	}
+
+	if err := os.RemoveAll(container.Path); err != nil {
+		return errors.Wrap(err, "failure during container deletion")
+	}
+
+	return nil
+}
+
 func (container Container) ApplyEnvironFilter(usrdata *userdata.Userdata) {
 	if container.Config.Boot {
 		delete(usrdata.Environ, "XDG_VTNR")

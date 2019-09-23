@@ -90,6 +90,7 @@ func main() {
 	subcommands.Register(subcommands.FlagsCommand(), "")
 	subcommands.Register(subcommands.CommandsCommand(), "")
 	subcommands.Register(newCreateCommand(app), "")
+	subcommands.Register(newDeleteCommand(app), "")
 	subcommands.Register(newInfoCommand(app), "")
 	subcommands.Register(newKillCommand(app), "")
 	subcommands.Register(newListCommand(app), "")

@@ -60,6 +60,7 @@ copy("gofiles") {
     "go.mod",
     "go.sum",
     "cmd/nsbox/create.go",
+    "cmd/nsbox/delete.go",
     "cmd/nsbox/info.go",
     "cmd/nsbox/kill.go",
     "cmd/nsbox/list.go",
