@@ -109,13 +109,11 @@ go_binary("varlink-go-interface-generator") {
 }
 
 action("nsbox-varlink-interface") {
-  varlink_generator = rebase_path(get_target_outputs(":varlink-go-interface-generator"),
-                                  go_target_dir)
-
   script = "//build/bin_proxy.py"
-  args = [rebase_path(go_target_dir, root_build_dir), varlink_generator[0],
-          "internal/varlink/dev.nsbox.varlink"]
-  outputs = ["$go_target_dir/interface/varlink/devnsbox.go"]
+  sources = get_target_outputs(":varlink-go-interface-generator")
+  sources += ["$go_target_dir/internal/varlink/dev.nsbox.varlink"]
+  outputs = ["$go_target_dir/internal/varlink/devnsbox.go"]
+  args = [rebase_path(go_target_dir, root_build_dir)] + rebase_path(sources, go_target_dir)
   deps = [":gofiles", ":varlink-go-interface-generator"]
 }
 

@@ -9,3 +9,7 @@
       - inetutils
       - sudo
       - vte-common
+
+- name: Delete the cached packages
+  shell: 'pacman -Scc --noconfirm'
+  tags: bend
