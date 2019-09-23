@@ -1,5 +1,5 @@
 {
   "base": "@local",
-  "remote_target": "quay.io/nsbox/arch:{nsbox_branch}",
+  "remote_target": "gcr.io/nsbox-data/arch:{nsbox_branch}",
   "valid_tags": []
 }

@@ -20,7 +20,7 @@
     group: root
     mode: '0644'
 
-- name: Install required packages
+- name: Install required packages (this may take a while)
   dnf:
     name:
       - ansible
