@@ -28,7 +28,7 @@ func fetchLayer(layer crev1.Layer, dest string) error {
 		return errors.Wrap(err, "failed to retrieve layer media type")
 	}
 
-	if mediaType != cretypes.OCILayer && mediaType != cretypes.DockerLayer {
+	if mediaType != cretypes.OCILayer && mediaType != cretypes.DockerLayer && mediaType != cretypes.OCIUncompressedLayer && mediaType != cretypes.DockerUncompressedLayer {
 		return errors.Errorf("unexpected layer type %s", mediaType)
 	}
 
