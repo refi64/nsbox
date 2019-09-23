@@ -1,5 +1,6 @@
 {
   "base": "@local",
-  "remote_target": "gcr.io/nsbox-data/arch:{nsbox_branch}",
+  "remote": "registry.nsbox.dev/arch:{nsbox_branch}",
+  "target": "gcr.io/nsbox-data/arch:{nsbox_branch}",
   "valid_tags": []
 }
