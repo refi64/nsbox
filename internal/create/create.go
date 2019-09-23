@@ -68,9 +68,9 @@ func saveImageToContainer(img *image.Image, ct *container.Container, tarOverride
 	var dockerImage crev1.Image
 
 	if tarOverride == "" {
-		ref, err := crename.ParseReference(img.RemoteTarget)
+		ref, err := crename.ParseReference(img.Remote)
 		if err != nil {
-			return errors.Wrap(err, "failed to parse RemoteTarget reference")
+			return errors.Wrap(err, "failed to parse Remote reference")
 		}
 
 		dockerImage, err = creremote.Image(ref)
@@ -78,9 +78,9 @@ func saveImageToContainer(img *image.Image, ct *container.Container, tarOverride
 			return errors.Wrap(err, "failed to load image from remote")
 		}
 	} else {
-		tag, err := crename.NewTag(img.RemoteTarget)
+		tag, err := crename.NewTag(img.Remote)
 		if err != nil {
-			return errors.Wrap(err, "failed to parse RemoteTarget as tag")
+			return errors.Wrap(err, "failed to parse Remote as tag")
 		}
 
 		dockerImage, err = cretarball.ImageFromPath(tarOverride, &tag)

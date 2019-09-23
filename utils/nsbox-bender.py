@@ -36,18 +36,22 @@ def read_metadata(image, extra_vars):
     with (image / 'metadata.json').open() as fp:
         metadata = json.load(fp)
 
-    if 'base' not in metadata or 'remote_target' not in metadata or 'valid_tags' not in metadata:
-        sys.exit('Metadata must specify base, remote_target, and valid_tags.')
+    if 'base' not in metadata or 'remote' not in metadata or 'valid_tags' not in metadata:
+        sys.exit('Metadata must specify base, remote, and valid_tags.')
 
-    if not all(isinstance(metadata[key], str) for key in ('base', 'remote_target')):
-        sys.exit('Metadata base and remote_target must be strings.')
+    if not all(isinstance(metadata.get(key, ''), str) for key in ('base', 'remote', 'target')):
+        sys.exit('Metadata base, remote, and target must be strings.')
 
     if (not isinstance(metadata['valid_tags'], list)
             or not all(isinstance(tag, str) for tag in metadata['valid_tags'])):
         sys.exit('Metadata valid_tags must be a list of strings.')
 
-    for key in 'base', 'remote_target':
-        metadata[key] = metadata[key].format(**extra_vars)
+    for key in 'base', 'remote', 'target':
+        if key in metadata:
+            metadata[key] = metadata[key].format(**extra_vars)
+
+    if 'target' not in metadata:
+        metadata['target'] = metadata['remote']
 
     return metadata
 
@@ -69,7 +73,7 @@ def export_image(metadata, target, builder):
     }
 
     print('Exporting image...')
-    run([BUILDERS_TO_EXPORTERS[builder], 'save', '-o', target, metadata['remote_target']])
+    run([BUILDERS_TO_EXPORTERS[builder], 'save', '-o', target, metadata['target']])
 
 
 def main():
@@ -138,7 +142,7 @@ def main():
     base = metadata['base']
 
     if base == '@local':
-        base = metadata['remote_target'] + '-bud'
+        base = metadata['target'] + '-bud'
 
         run([args.builder, 'bud' if args.builder == 'buildah' else 'build',
              *(f'--build-arg={k.upper()}={v}' for k, v in extra_vars.items()),
@@ -158,7 +162,7 @@ def main():
                     + f'--extra-vars="{" ".join(map("=".join, extra_vars.items()))}"')
     command.append(str(image / 'playbook.yaml'))
 
-    command.extend((base, metadata['remote_target']))
+    command.extend((base, metadata['target']))
 
     env = os.environ.copy()
     env['ANSIBLE_STDOUT_CALLBACK'] = 'default'

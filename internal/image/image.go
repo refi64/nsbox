@@ -18,7 +18,8 @@ import (
 type Image struct {
 	RootPath     string
 	Base         string   `json:"base"`
-	RemoteTarget string   `json:"remote_target"`
+	Remote string   `json:"remote"`
+	Target string `json:"target"`
 	ValidTags    []string `json:"valid_tags"`
 }
 
@@ -117,7 +118,8 @@ func openImageAtPath(path, tag string) (*Image, error) {
 	)
 
 	image.Base = replacer.Replace(image.Base)
-	image.RemoteTarget = replacer.Replace(image.RemoteTarget)
+	image.Remote = replacer.Replace(image.Remote)
+	image.Target = replacer.Replace(image.Target)
 
 	return &image, nil
 }
