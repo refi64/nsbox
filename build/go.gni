@@ -14,9 +14,9 @@ template("go_binary") {
     script = "//build/go.py"
     args = ["--go", go_exe, "--go-cache", rebase_path("$root_build_dir/gocache"),
             "--package", invoker.package,
-            "--root", rebase_path(go_target_dir, root_build_dir),
-            "--out-bin", rebase_path(outputs[0], go_target_dir),
-            "--out-dep", rebase_path(depfile, go_target_dir)]
+            "--gofiles-root", rebase_path(go_target_dir, root_build_dir),
+            "--out-bin", rebase_path(outputs[0], root_build_dir),
+            "--out-dep", rebase_path(depfile, root_build_dir)]
 
     if (defined(invoker.static) && invoker.static) {
       args += ["--static"]

@@ -7,11 +7,12 @@
 import json
 import subprocess
 
-def go_list(go, package, *, vendor=False):
+def go_list(go, package, *, cwd=None, vendor=False):
     mod_arg = 'vendor' if vendor else 'readonly'
 
     process = subprocess.run([go, 'list', f'-mod={mod_arg}', '-json', '-deps', package],
-                             stdout=subprocess.PIPE, universal_newlines=True, check=True)
+                             stdout=subprocess.PIPE, universal_newlines=True, check=True,
+                             cwd=cwd)
 
     # Change formatting to be in list form. (Go list prints JSON objects back-to-back.)
     dep_json = '[' + process.stdout.replace('\n}', '\n},').rstrip(',\n') + ']'

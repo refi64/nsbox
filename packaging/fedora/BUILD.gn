@@ -12,7 +12,7 @@ action("archive") {
   depfile = "$target_gen_dir/nsbox-sources.d"
 
   script = "//build/source_archive.py"
-  args = ["--root", rebase_path("//", root_build_dir),
+  args = ["--source-root", rebase_path("//", root_build_dir),
           "--prefix", "$product_name-$release_version",
           "--out-tar", rebase_path(outputs[0], root_build_dir),
           "--out-dep", rebase_path(depfile, root_build_dir)]

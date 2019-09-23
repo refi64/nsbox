@@ -16,27 +16,31 @@ import sys
 
 
 def load_deps(args):
-    deps = go_list(args.go, args.package, vendor=True)
+    deps = go_list(args.go, args.package, cwd=str(args.gofiles_root), vendor=True)
+
+    bin_relative_to_depfile = os.path.relpath(args.out_bin, args.out_dep)
+
+    makefile_deps = set()
+
+    for dep in deps:
+        import_path = dep['ImportPath']
+        directory = Path(dep['Dir']).resolve()
+
+        try:
+            directory.relative_to(args.gofiles_root)
+        except ValueError:
+            continue
+
+        for key, value in dep.items():
+            if key.endswith('Files') and not key.startswith('Ignored'):
+                makefile_deps |= set((directory / f).relative_to(Path().resolve()) for f in value)
 
     with open(args.out_dep, 'w') as fp:
-        for dep in deps:
-            import_path = dep['ImportPath']
-            directory = Path(dep['Dir']).resolve()
-
-            try:
-                directory.relative_to(args.root)
-            except ValueError:
-                continue
-
-            for key, value in dep.items():
-                if key.endswith('Files') and not key.startswith('Ignored'):
-                    for f in value:
-                        print(f'{args.out_bin}:', ' '.join(str(directory / f) for f in value),
-                              file=fp)
+        print(f'{args.out_bin}: {" ".join(map(str, makefile_deps))}', file=fp)
 
 
 def build(args):
-    command = [args.go, 'build', '-mod=vendor', '-o', args.out_bin]
+    command = [args.go, 'build', '-mod=vendor', '-o', os.path.abspath(args.out_bin)]
     env = os.environ.copy()
 
     env['GOCACHE'] = args.go_cache
@@ -47,7 +51,7 @@ def build(args):
 
     command.append(args.package)
 
-    process = subprocess.Popen(command, env=env)
+    process = subprocess.Popen(command, cwd=str(args.gofiles_root), env=env)
     ret = process.wait()
     if ret:
         sys.exit(ret)
@@ -57,7 +61,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--go')
     parser.add_argument('--go-cache')
-    parser.add_argument('--root', type=lambda x: Path(x).resolve())
+    parser.add_argument('--gofiles-root', type=lambda x: Path(x).resolve())
     parser.add_argument('--package')
     parser.add_argument('--out-bin')
     parser.add_argument('--out-dep')
@@ -65,7 +69,6 @@ def main():
 
     args = parser.parse_args()
 
-    os.chdir(args.root)
     load_deps(args)
     build(args)
 
