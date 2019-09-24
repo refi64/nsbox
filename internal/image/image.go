@@ -16,11 +16,11 @@ import (
 )
 
 type Image struct {
-	RootPath     string
-	Base         string   `json:"base"`
-	Remote string   `json:"remote"`
-	Target string `json:"target"`
-	ValidTags    []string `json:"valid_tags"`
+	RootPath  string
+	Base      string   `json:"base"`
+	Remote    string   `json:"remote"`
+	Target    string   `json:"target"`
+	ValidTags []string `json:"valid_tags"`
 }
 
 func readReleaseInfo() (string, string, error) {

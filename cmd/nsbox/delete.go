@@ -15,7 +15,7 @@ import (
 
 type deleteCommand struct {
 	name string
-	yes bool
+	yes  bool
 }
 
 func newDeleteCommand(app args.App) subcommands.Command {
