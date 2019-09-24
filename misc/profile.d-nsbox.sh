@@ -4,7 +4,7 @@
 
 # Updates XDG_DATA_DIRS with nsbox container exports.
 
-for dir in @STATE_DIR/nsbox/inventory/*; do
+for dir in @STATE_DIR/nsbox/$USER/inventory/*; do
   [ -d "$dir/exports/share" ] || continue
 
   export XDG_DATA_DIRS="$XDG_DATA_DIRS:$dir/exports/share/"
