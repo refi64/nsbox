@@ -75,7 +75,7 @@ func CreateStaged(usrdata *userdata.Userdata, name string, initialConfig Config)
 		return nil, errors.Wrap(err, "failed to remove old staged container")
 	}
 
-	if err := os.MkdirAll(stagedPath, 0700); err != nil {
+	if err := os.MkdirAll(stagedPath, 0755); err != nil {
 		return nil, errors.Wrap(err, "failed to create container directory")
 	}
 
