@@ -8,8 +8,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/google/subcommands"
+	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/args"
 	"github.com/refi64/nsbox/internal/container"
+	"github.com/refi64/nsbox/internal/inventory"
 	"strings"
 )
 
@@ -48,6 +50,15 @@ func (cmd *deleteCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.Ex
 	ct, err := container.Open(app.(*nsboxApp).usrdata, cmd.name)
 	if err != nil {
 		return args.HandleError(err)
+	}
+
+	def, err := inventory.DefaultContainer(app.(*nsboxApp).usrdata)
+	if err != nil {
+		return args.HandleError(err)
+	}
+
+	if def != nil && def.Name == ct.Name {
+		return args.HandleError(errors.New("Cannot delete the default container."))
 	}
 
 	if !cmd.yes {
