@@ -12,6 +12,7 @@ import (
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/userdata"
 	"os"
+	"strings"
 	"text/tabwriter"
 	"time"
 )
@@ -50,6 +51,9 @@ func (ct Container) ShowInfo() error {
 
 	fmt.Fprintln(writer, "Name:\t", ct.Name)
 	fmt.Fprintln(writer, "Booted:\t", boolYesNo(ct.Config.Boot))
+
+	fmt.Fprintln(writer, "XDG desktop exports:\t", strings.Join(ct.Config.XdgDesktopExports, ", "))
+	fmt.Fprintln(writer, "XDG desktop extra:\t", strings.Join(ct.Config.XdgDesktopExtra, ", "))
 
 	if machineProps != nil {
 		usec := machineProps["Timestamp"].(uint64)

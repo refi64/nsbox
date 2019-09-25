@@ -74,14 +74,7 @@ func exportDesktopFile(ct *container.Container, targetDir, desktopFilePath strin
 	return nil
 }
 
-func importDesktopFiles(ct *container.Container, targetRoot, sourcePrefix string) error {
-	desktopFilesDir := ct.StorageChild(sourcePrefix, "share", "applications")
-	target := filepath.Join(targetRoot, "share", "applications")
-
-	if err := os.MkdirAll(target, 0755); err != nil {
-		return errors.Wrapf(err, "failed to create target directory")
-	}
-
+func importDesktopFiles(ct *container.Container, target, desktopFilesDir string) error {
 	desktopFiles, err := ioutil.ReadDir(desktopFilesDir)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -93,12 +86,29 @@ func importDesktopFiles(ct *container.Container, targetRoot, sourcePrefix string
 	}
 
 	for _, file := range desktopFiles {
-		if !strings.HasSuffix(file.Name(), ".desktop") {
+		const desktopSuffix = ".desktop"
+
+		if !strings.HasSuffix(file.Name(), desktopSuffix) {
 			continue
 		}
 
-		path := filepath.Join(desktopFilesDir, file.Name())
-		exportDesktopFile(ct, target, path)
+		name := file.Name()[:len(file.Name())-len(desktopSuffix)]
+		for _, pat := range ct.Config.XdgDesktopExports {
+			ok, err := filepath.Match(pat, name)
+
+			if err != nil {
+				log.Alertf("%s failed to match: %v", pat, name)
+			} else if ok {
+				path := filepath.Join(desktopFilesDir, file.Name())
+				if err := exportDesktopFile(ct, target, path); err != nil {
+					log.Alertf("failed to export %s: %v", path, err)
+				}
+
+				break
+			} else {
+				log.Debugf("%s failed to match %s", pat, name)
+			}
+		}
 	}
 
 	return nil
@@ -125,12 +135,20 @@ func UpdateDesktopFiles(ct *container.Container) error {
 		return errors.Wrapf(err, "failed to reset new exports instance dir %d", newExportsInstanceId)
 	}
 
-	if err := importDesktopFiles(ct, newExportsInstanceDir, "usr"); err != nil {
-		return err
+	desktopFilesTarget := filepath.Join(newExportsInstanceDir, "share", "applications")
+
+	if err := os.MkdirAll(desktopFilesTarget, 0755); err != nil {
+		return errors.Wrapf(err, "failed to create target directory")
 	}
 
-	if err := importDesktopFiles(ct, newExportsInstanceDir, "usr/local"); err != nil {
-		return err
+	desktopFilesDirs := []string{"/usr/share/applications", "/usr/local/share/applications"}
+	desktopFilesDirs = append(desktopFilesDirs, ct.Config.XdgDesktopExtra...)
+
+	for _, absDesktopFilesDir := range desktopFilesDirs {
+		desktopFilesDir := ct.StorageChild(absDesktopFilesDir)
+		if err := importDesktopFiles(ct, desktopFilesTarget, desktopFilesDir); err != nil {
+			log.Alertf("failed to import desktop files from %s: %v", desktopFilesDir, err)
+		}
 	}
 
 	tempExportsLink := ct.ExportsLink(true)

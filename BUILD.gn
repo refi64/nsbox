@@ -59,6 +59,7 @@ copy("gofiles") {
   sources = [
     "go.mod",
     "go.sum",
+    "cmd/nsbox/config.go",
     "cmd/nsbox/create.go",
     "cmd/nsbox/delete.go",
     "cmd/nsbox/info.go",
@@ -74,6 +75,7 @@ copy("gofiles") {
     "cmd/nsbox-host/reload_exports.go",
     "cmd/nsbox-host/service.go",
     "cmd/nsbox-host/varlink_util.go",
+    "internal/args/array.go",
     "internal/args/args.go",
     "internal/container/container.go",
     "internal/container/info.go",

@@ -19,8 +19,10 @@ import (
 )
 
 type Config struct {
-	Image string
-	Boot  bool
+	Image             string
+	Boot              bool
+	XdgDesktopExports []string
+	XdgDesktopExtra   []string
 }
 
 type Container struct {
@@ -35,6 +37,23 @@ const StageSuffix = ".stage"
 func validateName(name string) error {
 	if matched, _ := regexp.MatchString(`^[a-zA-Z0-9_-]+$`, name); !matched {
 		return errors.Errorf("invalid container name: %s", name)
+	}
+
+	return nil
+}
+
+func writeConfigToNewFile(config Config, path string) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(config); err != nil {
+		return err
 	}
 
 	return nil
@@ -64,17 +83,9 @@ func CreateStaged(usrdata *userdata.Userdata, name string, initialConfig Config)
 		return nil, errors.Wrap(err, "failed to create container storage directory")
 	}
 
-	file, err := os.Create(filepath.Join(stagedPath, configJson))
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create container config")
-	}
-
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(initialConfig); err != nil {
-		return nil, errors.Wrap(err, "failed to save container config")
+	stagedConfigPath := filepath.Join(stagedPath, configJson)
+	if err := writeConfigToNewFile(initialConfig, stagedConfigPath); err != nil {
+		return nil, errors.Wrap(err, "failed to write container config")
 	}
 
 	return &Container{
@@ -119,6 +130,21 @@ func Open(usrdata *userdata.Userdata, name string) (*Container, error) {
 
 	path := paths.ContainerData(usrdata, name)
 	return OpenPath(path, name)
+}
+
+func (container Container) UpdateConfig() error {
+	configPath := filepath.Join(container.Path, configJson)
+	tempConfigPath := configPath + ".tmp"
+
+	if err := writeConfigToNewFile(*container.Config, tempConfigPath); err != nil {
+		return errors.Wrap(err, "failed to write temporary config")
+	}
+
+	if err := os.Rename(tempConfigPath, configPath); err != nil {
+		return errors.Wrap(err, "failed to overwrite config")
+	}
+
+	return nil
 }
 
 type LockWaitRequest int

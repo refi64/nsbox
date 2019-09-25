@@ -56,6 +56,7 @@ func (app *nsboxApp) PreexecHook(cmd subcommands.Command, fs *flag.FlagSet) {
 	redirect = append(redirect, "--")
 	redirect = append(redirect, fs.Args()...)
 
+	log.Debug(redirect)
 	err = unix.Exec(redirectorPath, redirect, os.Environ())
 	log.Fatal("failed to exec redirect", err)
 }
@@ -89,6 +90,7 @@ func main() {
 	subcommands.Register(subcommands.HelpCommand(), "")
 	subcommands.Register(subcommands.FlagsCommand(), "")
 	subcommands.Register(subcommands.CommandsCommand(), "")
+	subcommands.Register(newConfigCommand(app), "")
 	subcommands.Register(newCreateCommand(app), "")
 	subcommands.Register(newDeleteCommand(app), "")
 	subcommands.Register(newInfoCommand(app), "")
