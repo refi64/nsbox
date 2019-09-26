@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
+	"github.com/refi64/nsbox/internal/paths"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -57,7 +58,7 @@ func exportDesktopFile(ct *container.Container, targetDir, desktopFilePath strin
 				log.Alertf("%s had invalid line: %s", desktopFilePath, line)
 			} else {
 				if parts[0] == "Exec" {
-					line = fmt.Sprintf("Exec=nsbox run -c %s -- %s", ct.Name, parts[1])
+					line = fmt.Sprintf("Exec=%s run -c %s -- %s", paths.ProductName, ct.Name, parts[1])
 				}
 			}
 
