@@ -50,7 +50,7 @@ func (cmd *enterCommand) ParsePositional(fs *flag.FlagSet) error {
 		return errors.New("expected a command")
 	}
 
-	if cmd.stdin == "" || cmd.stdout == "" || cmd.stderr == "" || cmd.cwd == "" || cmd.uid == -1 {
+	if cmd.cwd == "" || cmd.uid == -1 {
 		return errors.New("missing arguments")
 	}
 
