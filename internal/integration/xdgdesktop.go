@@ -9,12 +9,17 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
+	"github.com/refi64/nsbox/internal/gtkicons"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+)
+
+var (
+	xdgDataDirs = []string{"/usr/share", "/usr/local/share"}
 )
 
 func readExportsId(path string) (int, error) {
@@ -36,14 +41,26 @@ func readExportsId(path string) (int, error) {
 	}
 }
 
-func exportDesktopFile(ct *container.Container, targetDir, desktopFilePath string) error {
+type exportContext struct {
+	ct *container.Container
+	iconCtxs []*gtkicons.LookupContext
+	icons []gtkicons.Icon
+
+	targetRoot string
+	targetApplicationsDir string
+	targetIconsDir string
+}
+
+func (ctx *exportContext) exportDesktopFile(desktopFilePath string) error {
+	log.Debug("Exporting desktop file", desktopFilePath)
+
 	source, err := os.Open(desktopFilePath)
 	if err != nil {
 		return errors.Wrapf(err, "failed to open desktop file %s", desktopFilePath)
 	}
 	defer source.Close()
 
-	target, err := os.Create(filepath.Join(targetDir, filepath.Base(desktopFilePath)))
+	target, err := os.Create(filepath.Join(ctx.targetApplicationsDir, filepath.Base(desktopFilePath)))
 	if err != nil {
 		return errors.Wrapf(err, "failed to create exported desktop file of %s", desktopFilePath)
 	}
@@ -58,11 +75,13 @@ func exportDesktopFile(ct *container.Container, targetDir, desktopFilePath strin
 				log.Alertf("%s had invalid line: %s", desktopFilePath, line)
 			} else {
 				if parts[0] == "Exec" {
-					line = fmt.Sprintf("Exec=%s run -c %s -- %s", paths.ProductName, ct.Name, parts[1])
+					line = fmt.Sprintf("Exec=%s run -c %s -- %s", paths.ProductName, ctx.ct.Name, parts[1])
+				} else if parts[0] == "Icon" {
+					for _, iconCtx := range ctx.iconCtxs {
+						ctx.icons = append(ctx.icons, iconCtx.FindIcon(parts[1])...)
+					}
 				}
 			}
-
-			// TODO: export icons
 		}
 
 		fmt.Fprintln(target, line)
@@ -75,7 +94,7 @@ func exportDesktopFile(ct *container.Container, targetDir, desktopFilePath strin
 	return nil
 }
 
-func importDesktopFiles(ct *container.Container, target, desktopFilesDir string) error {
+func (ctx *exportContext) exportDesktopFiles(desktopFilesDir string) error {
 	desktopFiles, err := ioutil.ReadDir(desktopFilesDir)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -94,14 +113,14 @@ func importDesktopFiles(ct *container.Container, target, desktopFilesDir string)
 		}
 
 		name := file.Name()[:len(file.Name())-len(desktopSuffix)]
-		for _, pat := range ct.Config.XdgDesktopExports {
+		for _, pat := range ctx.ct.Config.XdgDesktopExports {
 			ok, err := filepath.Match(pat, name)
 
 			if err != nil {
 				log.Alertf("%s failed to match: %v", pat, name)
 			} else if ok {
 				path := filepath.Join(desktopFilesDir, file.Name())
-				if err := exportDesktopFile(ct, target, path); err != nil {
+				if err := ctx.exportDesktopFile(path); err != nil {
 					log.Alertf("failed to export %s: %v", path, err)
 				}
 
@@ -113,6 +132,53 @@ func importDesktopFiles(ct *container.Container, target, desktopFilesDir string)
 	}
 
 	return nil
+}
+
+func (ctx *exportContext) exportIcons() {
+	if len(ctx.icons) == 0 {
+		log.Debug("no icons to export")
+		return
+	}
+
+	for _, icon := range ctx.icons {
+		log.Debugf("Exporting icon %s (from %s)", icon.Path, icon.Root)
+
+		subdir, err := filepath.Rel(icon.Root, filepath.Dir(icon.Path))
+		if err != nil {
+			log.Alertf("could not make icon %s relative to root %s: %v", icon.Path, icon.Root, err)
+			continue
+		}
+
+		themeName := strings.Split(subdir, string(os.PathSeparator))[0]
+		targetThemeDir := filepath.Join(ctx.targetIconsDir, themeName)
+		if err := os.MkdirAll(targetThemeDir, 0755); err != nil {
+			log.Alertf("failed to create %s: %v", targetThemeDir, err)
+			continue
+		}
+
+		sourceIndex := filepath.Join(icon.Root, themeName, "index.theme")
+		targetIndex := filepath.Join(targetThemeDir, "index.theme")
+		log.Debugf("subdir=%s themeName=%s sourceIndex=%s targetIndex=%s", subdir, themeName, sourceIndex, targetIndex)
+
+		// If the index.theme already exists, it can only be that *we* already linked it, as
+		// UpdateDesktopFiles creates a fresh exports directory every time.
+		if err := os.Symlink(sourceIndex, targetIndex); err != nil && !os.IsExist(err) {
+			log.Alertf("failed to symlink %s -> %s: %v", sourceIndex, targetIndex, err)
+			continue
+		}
+
+		targetIconDir := filepath.Join(ctx.targetIconsDir, subdir)
+		if err := os.MkdirAll(targetIconDir, 0755); err != nil {
+			log.Alertf("failed to mkdir %s: %v", targetIconDir, err)
+			continue
+		}
+
+		targetIcon := filepath.Join(targetIconDir, filepath.Base(icon.Path))
+		if err := os.Symlink(icon.Path, targetIcon); err != nil {
+			log.Alertf("failed to symlink %s -> %s: %v", icon.Path, targetIcon, err)
+			continue
+		}
+	}
 }
 
 func UpdateDesktopFiles(ct *container.Container) error {
@@ -136,21 +202,47 @@ func UpdateDesktopFiles(ct *container.Container) error {
 		return errors.Wrapf(err, "failed to reset new exports instance dir %d", newExportsInstanceId)
 	}
 
-	desktopFilesTarget := filepath.Join(newExportsInstanceDir, "share", "applications")
+	var ctx exportContext
+	ctx.ct = ct
+	ctx.targetRoot = filepath.Join(newExportsInstanceDir, "share")
 
-	if err := os.MkdirAll(desktopFilesTarget, 0755); err != nil {
-		return errors.Wrapf(err, "failed to create target directory")
+	for _, dir := range xdgDataDirs {
+		iconDir := ct.StorageChild(filepath.Join(dir, "icons"))
+		log.Debug("Scanning icon directory:", iconDir)
+		iconCtx, err := gtkicons.CreateContext(iconDir)
+		if err != nil {
+			return errors.Wrap(err, "failed to create icon context")
+		}
+
+		defer iconCtx.Destroy()
+		ctx.iconCtxs = append(ctx.iconCtxs, iconCtx)
 	}
 
-	desktopFilesDirs := []string{"/usr/share/applications", "/usr/local/share/applications"}
+	ctx.targetApplicationsDir = filepath.Join(ctx.targetRoot, "applications")
+	ctx.targetIconsDir = filepath.Join(ctx.targetRoot, "icons")
+
+	targetDirsToCreate := []string{ctx.targetApplicationsDir, ctx.targetIconsDir}
+	for _, dir := range targetDirsToCreate {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return errors.Wrapf(err, "failed to create %s", dir)
+		}
+	}
+
+	var desktopFilesDirs []string
+	for _, dir := range xdgDataDirs {
+		desktopFilesDirs = append(desktopFilesDirs, filepath.Join(dir, "applications"))
+	}
 	desktopFilesDirs = append(desktopFilesDirs, ct.Config.XdgDesktopExtra...)
 
 	for _, absDesktopFilesDir := range desktopFilesDirs {
 		desktopFilesDir := ct.StorageChild(absDesktopFilesDir)
-		if err := importDesktopFiles(ct, desktopFilesTarget, desktopFilesDir); err != nil {
-			log.Alertf("failed to import desktop files from %s: %v", desktopFilesDir, err)
+		log.Debug("Scanning desktop files directory:", desktopFilesDir)
+		if err := ctx.exportDesktopFiles(desktopFilesDir); err != nil {
+			log.Alertf("failed to export desktop files from %s: %v", desktopFilesDir, err)
 		}
 	}
+
+	ctx.exportIcons()
 
 	tempExportsLink := ct.ExportsLink(true)
 	if err := os.Symlink(newExportsInstanceDir, tempExportsLink); err != nil {
