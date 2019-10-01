@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "refi64-hosting"
+  },
+  "targets": {
+    "refi64-hosting": {
+      "hosting": {
+        "nsbox-site": [
+          "nsbox-site"
+        ]
+      }
+    }
+  }
+}

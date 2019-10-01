@@ -4,7 +4,8 @@ on:
     branches:
       - master
     paths-ignore:
-      - 'netlify.toml'
+      - '.firebaserc'
+      - 'firebase.json'
       - 'web/**'
 
 jobs:
