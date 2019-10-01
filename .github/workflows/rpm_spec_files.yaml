@@ -4,6 +4,7 @@ on:
     branches:
       - master
     paths-ignore:
+      - 'netlify.toml'
       - 'web/**'
 
 jobs:

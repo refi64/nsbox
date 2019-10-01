@@ -1,0 +1,4 @@
+[build]
+base = "web"
+command = "yarn run build"
+publish = "web/.vuepress/dist"
