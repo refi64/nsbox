@@ -1,0 +1,14 @@
+{
+  "name": "nsbox-web",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MPL-2.0",
+  "private": true,
+  "dependencies": {
+    "vuepress": "^1.1.0"
+  },
+  "scripts": {
+    "dev": "vuepress dev",
+    "build": "vuepress build"
+  }
+}
