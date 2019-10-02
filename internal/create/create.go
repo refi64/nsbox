@@ -78,7 +78,7 @@ func saveImageToContainer(img *image.Image, ct *container.Container, tarOverride
 			return errors.Wrap(err, "failed to load image from remote")
 		}
 	} else {
-		tag, err := crename.NewTag(img.Remote)
+		tag, err := crename.NewTag(img.Target)
 		if err != nil {
 			return errors.Wrap(err, "failed to parse Remote as tag")
 		}
