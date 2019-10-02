@@ -6,9 +6,16 @@
 - name: Install required packages (this may take a while)
   pacman:
     name:
+      - ansible
+      - grep
       - inetutils
       - sudo
       - vte-common
+
+- name: Fix the setuid bit on sudo
+  file:
+    path: /usr/bin/sudo
+    mode: 'u+s'
 
 - name: Delete the cached packages
   shell: 'pacman -Scc --noconfirm'
