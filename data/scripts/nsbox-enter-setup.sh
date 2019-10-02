@@ -9,14 +9,31 @@ trap 'echo "$BASH_SOURCE:$LINENO: $BASH_COMMAND" failed, sorry.' ERR
 
 . /run/host/nsbox/scripts/nsbox-apply-env.sh
 
-latest_image=/run/host/nsbox/image
-ansible_stamp=/var/lib/nsbox-container-state/ansible.stamp
+stamp_root=/var/lib/nsbox-container-state/ansible
+mkdir -p $stamp_root
 
-# If the playbook has been modified since it was last run (or was never run), re-run it.
-if [[ ! -f $ansible_stamp ]] || \
-    # This works by checking if any image file is newer than our stamp file. If so,
-    # find will run "false", which results in a non-zero return code.
-    ! find /run/host/nsbox/image -newermm $ansible_stamp -exec false {} +; then
+get_images_to_update() {
+  while [[ $# -gt 0 ]]; do
+    local image=$1
+    local stamp=$stamp_root/$image.stamp
+    # find /run/host/nsbox/images/$image -newermm $stamp -exec false {} +
+
+    # This messy if just checks if we need to run this playbook and, if so, then re-run all
+    # the ones that follow as well.
+    if [[ ! -f $stamp ]] || \
+        # This works by checking if any image file is newer than our stamp file. If so,
+        # find will run "false", which results in a non-zero return code. Therefore, we'll
+        ! find /run/host/nsbox/images/$image -newermm $stamp -exec false {} +; then
+      echo "$@"
+      return
+    fi
+
+    shift
+  done
+}
+
+to_update="$(get_images_to_update $NSBOX_IMAGE_CHAIN)"
+if [[ -n "$to_update" ]]; then
   # XXX: duplicated from nsbox-bender.py.
   branch="$(cat /run/host/nsbox/release/BRANCH)"
   version="$(cat /run/host/nsbox/release/VERSION)"
@@ -33,11 +50,12 @@ if [[ ! -f $ansible_stamp ]] || \
   extra_vars+=(nsbox_version=$version)
   extra_vars+=(nsbox_product_name=$product_name)
 
-  ANSIBLE_STDOUT_CALLBACK=default ansible-playbook --connection=local --inventory=localhost, \
-    --extra-vars "${extra_vars[*]}" --skip-tags bend /run/host/nsbox/image/playbook.yaml
-
-  mkdir -p $(dirname $ansible_stamp)
-  touch $ansible_stamp
+  for image in $to_update; do
+    ANSIBLE_STDOUT_CALLBACK=default ansible-playbook \
+      --connection=local --inventory=localhost, --extra-vars "${extra_vars[*]}" --skip-tags bend \
+      /run/host/nsbox/images/$image/playbook.yaml
+    touch $stamp_root/$image.stamp
+  done
 fi
 
 exec sudo --user="$NSBOX_USER" /run/host/nsbox/scripts/nsbox-enter-run.sh "$@"

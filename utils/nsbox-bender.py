@@ -39,14 +39,15 @@ def read_metadata(image, extra_vars):
     if 'base' not in metadata or 'remote' not in metadata or 'valid_tags' not in metadata:
         sys.exit('Metadata must specify base, remote, and valid_tags.')
 
-    if not all(isinstance(metadata.get(key, ''), str) for key in ('base', 'remote', 'target')):
+    string_keys = {'base', 'remote', 'target', 'parent'}
+    if not all(isinstance(metadata.get(key, ''), str) for key in string_keys):
         sys.exit('Metadata base, remote, and target must be strings.')
 
     if (not isinstance(metadata['valid_tags'], list)
             or not all(isinstance(tag, str) for tag in metadata['valid_tags'])):
         sys.exit('Metadata valid_tags must be a list of strings.')
 
-    for key in 'base', 'remote', 'target':
+    for key in string_keys:
         if key in metadata:
             metadata[key] = metadata[key].format(**extra_vars)
 

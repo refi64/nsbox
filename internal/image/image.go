@@ -20,6 +20,7 @@ type Image struct {
 	Base      string   `json:"base"`
 	Remote    string   `json:"remote"`
 	Target    string   `json:"target"`
+	Parent 		string   `json:"parent"`
 	ValidTags []string `json:"valid_tags"`
 }
 
@@ -120,6 +121,7 @@ func openImageAtPath(path, tag string) (*Image, error) {
 	image.Base = replacer.Replace(image.Base)
 	image.Remote = replacer.Replace(image.Remote)
 	image.Target = replacer.Replace(image.Target)
+	image.Parent = replacer.Replace(image.Parent)
 
 	return &image, nil
 }
@@ -149,4 +151,27 @@ func Open(name string) (*Image, error) {
 	}
 
 	return nil, errors.New("does not exist")
+}
+
+func (img Image) Name() string {
+	return filepath.Base(img.RootPath)
+}
+
+func (img *Image) ResolveChain() ([]*Image, error) {
+	var chain []*Image
+
+	if img.Parent != "" {
+		log.Debug("resolve parent", img.Parent)
+		parent, err := Open(img.Parent)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not resolve parent %s", img.Parent)
+		}
+
+		chain, err = parent.ResolveChain()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return append(chain, img), nil
 }
