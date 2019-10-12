@@ -41,7 +41,7 @@ var whitelistedEnvNames = map[string]interface{}{
 type Userdata struct {
 	User     *user.User
 	Shell    string
-	GroupIds []string
+	Groups   []*user.Group
 	Environ  map[string]string
 }
 
@@ -120,10 +120,20 @@ func userdataForUser(usr *user.User) (*Userdata, error) {
 		return nil, err
 	}
 
+	var groups []*user.Group
+	for _, gid := range groupIds {
+		group, err := user.LookupGroupId(gid)
+		if err != nil {
+			return nil, err
+		}
+
+		groups = append(groups, group)
+	}
+
 	return &Userdata{
 		User:     usr,
 		Shell:    shell,
-		GroupIds: groupIds,
+		Groups:   groups,
 		Environ:  parseEnviron(),
 	}, nil
 }

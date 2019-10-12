@@ -17,6 +17,13 @@
     path: /usr/bin/sudo
     mode: 'u+s'
 
+- name: Allow wheel to sudo
+  lineinfile:
+    path: /etc/sudoers
+    regexp: '# (%wheel ALL=\(ALL\) ALL)'
+    line: '\1'
+    backrefs: true
+
 - name: Delete the cached packages
   shell: 'pacman -Scc --noconfirm'
   tags: bend

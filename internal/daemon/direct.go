@@ -96,6 +96,10 @@ func setUserEnv(hostMachineId string, ct *container.Container, usrdata *userdata
 	usrdata.Environ["NSBOX_USER"] = usrdata.User.Username
 	usrdata.Environ["NSBOX_UID"] = usrdata.User.Uid
 
+	if usrdata.HasSudoAccess() {
+		usrdata.Environ["NSBOX_USER_CAN_SUDO"] = "1"
+	}
+
 	fullShellPath := ct.StorageChild(stripLeadingSlash(usrdata.Shell))
 
 	if _, err := os.Stat(fullShellPath); err != nil {
@@ -114,21 +118,6 @@ func setUserEnv(hostMachineId string, ct *container.Container, usrdata *userdata
 }
 
 func writeContainerFiles(ct *container.Container, hostPrivPath string, usrdata *userdata.Userdata) error {
-	supplementaryGroups, err := os.Create(filepath.Join(hostPrivPath, "supplementary-groups"))
-	if err != nil {
-		return err
-	}
-
-	defer supplementaryGroups.Close()
-
-	for _, gid := range usrdata.GroupIds {
-		if gid == usrdata.User.Gid {
-			continue
-		}
-
-		fmt.Fprintf(supplementaryGroups, "::%s\n", gid)
-	}
-
 	sharedEnv, err := os.Create(filepath.Join(hostPrivPath, "shared-env"))
 	if err != nil {
 		return err

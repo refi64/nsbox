@@ -13,10 +13,14 @@ user="$NSBOX_USER"
 uid="$NSBOX_UID"
 shell="$NSBOX_SHELL"
 
-groups=$(cat /run/host/nsbox/supplementary-groups /etc/group | cut -d: -f3 | sort | uniq -d \
-         | head -c -1 | tr '\n' ',')
 grep -q "^$user:" /etc/passwd && userdel "$user"
 rm -f /var/mail/"$user"
+
+groups=""
+if [[ -n "$NSBOX_USER_CAN_SUDO" ]]; then
+  groups="wheel"
+fi
+
 useradd -MU -G "$groups" -u "$uid" -s "$shell" "$user"
 ln -sf "$shell" /run/host/login-shell
 

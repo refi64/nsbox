@@ -96,6 +96,7 @@ copy("gofiles") {
     "internal/ptyservice/service.go",
     "internal/session/enter.go",
     "internal/session/setup.go",
+    "internal/userdata/check_privs.go",
     "internal/userdata/userdata.go",
     "internal/varlink/dev.nsbox.varlink",
     "internal/varlinkhost/varlinkhost.go",
