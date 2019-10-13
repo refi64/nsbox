@@ -19,7 +19,7 @@ if (current_os == "") {
 }
 
 declare_args() {
-  # Should this build be marked as stable?
+  # Mark this as a stable build.
   is_stable_build = false
 
   # The path to the Go binary.
@@ -43,7 +43,7 @@ declare_args() {
   # The system's config directory, which should be an absolute path.
   config_dir = "/etc"
 
-  # Enable build the Fedora package.
+  # Build the Fedora package.
   fedora_package = false
 
   # Build the Fedora guest tools.
