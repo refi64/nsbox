@@ -100,14 +100,7 @@ func setUserEnv(hostMachineId string, ct *container.Container, usrdata *userdata
 		usrdata.Environ["NSBOX_USER_CAN_SUDO"] = "1"
 	}
 
-	fullShellPath := ct.StorageChild(stripLeadingSlash(usrdata.Shell))
-
-	if _, err := os.Stat(fullShellPath); err != nil {
-		log.Debugf("Failed to stat shell %s: %v", fullShellPath, err)
-		usrdata.Environ["NSBOX_SHELL"] = "/bin/bash"
-	} else {
-		usrdata.Environ["NSBOX_SHELL"] = usrdata.Shell
-	}
+	usrdata.Environ["NSBOX_SHELL"] = ct.Shell(usrdata)
 
 	usrdata.Environ["NSBOX_CONTAINER"] = ct.Name
 	usrdata.Environ["NSBOX_HOST_MACHINE"] = hostMachineId
@@ -128,6 +121,21 @@ func writeContainerFiles(ct *container.Container, hostPrivPath string, usrdata *
 	for name, value := range usrdata.Environ {
 		fmt.Fprintf(sharedEnv, "%s=%s\n", name, value)
 	}
+
+	shadowLine, err := usrdata.ShadowLine()
+	if err != nil {
+		return errors.Wrap(err, "failed to get shadow line")
+	}
+
+	shadowEntry, err := os.Create(filepath.Join(hostPrivPath, "shadow-entry"))
+	if err != nil {
+		return err
+	}
+
+	defer shadowEntry.Close()
+
+	shadowEntry.Chmod(0)
+	fmt.Fprintln(shadowEntry, shadowLine)
 
 	return nil
 }

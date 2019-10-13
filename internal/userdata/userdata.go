@@ -45,15 +45,23 @@ type Userdata struct {
 	Environ  map[string]string
 }
 
-func getUserShell(usr *user.User) (string, error) {
-	// XXX: This sucks.
-	cmd := exec.Command("getent", "passwd", usr.Uid)
+// XXX: This sucks.
+func getent(db string, usr *user.User) (string, error) {
+	cmd := exec.Command("getent", db, usr.Username)
 	outBytes, err := cmd.Output()
+	if err != nil {
+		return "", errors.Wrap(err, "failed to call getent")
+	}
+
+	return string(outBytes), nil
+}
+
+func getUserShell(usr *user.User) (string, error) {
+	out, err := getent("passwd", usr)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to ask getent for shell")
 	}
 
-	out := string(outBytes)
 	idx := strings.LastIndex(out, ":")
 	if idx == -1 || idx == len(out)-1 {
 		return "", errors.New("failed to split getent output")
@@ -171,4 +179,18 @@ func BeneathSudo() (*Userdata, error) {
 	}
 
 	return userdataForUser(usr)
+}
+
+func (usrdata *Userdata) ShadowLine() (string, error) {
+	out, err := getent("shadow", usrdata.User)
+	if err != nil {
+		return "", errors.Wrap(err, "getent")
+	}
+
+	out = strings.TrimSpace(out)
+	if len(out) == 0 {
+		return "", errors.New("shadow entry missing")
+	}
+
+	return out, nil
 }

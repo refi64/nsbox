@@ -13,7 +13,6 @@ user="$NSBOX_USER"
 uid="$NSBOX_UID"
 shell="$NSBOX_SHELL"
 
-grep -q "^$user:" /etc/passwd && userdel "$user"
 rm -f /var/mail/"$user"
 
 groups=""
@@ -21,8 +20,11 @@ if [[ -n "$NSBOX_USER_CAN_SUDO" ]]; then
   groups="wheel"
 fi
 
-useradd -MU -G "$groups" -u "$uid" -s "$shell" "$user"
-ln -sf "$shell" /run/host/login-shell
+if grep -q "^$user:" /etc/passwd; then
+  usermod -G "$groups" -u "$uid" -s "$shell" "$user"
+else
+  useradd -MU -G "$groups" -u "$uid" -s "$shell" "$user"
+fi
 
 if [[ -d /run/host/nsbox/mail ]]; then
   rm -f /var/mail/"$user"
@@ -35,7 +37,8 @@ if grep -q "^$user" /etc/shadow; then
 fi
 
 cp /etc/shadow{,.x}
-grep "^$user" /run/host/etc/shadow >> /etc/shadow.x
+cat /run/host/nsbox/shadow-entry >> /etc/shadow.x
+rm /run/host/nsbox/shadow-entry
 mv /etc/shadow{.x,}
 
 chmod 000 /etc/shadow

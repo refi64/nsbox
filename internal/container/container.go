@@ -147,6 +147,17 @@ func (container Container) UpdateConfig() error {
 	return nil
 }
 
+func (container Container) Shell(usrdata *userdata.Userdata) string {
+	fullShellPath := container.StorageChild(usrdata.Shell)
+
+	if _, err := os.Stat(fullShellPath); err != nil {
+		log.Debugf("Failed to stat shell %s: %v", fullShellPath, err)
+		return "/bin/bash"
+	} else {
+		return usrdata.Shell
+	}
+}
+
 type LockWaitRequest int
 
 const (

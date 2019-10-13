@@ -89,7 +89,7 @@ func convertStateToExitCode(state *os.ProcessState) int {
 
 func EnterContainer(ct *container.Container, command []string, usrdata *userdata.Userdata, workdir string) (int, error) {
 	if len(command) == 0 {
-		command = []string{"/run/host/login-shell", "-l"}
+		command = []string{ct.Shell(usrdata), "-l"}
 	}
 
 	leader, err := getLeader(ct.Name)
