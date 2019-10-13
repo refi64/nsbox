@@ -50,7 +50,7 @@ func getent(db string, usr *user.User) (string, error) {
 	cmd := exec.Command("getent", db, usr.Username)
 	outBytes, err := cmd.Output()
 	if err != nil {
-		return "", errors.Wrap(err, "failed to call getent")
+		return "", errors.Wrapf(err, "failed to call getent for %s database", db)
 	}
 
 	return string(outBytes), nil

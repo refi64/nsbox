@@ -140,15 +140,15 @@ list, or set the entire contents of the list:
 
 ```bash
 # Set the xdg-desktop-exports list to four items: a, b, c, and d:
-$ nsbox-edge config -xdg-desktop-exports=:a,b,c
+$ nsbox-edge config -xdg-desktop-exports=:a,b,c my-container
 # Remove b and d from the xdg-desktop-exports list:
-$ nsbox-edge config -xdg-desktop-exports=-b,d
+$ nsbox-edge config -xdg-desktop-exports=-b,d my-container
 # Append e to the exports list:
-$ nsbox-edge config -xdg-desktop-exports=+e
+$ nsbox-edge config -xdg-desktop-exports=+e my-container
 # Set the entire exports list to three items: x, y, and z:
-$ nsbox-edge config -xdg-desktop-exports=:x,y,z
+$ nsbox-edge config -xdg-desktop-exports=:x,y,z my-container
 # Set the list to be empty.
-$ nsbox-edge config -xdg-desktop-exports=:
+$ nsbox-edge config -xdg-desktop-exports=: my-container
 ```
 
 - There are three control characters: `+`, `-`, and `:`.
@@ -165,11 +165,11 @@ exported (without the `.desktop` extension):
 
 ```bash
 # Export virt-manager.desktop.
-$ nsbox-edge config -xdg-desktop-exports='+virt-manager'
+$ nsbox-edge config -xdg-desktop-exports='+virt-manager' my-container
 # Export any desktop file starting with "gnome-".
-$ nsbox-edge config -xdg-desktop-exports='+gnome-*'
+$ nsbox-edge config -xdg-desktop-exports='+gnome-*' my-container
 # Export all desktop files (because * matches any file name).
-$ nsbox-edge config -xdg-desktop-exports=':*'
+$ nsbox-edge config -xdg-desktop-exports=':*' my-container
 ```
 
 ### -xdg-desktop-extra
@@ -179,8 +179,27 @@ By default, `/usr/share/applications` and `/usr/local/share/applications` will b
 
 ```bash
 # Export any desktop files directly under /opt/MyPoorlyPackagedProprietaryApp.
-$ nsbox-edge config -xdg-desktop-extra='+/opt/MyPoorlyPackagedProprietaryApp'
+$ nsbox-edge config -xdg-desktop-extra='+/opt/MyPoorlyPackagedProprietaryApp' my-container
 ```
+
+## Custom authentication
+
+nsbox sets up the user account inside the container to mimic your host account, including
+using the same password. This is necessary for sudo inside the container to work. However,
+there are two scenarios where this isn't viable:
+
+- You may be on a system that uses a remote authentication service, e.g. SSSD, in which
+  case nsbox can't read the shadow database entry for your user.
+- You may want to use a different password for the container account.
+
+In order to use a custom password for the container, run:
+
+```bash
+$ nsbox-edge config -auth=manual my-container
+```
+
+nsbox will ask you to enter the custom password. This will be applied to the container the
+next time you run it. (If it's already running, you will have to kill it first.)
 
 ## Got issues?
 

@@ -31,16 +31,20 @@ if [[ -d /run/host/nsbox/mail ]]; then
   ln -s /run/host/nsbox/mail /var/mail/"$user"
 fi
 
-if grep -q "^$user" /etc/shadow; then
+# XXX: shadow file hacks suck, but the only real workarond is to define a custom
+# NSS module that asks the host, which...is not very fun.
+if [[ -f /run/host/nsbox/shadow-custom-pass ]]; then
+  # https://stackoverflow.com/questions/407523/escape-a-string-for-a-sed-replace-pattern
+  pass=$(sed -e 's/[\/&]/\\&/g' /run/host/nsbox/shadow-custom-pass)
+  sed "s/^\($user\):[^:]*/\1:$pass/" /etc/shadow > /etc/shadow.x
+  unset pass
+elif [[ -f /run/host/nsbox/shadow-entry ]]; then
   grep -v "^$user" /etc/shadow > /etc/shadow.x
-  mv /etc/shadow{.x,}
+  cat /run/host/nsbox/shadow-entry >> /etc/shadow.x
 fi
 
-cp /etc/shadow{,.x}
-cat /run/host/nsbox/shadow-entry >> /etc/shadow.x
-rm /run/host/nsbox/shadow-entry
+rm -f /run/host/nsbox/shadow-{custom-pass,entry}
 mv /etc/shadow{.x,}
-
 chmod 000 /etc/shadow
 
 if [[ -n "$NSBOX_HOME_LINK_NAME" ]]; then

@@ -122,20 +122,22 @@ func writeContainerFiles(ct *container.Container, hostPrivPath string, usrdata *
 		fmt.Fprintf(sharedEnv, "%s=%s\n", name, value)
 	}
 
-	shadowLine, err := usrdata.ShadowLine()
-	if err != nil {
-		return errors.Wrap(err, "failed to get shadow line")
+	if ct.Config.Auth == container.AuthAuto {
+		shadowLine, err := usrdata.ShadowLine()
+		if err != nil {
+			return errors.Wrap(err, "failed to get shadow line")
+		}
+
+		shadowEntry, err := os.Create(filepath.Join(hostPrivPath, "shadow-entry"))
+		if err != nil {
+			return err
+		}
+
+		defer shadowEntry.Close()
+
+		shadowEntry.Chmod(0)
+		fmt.Fprintln(shadowEntry, shadowLine)
 	}
-
-	shadowEntry, err := os.Create(filepath.Join(hostPrivPath, "shadow-entry"))
-	if err != nil {
-		return err
-	}
-
-	defer shadowEntry.Close()
-
-	shadowEntry.Chmod(0)
-	fmt.Fprintln(shadowEntry, shadowLine)
 
 	return nil
 }

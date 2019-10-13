@@ -27,6 +27,7 @@ FEDORA_REPO_AVAILABLE_DEPS = {
 
 
 MANUALLY_DOWNLOADED_DEPS = {
+    'github.com/GehirnInc/crypt',
     'github.com/google/go-containerregistry',
     'github.com/google/subcommands',
     'github.com/refi64/go-lxtempdir',

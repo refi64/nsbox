@@ -152,6 +152,13 @@ func CreateContainer(usrdata *userdata.Userdata, name, tar string, config contai
 		}
 	}
 
+	if _, err := usrdata.ShadowLine(); err != nil {
+		log.Debug("ShadowLine error:", err)
+		log.Alert("WARNING: nsbox could not retrieve your user account information from the")
+		log.Alert("					shadow database. If you are using SSSD or another remote auth system")
+		log.Alert("					then please see: https://nsbox.dev/guide.html#custom-authentication")
+	}
+
 	log.Info("Done!")
 	return nil
 }

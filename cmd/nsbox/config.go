@@ -6,10 +6,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/google/subcommands"
 	"github.com/refi64/nsbox/internal/args"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/integration"
+	"golang.org/x/crypto/ssh/terminal"
+	"os"
 )
 
 type configCommand struct {
@@ -17,6 +20,7 @@ type configCommand struct {
 
 	xdgDesktopExtra   args.ArrayTransformValue
 	xdgDesktopExports args.ArrayTransformValue
+	auth							container.Auth
 }
 
 func newConfigCommand(app args.App) subcommands.Command {
@@ -39,6 +43,7 @@ func (*configCommand) Usage() string {
 }
 
 func (cmd *configCommand) SetFlags(fs *flag.FlagSet) {
+	fs.Var(&cmd.auth, "auth", "password authentication method")
 	fs.Var(&cmd.xdgDesktopExtra, "xdg-desktop-extra", "extra desktop file directories")
 	fs.Var(&cmd.xdgDesktopExports, "xdg-desktop-exports", "exported desktop files patterns")
 }
@@ -54,6 +59,34 @@ func (cmd *configCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.Ex
 	}
 
 	if err := ct.LockUntilProcessDeath(container.NoWaitForLock); err != nil {
+		return args.HandleError(err)
+	}
+
+	fs.Visit(func (f *flag.Flag) {
+		// XXX: This is ridiculous, all I want to know is if -auth was actually given...
+		if f.Name == "auth" {
+			ct.Config.Auth = cmd.auth
+
+			if cmd.auth == container.AuthManual {
+				fmt.Print("Enter a password for the container user: ")
+
+				pass, err2 := terminal.ReadPassword(int(os.Stdin.Fd()))
+				if err2 != nil {
+					err = err2
+					return
+				}
+
+				fmt.Println()
+
+				if err := ct.UpdateManualPassword(pass); err != nil {
+					err = err2
+					return
+				}
+			}
+		}
+	})
+
+	if err != nil {
 		return args.HandleError(err)
 	}
 

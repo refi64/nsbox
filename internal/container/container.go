@@ -7,6 +7,7 @@ package container
 import (
 	"encoding/json"
 	"fmt"
+	crypt "github.com/GehirnInc/crypt/sha512_crypt"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
@@ -18,9 +19,57 @@ import (
 	"strings"
 )
 
+type Auth int
+
+const (
+	AuthAuto 	 Auth = iota
+	AuthManual
+)
+
+var (
+	authToString = map[Auth]string{
+		AuthAuto:   "auto",
+		AuthManual: "manual",
+	}
+
+	stringToAuth = map[string]Auth{
+		"auto":	  AuthAuto,
+		"manual": AuthManual,
+	}
+)
+
+func (auth Auth) String() string {
+	return authToString[auth]
+}
+
+func (auth *Auth) Set(value string) error {
+	newAuth, ok := stringToAuth[strings.ToLower(value)]
+	if !ok {
+		return errors.New("invalid auth value")
+	}
+
+	*auth = newAuth
+	return nil
+}
+
+
+func (auth Auth) MarshalJSON() ([]byte, error) {
+	return []byte(`"` + auth.String() + `"`), nil
+}
+
+func (auth *Auth) UnmarshalJSON(data []byte) error {
+	var value string
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+
+	return auth.Set(value)
+}
+
 type Config struct {
 	Image             string
 	Boot              bool
+	Auth              Auth
 	XdgDesktopExports []string
 	XdgDesktopExtra   []string
 }
@@ -241,4 +290,28 @@ func (container Container) ExportsLink(temp bool) string {
 
 func (container Container) ExportsInstance(n int) string {
 	return filepath.Join(container.Path, fmt.Sprintf("exports.%d", n))
+}
+
+func (container Container) UpdateManualPassword(pass []byte) error {
+	if container.Config.Auth != AuthManual {
+		panic("container auth must be AuthManual to set a password")
+	}
+
+	cr := crypt.New()
+	hashed, err := cr.Generate(pass, []byte{})
+	if err != nil {
+		panic(errors.Wrap(err, "crypt"))
+	}
+
+	passPath := container.StorageChild(paths.InContainerPrivPath, "shadow-custom-pass")
+	passFile, err := os.Create(passPath)
+	if err != nil {
+		return errors.Wrap(err, "failed to create shadow password file")
+	}
+
+	defer passFile.Close()
+
+	passFile.Chmod(0)
+	fmt.Fprint(passFile, hashed)
+	return nil
 }
