@@ -8,6 +8,7 @@ module.exports = {
       { text: 'Source', link: 'https://github.com/refi64/nsbox' },
     ],
     sidebar: 'auto',
+    smoothScroll: true,
   },
   title: 'nsbox',
 }
