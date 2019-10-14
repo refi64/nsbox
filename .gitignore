@@ -1,3 +1,5 @@
 .firebase/
 out/
 vendor/
+web/node_modules/
+web/.vuepress/dist/
