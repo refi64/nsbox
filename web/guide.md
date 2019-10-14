@@ -34,8 +34,13 @@ Currently you must [build from source](https://github.com/refi64/nsbox).
 
 ## Creating and deleting containers
 
-For now, nsbox only ships with support for a Fedora image, either version 30 or 31. (An Arch
-image is in the works; you can build it from scratch.)
+For now, nsbox only ships with support for a Fedora image, either version 30 or 31.
+
+::: tip
+An Arch image is available in an experimental stage; you can use it by just using "arch" as your
+image name, but note that there is neither guest tools integration nor working booted container
+support.
+:::
 
 Creating a new container is easy:
 
