@@ -31,6 +31,8 @@ if [[ -d /run/host/nsbox/mail ]]; then
   ln -s /run/host/nsbox/mail /var/mail/"$user"
 fi
 
+update=1
+
 # XXX: shadow file hacks suck, but the only real workarond is to define a custom
 # NSS module that asks the host, which...is not very fun.
 if [[ -f /run/host/nsbox/shadow-custom-pass ]]; then
@@ -41,11 +43,15 @@ if [[ -f /run/host/nsbox/shadow-custom-pass ]]; then
 elif [[ -f /run/host/nsbox/shadow-entry ]]; then
   grep -v "^$user" /etc/shadow > /etc/shadow.x
   cat /run/host/nsbox/shadow-entry >> /etc/shadow.x
+else
+  update=
 fi
 
-rm -f /run/host/nsbox/shadow-{custom-pass,entry}
-mv /etc/shadow{.x,}
-chmod 000 /etc/shadow
+if [[ -n "$update" ]]; then
+  rm -f /run/host/nsbox/shadow-{custom-pass,entry}
+  mv /etc/shadow{.x,}
+  chmod 000 /etc/shadow
+fi
 
 if [[ -n "$NSBOX_HOME_LINK_NAME" ]]; then
   [[ -e "$NSBOX_HOME_LINK_NAME" ]] && rm -d "$NSBOX_HOME_LINK_NAME" ||:
