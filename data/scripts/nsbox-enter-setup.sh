@@ -58,4 +58,4 @@ if [[ -n "$to_update" ]]; then
   done
 fi
 
-exec sudo --user="$NSBOX_USER" /run/host/nsbox/scripts/nsbox-enter-run.sh "$@"
+exec su - "$NSBOX_USER" /run/host/nsbox/scripts/nsbox-enter-run.sh "$@"
