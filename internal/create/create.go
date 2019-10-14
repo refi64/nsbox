@@ -5,11 +5,14 @@
 package create
 
 import (
+	"github.com/artyom/untar"
+	"github.com/briandowns/spinner"
+	"github.com/dustin/go-humanize"
 	crename "github.com/google/go-containerregistry/pkg/name"
 	crev1 "github.com/google/go-containerregistry/pkg/v1"
+	cremutate "github.com/google/go-containerregistry/pkg/v1/mutate"
 	creremote "github.com/google/go-containerregistry/pkg/v1/remote"
 	cretarball "github.com/google/go-containerregistry/pkg/v1/tarball"
-	cretypes "github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/pkg/errors"
 	"github.com/refi64/go-lxtempdir"
 	"github.com/refi64/nsbox/internal/container"
@@ -17,34 +20,21 @@ import (
 	"github.com/refi64/nsbox/internal/inventory"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/userdata"
-	"github.com/refi64/nsbox/internal/webutil"
+	"io"
 	"os"
-	"path/filepath"
+	"time"
 )
 
-func fetchLayer(layer crev1.Layer, dest string) error {
-	mediaType, err := layer.MediaType()
-	if err != nil {
-		return errors.Wrap(err, "failed to retrieve layer media type")
-	}
+type spinnerProgress struct {
+	spinner *spinner.Spinner
+	total   uint64
+}
 
-	if mediaType != cretypes.OCILayer && mediaType != cretypes.DockerLayer && mediaType != cretypes.OCIUncompressedLayer && mediaType != cretypes.DockerUncompressedLayer {
-		return errors.Errorf("unexpected layer type %s", mediaType)
-	}
-
-	size, err := layer.Size()
-	if err != nil {
-		return errors.Wrap(err, "failed to retrieve layer size")
-	}
-
-	reader, err := layer.Compressed()
-	if err != nil {
-		return errors.Wrap(err, "failed to retrieve compressed layer")
-	}
-
-	defer reader.Close()
-
-	return webutil.SaveReaderWithProgress(size, reader, dest)
+func (p *spinnerProgress) Write(data []byte) (int, error) {
+	bytes := len(data)
+	p.total += uint64(bytes)
+	p.spinner.Suffix = " " + humanize.Bytes(p.total)
+	return bytes, nil
 }
 
 func saveImageToContainer(img *image.Image, ct *container.Container, tarOverride string) error {
@@ -89,38 +79,17 @@ func saveImageToContainer(img *image.Image, ct *container.Container, tarOverride
 		}
 	}
 
-	manifest, err := dockerImage.Manifest()
-	if err != nil {
-		return errors.Wrap(err, "failed to fetch image manifest")
-	}
+	rd := cremutate.Extract(dockerImage)
+	defer rd.Close()
 
-	log.Infof("Fetching %d layer(s)...", len(manifest.Layers))
+	spinner := spinner.New(spinner.CharSets[43], 200 * time.Millisecond)
+	spinner.Prefix = "Fetching image: "
+	spinner.Start()
+	defer spinner.Stop()
 
-	layerFiles := []string{}
-
-	for _, descr := range manifest.Layers {
-		layer, err := dockerImage.LayerByDigest(descr.Digest)
-		if err != nil {
-			return errors.Wrapf(err, "failed to fetch image layer %s", descr.Digest.String())
-		}
-
-		layerDest := filepath.Join(tmp.Path, descr.Digest.String()+".tar.gz")
-		log.Debug("Fetch layer", layerDest)
-
-		if err := fetchLayer(layer, layerDest); err != nil {
-			return err
-		}
-
-		layerFiles = append(layerFiles, layerDest)
-	}
-
-	log.Info("Extracting layer(s)...")
-
-	for _, file := range layerFiles {
-		log.Debug("Extract", file)
-		if err := webutil.ExtractFullTarArchive(file, ct.Storage()); err != nil {
-			return errors.Wrapf(err, "failed to extract %s", file)
-		}
+	tee := io.TeeReader(rd, &spinnerProgress{spinner: spinner})
+	if err := untar.Untar(tee, ct.Storage()); err != nil {
+		return errors.Wrap(err, "failed to untar image")
 	}
 
 	return nil

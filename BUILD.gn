@@ -100,8 +100,6 @@ copy("gofiles") {
     "internal/userdata/userdata.go",
     "internal/varlink/dev.nsbox.varlink",
     "internal/varlinkhost/varlinkhost.go",
-    "internal/webutil/download.go",
-    "internal/webutil/extract.go",
   ]
 
   outputs = ["$go_target_dir/{{source}}"]

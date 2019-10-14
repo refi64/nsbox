@@ -14,6 +14,7 @@ import os.path
 
 
 FEDORA_REPO_AVAILABLE_DEPS = {
+    'github.com/briandowns/spinner',
     'github.com/coreos/go-systemd',
     'github.com/dustin/go-humanize',
     'github.com/godbus/dbus',
@@ -22,33 +23,16 @@ FEDORA_REPO_AVAILABLE_DEPS = {
     'golang.org/x/crypto',
     'golang.org/x/sync',
     'golang.org/x/sys',
-    'gopkg.in/cheggaaa/pb.v1',
 }
 
 
 MANUALLY_DOWNLOADED_DEPS = {
+    'github.com/artyom/untar',
     'github.com/GehirnInc/crypt',
     'github.com/google/go-containerregistry',
     'github.com/google/subcommands',
     'github.com/refi64/go-lxtempdir',
     'github.com/varlink/go',
-
-    # Technically in the F31 repos, but trying to balance their go.mod with F31's deps is a
-    # total mess, so I just cop out.
-    'github.com/mholt/archiver',
-
-    # archiver deps.
-    'github.com/andybalholm/brotli',
-    'github.com/golang/gddo',
-    'github.com/golang/snappy',
-    'github.com/dsnet/compress',
-    'github.com/klauspost/compress',
-    'github.com/klauspost/cpuid',
-    'github.com/klauspost/pgzip',
-    'github.com/nwaples/rardecode',
-    'github.com/pierrec/lz4',
-    'github.com/xi2/xz',
-    'github.com/ulikunitz/xz',
 }
 
 F31_ONLY_REPO_DEPS = {
