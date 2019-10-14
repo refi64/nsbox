@@ -21,7 +21,11 @@ def main():
     files_process = subprocess.run(['git', 'ls-files', '-oc', '-X', '.gitignore',
                                     args.source_root],
                                    check=True, stdout=subprocess.PIPE, universal_newlines=True)
-    files = files_process.stdout.splitlines()
+    files = set(files_process.stdout.splitlines())
+
+    removed_process = subprocess.run(['git', 'ls-files', '-d', args.source_root],
+                                     check=True, stdout=subprocess.PIPE, universal_newlines=True)
+    files -= set(removed_process.stdout.splitlines())
 
     # XXX: Avoid a weird issue where the out dependency file's parent dirs don't exist yet.
     os.makedirs(os.path.dirname(args.out_dep), exist_ok=True)
