@@ -41,6 +41,18 @@
     <annotate key="org.freedesktop.policykit.exec.argv1">kill</annotate>
   </action>
 
+  <action id="dev.nsbox.images">
+    <description>List the available images</description>
+    <message>Authentication is required to list the available images</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">@NSBOX_INVOKER</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">images</annotate>
+  </action>
+
   <action id="dev.nsbox.info">
     <description>Get container information</description>
     <message>Authentication is required to find information on a container</message>

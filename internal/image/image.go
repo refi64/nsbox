@@ -57,12 +57,7 @@ func readReleaseInfo() (string, string, error) {
 	return branch, version, nil
 }
 
-func openImageAtPath(path, tag string) (*Image, error) {
-	nsboxBranch, nsboxVersion, err := readReleaseInfo()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to read release info")
-	}
-
+func openImageAtPath(path string) (*Image, error) {
 	metadataPath := filepath.Join(path, "metadata.json")
 	playbookPath := filepath.Join(path, "playbook.yaml")
 
@@ -86,6 +81,20 @@ func openImageAtPath(path, tag string) (*Image, error) {
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&image); err != nil {
 		return nil, errors.Wrap(err, "failed to read metadata")
+	}
+
+	return &image, nil
+}
+
+func openTaggedImageAtPath(path, tag string) (*Image, error) {
+	nsboxBranch, nsboxVersion, err := readReleaseInfo()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read release info")
+	}
+
+	image, err := openImageAtPath(path)
+	if err != nil {
+		return nil, err
 	}
 
 	// XXX: Similar code to nsbox-bender.py.
@@ -123,7 +132,7 @@ func openImageAtPath(path, tag string) (*Image, error) {
 	image.Target = replacer.Replace(image.Target)
 	image.Parent = replacer.Replace(image.Parent)
 
-	return &image, nil
+	return image, nil
 }
 
 func Open(name string) (*Image, error) {
@@ -135,14 +144,14 @@ func Open(name string) (*Image, error) {
 
 	customImagePath := filepath.Join(paths.Config, "nsbox", "images", name)
 	if _, err := os.Stat(customImagePath); err == nil {
-		return openImageAtPath(customImagePath, tag)
+		return openTaggedImageAtPath(customImagePath, tag)
 	} else {
 		log.Debug("failed to stat user image path:", err)
 	}
 
 	if globalImagePath, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "images", name); err == nil {
 		if _, err := os.Stat(globalImagePath); err == nil {
-			return openImageAtPath(globalImagePath, tag)
+			return openTaggedImageAtPath(globalImagePath, tag)
 		} else {
 			log.Debug("failed to stat global image path:", err)
 		}
@@ -174,4 +183,51 @@ func (img *Image) ResolveChain() ([]*Image, error) {
 	}
 
 	return append(chain, img), nil
+}
+
+func List() ([]*Image, error) {
+	images := []*Image{}
+	foundImages := map[string]interface{}{}
+
+	systemImages, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "images")
+	if err != nil {
+		return nil, err
+	}
+
+	paths := []string{
+		filepath.Join(paths.Config, "nsbox", "images"),
+		systemImages,
+	}
+
+	for _, path := range paths {
+		items, err := ioutil.ReadDir(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				log.Debug(path, "does not exist")
+				continue
+			} else {
+				return nil, errors.Wrapf(err, "failed to read %s", path)
+			}
+		}
+
+		for _, item := range items {
+			name := item.Name()
+
+			if _, ok := foundImages[name]; ok {
+				log.Debug("skipping already-found image", item)
+				continue
+			}
+
+			image, err := openImageAtPath(filepath.Join(path, name))
+			if err != nil {
+				log.Alert("warning: failed to open %s: %v", item, err)
+				continue
+			}
+
+			foundImages[name] = nil
+			images = append(images, image)
+		}
+	}
+
+	return images, nil
 }

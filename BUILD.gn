@@ -63,6 +63,7 @@ copy("gofiles") {
     "cmd/nsbox/create.go",
     "cmd/nsbox/delete.go",
     "cmd/nsbox/info.go",
+    "cmd/nsbox/images.go",
     "cmd/nsbox/kill.go",
     "cmd/nsbox/list.go",
     "cmd/nsbox/main.go",
