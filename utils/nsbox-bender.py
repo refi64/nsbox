@@ -36,8 +36,11 @@ def read_metadata(image, extra_vars):
     with (image / 'metadata.json').open() as fp:
         metadata = json.load(fp)
 
-    if 'base' not in metadata or 'remote' not in metadata or 'valid_tags' not in metadata:
-        sys.exit('Metadata must specify base, remote, and valid_tags.')
+    if 'base' not in metadata or 'valid_tags' not in metadata:
+        sys.exit('Metadata must specify base and valid_tags.')
+
+    if 'remote' not in metadata and 'target' not in metadata:
+        sys.exit('Metadata must specify at least one of remote and target.')
 
     string_keys = {'base', 'remote', 'target', 'parent'}
     if not all(isinstance(metadata.get(key, ''), str) for key in string_keys):

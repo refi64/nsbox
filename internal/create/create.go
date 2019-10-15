@@ -58,6 +58,10 @@ func saveImageToContainer(img *image.Image, ct *container.Container, tarOverride
 	var dockerImage crev1.Image
 
 	if tarOverride == "" {
+		if img.Remote == "" {
+			return errors.New("image has no remote reference (use -tar to use a local image)")
+		}
+
 		ref, err := crename.ParseReference(img.Remote)
 		if err != nil {
 			return errors.Wrap(err, "failed to parse Remote reference")
