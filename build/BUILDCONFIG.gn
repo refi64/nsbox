@@ -74,19 +74,19 @@ substitute_config_vars = [
   ["STATE_DIR", state_dir],
 ]
 
-if (override_release_version != "") {
-  release_version = override_release_version
-} else {
-  release_version = exec_script("//build/parse_release.py",
-                                ["--head-file", rebase_path("//.git/logs/HEAD")],
-                                "string",
-                                ["//.git/logs/HEAD"])
-}
-
 if (is_stable_build) {
   release_branch = "stable"
   product_name = "nsbox"
 } else {
   release_branch = "edge"
   product_name = "nsbox-edge"
+}
+
+if (override_release_version != "") {
+  release_version = override_release_version
+} else {
+  release_version = exec_script("//build/parse_release.py",
+                                ["--root", rebase_path("//"),  "--branch", release_branch],
+                                "string",
+                                ["//.git/logs/HEAD"])
 }

@@ -6,25 +6,29 @@
 
 import argparse
 import json
+import subprocess
 import time
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--head-file')
+    parser.add_argument('--root')
+    parser.add_argument('--branch', choices=['stable', 'edge'])
 
     args = parser.parse_args()
 
-    with open(args.head_file) as fp:
-        for line in map(str.strip, fp):
-            continue
+    fmt = '%ct'
+    if args.branch == 'edge':
+        fmt += '.%h'
 
-    heading, _ = line.split('\t')
-    _, unix_time, _ = heading.rsplit(' ', 2)
+    version_proc = subprocess.run(['git', '-C', args.root, 'log', '-1', f'--format={fmt}'],
+                                  stdout=subprocess.PIPE, check=True, universal_newlines=True)
+    version_proc_parts = version_proc.stdout.strip().split('.')
+    assert len(version_proc_parts) in (1, 2), version_proc_parts
 
-    version = time.strftime('%y.%m.%d', time.gmtime(int(unix_time)))
-    print(version, end='')
+    version_proc_parts[0] = time.strftime('%y.%m.%d', time.gmtime(int(version_proc_parts[0])))
 
+    print('.'.join(version_proc_parts), end='')
 
 if __name__ == '__main__':
     main()
