@@ -28,7 +28,6 @@
       - hostname
       - man-pages
       - nsbox-guest-tools
-      - sudo
       - vte-profile
 
 - name: Clear the dnf cache

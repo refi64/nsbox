@@ -9,7 +9,6 @@
       - ansible
       - grep
       - inetutils
-      - sudo
       - vte-common
 
 - name: Fix the setuid bit on sudo
