@@ -80,12 +80,9 @@ This will start the container if it's not already running and then open a login 
 
 ::: tip
 If your current login shell is not found in the container, nsbox will default to using bash.
-When you install the same shell, you have to [kill the container](#killing-containers) before
-running so that the newly installed shell will be used.
-
 For example, if I'm a zsh user, any new containers will use bash because zsh isn't installed.
-Once I install zsh inside the container, I have to kill the container and run it again so
-zsh will be found.
+Once I install zsh inside the container, then entering the container will result in zsh being
+used.
 :::
 
 ## Managing your containers
