@@ -1,0 +1,7 @@
+{
+  "base": "@local",
+  "remote": "registry.nsbox.dev/debian:{nsbox_branch}-{image_tag}",
+  "target": "gcr.io/nsbox-data/debian:{nsbox_branch}-{image_tag}",
+  "sudo_group": "sudo",
+  "valid_tags": ["buster"]
+}

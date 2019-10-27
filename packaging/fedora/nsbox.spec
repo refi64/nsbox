@@ -145,6 +145,10 @@ chmod -R g-w %{buildroot}
 %{_datadir}/%{name}/images/arch/metadata.json
 %{_datadir}/%{name}/images/arch/playbook.yaml
 %{_datadir}/%{name}/images/arch/roles/main/tasks/main.yaml
+%{_datadir}/%{name}/images/debian/Dockerfile
+%{_datadir}/%{name}/images/debian/metadata.json
+%{_datadir}/%{name}/images/debian/playbook.yaml
+%{_datadir}/%{name}/images/debian/roles/main/tasks/main.yaml
 %{_datadir}/%{name}/images/fedora/metadata.json
 %{_datadir}/%{name}/images/fedora/playbook.yaml
 %{_datadir}/%{name}/images/fedora/roles/main/tasks/main.yaml

@@ -1,0 +1,25 @@
+- name: Delete the apt upgrade timers
+  file:
+    path: '/etc/systemd/system/timers.target.wants/'
+    state: absent
+
+- name: Update the package cache
+  apt:
+    force_apt_get: yes
+    update_cache: yes
+  tags: bend
+
+- name: Install required packages (this may take a while)
+  apt:
+    force_apt_get: yes
+    name:
+      - ansible
+      - hostname
+      - man
+      - sudo
+
+- name: Clear the apt cache
+  shell: 'apt clean all && rm -rf /var/lib/apt/lists/*'
+  args:
+    warn: false
+  tags: bend

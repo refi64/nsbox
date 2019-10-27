@@ -42,16 +42,33 @@ template("nsbox_image") {
   }
 }
 
-fedora_versions = ["30", "31"]
-
-foreach(version, fedora_versions) {
-  nsbox_image("fedora-$version-image") {
-    image = "fedora"
-    tag = version
-    role_files = [
-      "main/tasks/main.yaml",
+images_with_tags = [
+  {
+    name = "fedora"
+    versions = ["30", "31"]
+    extra_role_files = [
       "main/templates/nsbox.repo",
     ]
+  },
+  {
+    name = "debian"
+    versions = ["buster"]
+  },
+]
+
+foreach(spec, images_with_tags) {
+  foreach(version, spec.versions) {
+    nsbox_image("${spec.name}-$version-image") {
+      image = spec.name
+      tag = version
+      role_files = [
+        "main/tasks/main.yaml",
+      ]
+
+      if (defined(spec.extra_role_files)) {
+        role_files += spec.extra_role_files
+      }
+    }
   }
 }
 
@@ -65,7 +82,9 @@ nsbox_image("arch-image") {
 
 group("images") {
   deps = [":arch-image"]
-  foreach(version, fedora_versions) {
-    deps += [":fedora-$version-image"]
+  foreach(spec, images_with_tags) {
+    foreach(version, spec.versions) {
+      deps += [":${spec.name}-$version-image"]
+    }
   }
 }
