@@ -42,7 +42,7 @@ def read_metadata(image, extra_vars):
     if 'remote' not in metadata and 'target' not in metadata:
         sys.exit('Metadata must specify at least one of remote and target.')
 
-    string_keys = {'base', 'remote', 'target', 'parent'}
+    string_keys = {'base', 'remote', 'target', 'parent', 'sudo_group'}
     if not all(isinstance(metadata.get(key, ''), str) for key in string_keys):
         sys.exit('Metadata base, remote, and target must be strings.')
 
@@ -150,7 +150,7 @@ def main():
 
         run([args.builder, 'bud' if args.builder == 'buildah' else 'build',
              *(f'--build-arg={k.upper()}={v}' for k, v in extra_vars.items()),
-             f'--tag={base}', str(args.image)])
+             f'--tag={base}', str(image)])
 
     command = ['ansible-bender', 'build', f'--builder={args.builder}']
 

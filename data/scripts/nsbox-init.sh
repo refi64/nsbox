@@ -15,15 +15,10 @@ shell="$NSBOX_SHELL"
 
 rm -f /var/mail/"$user"
 
-groups=""
-if [[ -n "$NSBOX_USER_CAN_SUDO" ]]; then
-  groups="wheel"
-fi
-
 if grep -q "^$user:" /etc/passwd; then
-  usermod -G "$groups" -u "$uid" -s "$shell" "$user"
+  usermod -G "$NSBOX_SUDO_GROUP" -u "$uid" -s "$shell" "$user"
 else
-  useradd -MU -G "$groups" -u "$uid" -s "$shell" "$user"
+  useradd -MU -G "$NSBOX_SUDO_GROUP" -u "$uid" -s "$shell" "$user"
 fi
 
 if [[ -d /run/host/nsbox/mail ]]; then

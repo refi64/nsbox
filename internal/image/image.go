@@ -21,6 +21,7 @@ type Image struct {
 	Remote    string   `json:"remote"`
 	Target    string   `json:"target"`
 	Parent 		string   `json:"parent"`
+	SudoGroup string   `json:"sudo_group"`
 	ValidTags []string `json:"valid_tags"`
 }
 

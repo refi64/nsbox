@@ -92,12 +92,18 @@ func stripLeadingSlash(path string) string {
 	return result
 }
 
-func setUserEnv(hostMachineId string, ct *container.Container, usrdata *userdata.Userdata) {
+func setUserEnv(hostMachineId string, img *image.Image, ct *container.Container, usrdata *userdata.Userdata) {
 	usrdata.Environ["NSBOX_USER"] = usrdata.User.Username
 	usrdata.Environ["NSBOX_UID"] = usrdata.User.Uid
 
 	if usrdata.HasSudoAccess() {
-		usrdata.Environ["NSBOX_USER_CAN_SUDO"] = "1"
+		if img.SudoGroup != "" {
+			usrdata.Environ["NSBOX_SUDO_GROUP"] = img.SudoGroup
+		} else {
+			usrdata.Environ["NSBOX_SUDO_GROUP"] = "wheel"
+		}
+	} else {
+		usrdata.Environ["NSBOX_SUDO_GROUP"] = ""
 	}
 
 	usrdata.Environ["NSBOX_SHELL"] = ct.Shell(usrdata)
@@ -307,7 +313,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		return errors.Wrap(err, "failed to bind home")
 	}
 
-	setUserEnv(machineId, ct, usrdata)
+	setUserEnv(machineId, mainImage, ct, usrdata)
 
 	if err := writeContainerFiles(ct, hostPrivPath, usrdata); err != nil {
 		return errors.Wrap(err, "failed to write private container files")
