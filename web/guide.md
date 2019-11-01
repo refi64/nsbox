@@ -72,8 +72,10 @@ By default, nsbox will run [the "default" container](#the-default-container).
 ```bash
 # Run the default container.
 $ nsbox-edge run
+# Equivalent to the above (- signifies the default).
+$ nsbox-edge run -
 # Run another container.
-$ nsbox-edge run -c my-other-container
+$ nsbox-edge run my-other-container
 ```
 
 This will start the container if it's not already running and then open a login shell inside.
@@ -84,6 +86,15 @@ For example, if I'm a zsh user, any new containers will use bash because zsh isn
 Once I install zsh inside the container, then entering the container will result in zsh being
 used.
 :::
+
+You can also run custom commands:
+
+```bash
+# Run neofetch in the default container.
+$ nsbox-edge run - neofetch
+# Run neofetch in another container.
+$ nsbox-edge run my-other-container neofetch
+```
 
 ## Managing your containers
 

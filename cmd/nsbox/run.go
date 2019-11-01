@@ -34,18 +34,20 @@ func (*runCommand) Synopsis() string {
 }
 
 func (*runCommand) Usage() string {
-	return `run [-c container] <command...>:
+	return `run [<container>] [<command...>]:
 	Run a command within container. If a command is not given, the shell will be run. If a
-	container is not given, the default container set via set-default is run.
+	container is not given or is -, the default container will be run.
 `
 }
 
-func (cmd *runCommand) SetFlags(fs *flag.FlagSet) {
-	fs.StringVar(&cmd.container, "c", "", "The container to run")
-}
+func (cmd *runCommand) SetFlags(fs *flag.FlagSet) {}
 
 func (cmd *runCommand) ParsePositional(fs *flag.FlagSet) error {
-	cmd.command = fs.Args()
+	if len(fs.Args()) >= 1 {
+		cmd.container = fs.Args()[0]
+		cmd.command = fs.Args()[1:]
+	}
+
 	return nil
 }
 
@@ -55,7 +57,7 @@ func (cmd *runCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.ExitS
 
 	usrdata := app.(*nsboxApp).usrdata
 
-	if cmd.container == "" {
+	if cmd.container == "" || cmd.container == "-" {
 		ct, err = inventory.DefaultContainer(usrdata)
 		if ct == nil {
 			err = errors.New("no default container is set")
