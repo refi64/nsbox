@@ -1,6 +1,10 @@
 Name: nsbox-guest-tools
 Version: @VERSION
+%if "@COMMIT" != ""
+Release: 1%{?dist}.@COMMIT
+%else
 Release: 1%{?dist}
+%endif
 Summary: Tools for nsbox host integration
 License: MPL-2.0
 URL: https://nsbox.dev/

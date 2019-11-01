@@ -11,6 +11,7 @@ substitute_file("nsbox-guest-tools.spec") {
   source = "nsbox-guest-tools.spec"
   vars = [
     ["VERSION", release_version],
+    ["COMMIT", release_commit],
   ]
 }
 

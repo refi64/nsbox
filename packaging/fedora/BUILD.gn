@@ -38,6 +38,7 @@ substitute_file("nsbox.spec") {
     ["GN", package_gn],
     ["PRODUCT_NAME", product_name],
     ["VERSION", release_version],
+    ["COMMIT", release_commit],
   ]
 
   file_vars = [

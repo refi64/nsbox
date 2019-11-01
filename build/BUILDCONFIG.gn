@@ -85,8 +85,13 @@ if (is_stable_build) {
 if (override_release_version != "") {
   release_version = override_release_version
 } else {
-  release_version = exec_script("//build/parse_release.py",
-                                ["--root", rebase_path("//"),  "--branch", release_branch],
-                                "string",
-                                ["//.git/logs/HEAD"])
+  version_data = exec_script("//build/parse_release.py",
+                             ["--root", rebase_path("//"),  "--branch", release_branch],
+                             "json", ["//.git/logs/HEAD"])
+  release_version = version_data.version
+  release_commit = version_data.commit
+
+  if (release_branch == "edge") {
+    assert(release_commit != "")
+  }
 }

@@ -16,7 +16,11 @@
 
 Name: @PRODUCT_NAME
 Version: @VERSION
+%if "%{name}" == "nsbox-edge"
+Release: 1%{?dist}.@COMMIT
+%else
 Release: 1%{?dist}
+%endif
 Summary: A multi-purpose, nspawn-powered container manager
 License: MPL-2.0
 URL: https://nsbox.dev/

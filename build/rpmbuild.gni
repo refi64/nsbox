@@ -21,6 +21,11 @@ template("rpmbuild") {
 
     forward_variables_from(invoker, ["version", "release"])
 
+    release += ".fc$fedora_rpm_target_release"
+    if (release_branch == "edge") {
+      release += ".$release_commit"
+    }
+
     deps = []
     if (defined(invoker.sources)) {
       deps += [":${target_name}_sources"]
@@ -47,7 +52,6 @@ template("rpmbuild") {
       }
     }
 
-    fc = "fc$fedora_rpm_target_release"
     topdir = "$target_gen_dir/rpmbuild"
 
     absolute_topdir = rebase_path(topdir)
@@ -66,9 +70,9 @@ template("rpmbuild") {
       binary_packages += invoker.extra_packages
     }
 
-    outputs = ["$topdir/SRPMS/$package_name-$version-$release.$fc.src.rpm"]
+    outputs = ["$topdir/SRPMS/$package_name-$version-$release.src.rpm"]
     foreach(pkg, binary_packages) {
-      outputs += ["$topdir/RPMS/$arch/$pkg-$version-$release.$fc.$arch.rpm"]
+      outputs += ["$topdir/RPMS/$arch/$pkg-$version-$release.$arch.rpm"]
     }
 
     script = "//build/bin_proxy.py"
