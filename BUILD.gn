@@ -50,8 +50,18 @@ substitute_file("nsbox_profile") {
 
 substitute_file("nsbox_policy") {
   source = "//misc/dev.nsbox.policy"
+  output = "$target_out_dir/$rdns_name.policy"
   vars = [
     ["NSBOX_INVOKER", "$prefix/$libexec_dir/$product_name/nsbox-invoker"],
+    ["RDNS_NAME", rdns_name],
+  ]
+}
+
+substitute_file("nsbox_polkit_rules") {
+  source = "//misc/dev.nsbox.rules"
+  output = "$target_out_dir/$rdns_name.rules"
+  vars = [
+    ["RDNS_NAME", rdns_name],
   ]
 }
 
@@ -179,13 +189,14 @@ copy("install-etc") {
 
 copy("install-polkit-actions") {
   sources = get_target_outputs(":nsbox_policy")
-  outputs = ["$install_dir/$share_dir/polkit-1/actions/dev.nsbox.policy"]
+  outputs = ["$install_dir/$share_dir/polkit-1/actions/$rdns_name.policy"]
   deps = [":nsbox_policy"]
 }
 
 copy("install-polkit-rules") {
-  sources = ["//misc/dev.nsbox.rules"]
-  outputs = ["$install_dir/$share_dir/polkit-1/rules.d/dev.nsbox.rules"]
+  sources = get_target_outputs(":nsbox_polkit_rules")
+  outputs = ["$install_dir/$share_dir/polkit-1/rules.d/$rdns_name.rules"]
+  deps = [":nsbox_polkit_rules"]
 }
 
 copy("install-private-exec") {

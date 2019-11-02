@@ -5,7 +5,7 @@
   <vendor>nsbox</vendor>
   <vendor_url>https://nsbox.dev/</vendor_url>
 
-  <action id="dev.nsbox.config">
+  <action id="@RDNS_NAME.config">
     <description>Configure a container</description>
     <message>Authentication is required to configure a container</message>
     <defaults>
@@ -17,7 +17,7 @@
     <annotate key="org.freedesktop.policykit.exec.argv1">config</annotate>
   </action>
 
-  <action id="dev.nsbox.create">
+  <action id="@RDNS_NAME.create">
     <description>Create a new container</description>
     <message>Authentication is required to create a new container</message>
     <defaults>
@@ -29,7 +29,7 @@
     <annotate key="org.freedesktop.policykit.exec.argv1">create</annotate>
   </action>
 
-  <action id="dev.nsbox.kill">
+  <action id="@RDNS_NAME.kill">
     <description>Kill a container</description>
     <message>Authentication is required to kill a container</message>
     <defaults>
@@ -41,7 +41,7 @@
     <annotate key="org.freedesktop.policykit.exec.argv1">kill</annotate>
   </action>
 
-  <action id="dev.nsbox.images">
+  <action id="@RDNS_NAME.images">
     <description>List the available images</description>
     <message>Authentication is required to list the available images</message>
     <defaults>
@@ -53,7 +53,7 @@
     <annotate key="org.freedesktop.policykit.exec.argv1">images</annotate>
   </action>
 
-  <action id="dev.nsbox.info">
+  <action id="@RDNS_NAME.info">
     <description>Get container information</description>
     <message>Authentication is required to find information on a container</message>
     <defaults>
@@ -65,7 +65,7 @@
     <annotate key="org.freedesktop.policykit.exec.argv1">info</annotate>
   </action>
 
-  <action id="dev.nsbox.list">
+  <action id="@RDNS_NAME.list">
     <description>List the installed containers</description>
     <message>Authentication is required to list the installed containers</message>
     <defaults>
@@ -77,7 +77,7 @@
     <annotate key="org.freedesktop.policykit.exec.argv1">list</annotate>
   </action>
 
-  <action id="dev.nsbox.run">
+  <action id="@RDNS_NAME.run">
     <description>Run a container</description>
     <message>Authentication is required to run a container</message>
     <defaults>
@@ -89,7 +89,7 @@
     <annotate key="org.freedesktop.policykit.exec.argv1">run</annotate>
   </action>
 
-  <action id="dev.nsbox.set-default">
+  <action id="@RDNS_NAME.set-default">
     <description>Set the default container</description>
     <message>Authentication is required to set the default container</message>
     <defaults>

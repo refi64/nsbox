@@ -1,6 +1,6 @@
 polkit.addRule(function (action, subject) {
-  if ((action.id == 'dev.nsbox.info' || action.id == 'dev.nsbox.list'
-        || action.id == 'dev.nsbox.run' || action.id == 'dev.nsbox.images')
+  if ((action.id == '@RDNS_NAME.info' || action.id == '@RDNS_NAME.list'
+        || action.id == '@RDNS_NAME.run' || action.id == '@RDNS_NAME.images')
       && subject.active && subject.local && subject.isInGroup('wheel')) {
     return polkit.Result.YES
   }

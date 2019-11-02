@@ -159,8 +159,8 @@ chmod -R g-w %{buildroot}
 %{_datadir}/%{name}/images/fedora/roles/main/templates/nsbox.repo
 %{_datadir}/%{name}/release/VERSION
 %{_datadir}/%{name}/release/BRANCH
-%{_datadir}/polkit-1/actions/dev.nsbox.policy
-%{_datadir}/polkit-1/rules.d/dev.nsbox.rules
+%{_datadir}/polkit-1/actions/@RDNS_NAME.policy
+%{_datadir}/polkit-1/rules.d/@RDNS_NAME.rules
 
 %files bender
 %{_bindir}/%{name}-bender
