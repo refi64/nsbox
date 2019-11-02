@@ -3,10 +3,10 @@ on:
   push:
     branches:
       - master
-    paths:
-      - '.firebaserc'
-      - 'firebase.json'
-      - 'web/**'
+    # paths:
+    #   - '.firebaserc'
+    #   - 'firebase.json'
+    #   - 'web/**'
 
 jobs:
   push:
@@ -28,6 +28,7 @@ jobs:
 
   deploy:
     name: Deploy the website
+    needs: build
     steps:
       - name: 'Checkout the nsbox repo'
         uses: actions/checkout@v1
