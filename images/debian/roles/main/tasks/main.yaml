@@ -1,13 +1,28 @@
+- name: Delete the Docker-only apt config files
+  file:
+    path: '/etc/systemd/system/{{ item }}'
+    state: absent
+  loop:
+    - docker-autoremove-suggests
+    - docker-clean
+    - docker-gzip-indexes
+    - docker-no-languages
+
 - name: Delete the apt upgrade timers
   file:
     path: '/etc/systemd/system/timers.target.wants/'
     state: absent
 
+- name: Check the package cache
+  find:
+    paths: '/var/lib/apt/lists'
+  register: package_cache
+
 - name: Update the package cache
   apt:
     force_apt_get: yes
     update_cache: yes
-  tags: bend
+  when: '"bend" not in ansible_skip_tags or package_cache.matched|int == 0'
 
 - name: Install required packages (this may take a while)
   apt:
@@ -16,7 +31,15 @@
       - ansible
       - hostname
       - man
+      - libnss-myhostname
       - sudo
+
+- name: Use nss-myhostname for hostname resolution
+  lineinfile:
+    path: /etc/nsswitch.conf
+    regexp: '^(hosts:\s+files) (dns)$'
+    line: '\1 myhostname \2'
+    backrefs: true
 
 - name: Clear the apt cache
   shell: 'apt clean all && rm -rf /var/lib/apt/lists/*'
