@@ -10,7 +10,7 @@ on:
       - 'web/**'
 
 jobs:
-  push:
+  build:
     name: Build the website
     runs-on: ubuntu-latest
     steps:
