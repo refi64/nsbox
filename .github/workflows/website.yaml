@@ -1,0 +1,44 @@
+name: Deploy the website
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.firebaserc'
+      - 'firebase.json'
+      - 'web/**'
+
+jobs:
+  push:
+    name: Build the website
+    steps:
+      - name: 'Checkout the nsbox repo'
+        uses: actions/checkout@v1
+      - name: 'Setup Node'
+        uses: actions/setup-node@v1
+      - name: 'Download the build dependenciesl'
+        run: 'yarn --cwd web'
+      - name: 'Build the website'
+        run: 'yarn --cwd web build'
+      - name: 'Upload the build artifacts'
+        uses: actions/upload-artifact@v1
+        with:
+          name: dist
+          path: web/.vuepress/dist
+
+  deploy:
+    name: Deploy the website
+    steps:
+      - name: 'Checkout the nsbox repo'
+        uses: actions/checkout@v1
+      - name: 'Download the build artifacts'
+        uses: action/download-artifact@v1
+        with:
+          name: dist
+          path: web/.vuepress/dist
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@v1.1.0
+        with:
+          args: 'deploy --only hosting'
+        env:
+          FIREBASE_TOKEN: '${{ secrets.FIREBASE_TOKEN }}'
