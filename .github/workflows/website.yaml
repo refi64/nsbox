@@ -4,6 +4,7 @@ on:
     branches:
       - master
     paths:
+      - '.github/workflows/website.yaml'
       - '.firebaserc'
       - 'firebase.json'
       - 'web/**'
