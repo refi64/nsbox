@@ -24,7 +24,8 @@ type nsboxApp struct {
 }
 
 func (app *nsboxApp) PreexecHook(cmd subcommands.Command, fs *flag.FlagSet) {
-	if os.Getuid() == 0 {
+	// No auth needed for "version".
+	if os.Getuid() == 0 || cmd.Name() == "version" {
 		return
 	}
 
@@ -99,6 +100,7 @@ func main() {
 	subcommands.Register(newListCommand(app), "")
 	subcommands.Register(newRunCommand(app), "")
 	subcommands.Register(newSetDefaultCommand(app), "")
+	subcommands.Register(newVersionCommand(app), "")
 
 	args.Execute(app)
 }

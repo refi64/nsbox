@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
+	"github.com/refi64/nsbox/internal/release"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -23,39 +24,6 @@ type Image struct {
 	Parent 		string   `json:"parent"`
 	SudoGroup string   `json:"sudo_group"`
 	ValidTags []string `json:"valid_tags"`
-}
-
-func readReleaseInfo() (string, string, error) {
-	releaseDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "release")
-	if err != nil {
-		return "", "", errors.Wrap(err, "failed to get release data")
-	}
-
-	var branch string
-	var version string
-
-	releaseFiles := map[string]*string{
-		"BRANCH":  &branch,
-		"VERSION": &version,
-	}
-
-	for releaseFile, target := range releaseFiles {
-		file, err := os.Open(filepath.Join(releaseDir, releaseFile))
-		if err != nil {
-			return "", "", err
-		}
-
-		defer file.Close()
-
-		bytes, err := ioutil.ReadAll(file)
-		if err != nil {
-			return "", "", err
-		}
-
-		*target = strings.TrimSpace(string(bytes))
-	}
-
-	return branch, version, nil
 }
 
 func openImageAtPath(path string) (*Image, error) {
@@ -88,7 +56,7 @@ func openImageAtPath(path string) (*Image, error) {
 }
 
 func openTaggedImageAtPath(path, tag string) (*Image, error) {
-	nsboxBranch, nsboxVersion, err := readReleaseInfo()
+	rel, err := release.Read()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read release info")
 	}
@@ -123,8 +91,8 @@ func openTaggedImageAtPath(path, tag string) (*Image, error) {
 
 	replacer := strings.NewReplacer(
 		"{image_tag}", tag,
-		"{nsbox_branch}", nsboxBranch,
-		"{nsbox_version}", nsboxVersion,
+		"{nsbox_branch}", rel.Branch.String(),
+		"{nsbox_version}", rel.Version,
 		"{nsbox_product_name}", paths.ProductName,
 	)
 
