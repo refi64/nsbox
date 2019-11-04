@@ -1,2 +1,2 @@
-FROM archlinux/base
-RUN pacman -Syu --noconfirm python3 && pacman -Scc --noconfirm
+FROM archlinux
+RUN pacman -Syu --noconfirm base python3 && pacman -Scc --noconfirm
