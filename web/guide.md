@@ -20,7 +20,7 @@ $ sudo dnf copr enable refi64/nsbox-edge
 $ sudo dnf install nsbox-edge
 # For Silverblue
 $ sudo curl -Lo /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:refi64:nsbox-edge.repo \
-  https://copr.fedorainfracloud.org/coprs/refi64/nsbox-edge/repo/fedora-$(lsb_release -sr)/refi64-nsbox-edge-fedora-$(lsb_release -sr).repo
+  https://copr.fedorainfracloud.org/coprs/refi64/nsbox-edge/repo/fedora-$(rpm -E %fedora)/refi64-nsbox-edge-fedora-$(rpm -E %fedora).repo
 $ rpm-ostree install nsbox-edge
 ```
 
