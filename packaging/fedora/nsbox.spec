@@ -35,6 +35,9 @@ BuildRequires: golang
 BuildRequires: ninja-build
 BuildRequires: python3
 BuildRequires: systemd-devel
+Requires: polkit
+Requires: sudo
+Requires: systemd-container
 Requires: tar
 Source0: nsbox-sources.tar
 Source1: https://gn.googlesource.com/gn/+archive/@GN.tar.gz#/gn.tar.gz
