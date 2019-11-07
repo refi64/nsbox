@@ -13,6 +13,10 @@
 
 # nsbox-host has missing build-ids due to being static.
 %global _missing_build_ids_terminate_build 0
+# Scripts in data/scripts intentionally use a hashbang of /bin/bash (not /usr/bin)
+# because the scripts are run inside container OSs that may not have performed the /usr
+# merge yet. Skip automatically converting those hashbangs to /usr/bin/bash.
+%global __brp_mangle_shebangs_exclude .*\.sh
 
 Name: @PRODUCT_NAME
 Version: @VERSION
