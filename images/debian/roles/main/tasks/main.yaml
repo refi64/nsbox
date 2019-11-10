@@ -32,6 +32,7 @@
       - hostname
       - man
       - libnss-myhostname
+      - locales-all
       - sudo
 
 - name: Use nss-myhostname for hostname resolution before dns

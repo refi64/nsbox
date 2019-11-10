@@ -25,9 +25,11 @@
     name:
       - ansible
       - findutils
+      - glibc-all-langpacks
       - hostname
       - man-pages
       - nsbox-guest-tools
+      - iso-codes
       - sudo
       - vte-profile
 

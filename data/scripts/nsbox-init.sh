@@ -50,6 +50,8 @@ fi
 
 echo "$HOSTNAME" > /etc/hostname
 
+ln -sf {/run/host,}/etc/locale.conf
+
 if [[ -n "$NSBOX_HOME_LINK_NAME" ]]; then
   [[ -e "$NSBOX_HOME_LINK_NAME" ]] && rm -d "$NSBOX_HOME_LINK_NAME" ||:
   ln -s "$NSBOX_HOME_LINK_TARGET_REL" "$NSBOX_HOME_LINK_NAME"
