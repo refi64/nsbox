@@ -34,10 +34,10 @@
       - libnss-myhostname
       - sudo
 
-- name: Use nss-myhostname for hostname resolution
+- name: Use nss-myhostname for hostname resolution before dns
   lineinfile:
     path: /etc/nsswitch.conf
-    regexp: '^(hosts:\s+files) (dns)$'
+    regexp: '^(hosts:\s+files)\s+(dns)(\s+myhostname)?$'
     line: '\1 myhostname \2'
     backrefs: true
 
