@@ -47,7 +47,10 @@ def build(args):
 
     if args.static:
         env['CGO_ENABLED'] = '0'
-        command.extend(['-ldflags', '-extldflags "-static"'])
+        # We have to add buildmode=exe because distros like to use buildmode=pie for
+        # building Go binaries, but it causes statically-linked binaries like nsbox-host
+        # to segfault.
+        command.extend(['-ldflags', '-extldflags "-static"', '-buildmode=exe'])
 
     command.append(args.package)
 

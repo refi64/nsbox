@@ -88,10 +88,7 @@ cat >build/go-shim.sh <<'EOF'
 #!/bin/sh
 if [[ "$1" == "build" ]]; then
   shift
-  # XXX: We can't use buildmode=pie for our static nsbox-host, so remove it here.
-  extra_args=""
-  [[ "$CGO_ENABLED" == "0" ]] && extra_args="-buildmode=exe" ||:
-  %gobuild $extra_args "$@@"
+  %gobuild "$@@"
 else
   go "$@@"
 fi
