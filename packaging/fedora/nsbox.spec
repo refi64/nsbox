@@ -29,7 +29,7 @@ Summary: A multi-purpose, nspawn-powered container manager
 License: MPL-2.0
 URL: https://nsbox.dev/
 BuildRequires: gcc
-BuildRequires: gcc-c++
+BuildRequires: gn
 %if 0%{?fedora} >= 31
 BuildRequires: go-rpm-macros
 %else
@@ -44,7 +44,6 @@ Requires: sudo
 Requires: systemd-container
 Requires: tar
 Source0: nsbox-sources.tar
-Source1: https://gn.googlesource.com/gn/+archive/@GN.tar.gz#/gn.tar.gz
 @SPECDEFS
 
 %description
@@ -80,7 +79,6 @@ rm -rf %{name}-%{version}
 %setup_go_archives_universal
 %{?setup_go_archives_pre_f31_only}
 
-%setup -q -c -T -n %{name}-%{version}/gn -a 1
 %setup -q -D
 
 %setup_go_repo_links
@@ -104,18 +102,8 @@ chmod +x build/go-shim.sh
 
 %build
 %set_build_flags
-export CC=gcc
-export CXX=g++
-
-cd gn
-# last_commit_position.h generation wants Git, so write it manually.
-python3 build/gen.py --no-last-commit-position --no-static-libstdc++
-# XXX: this sort-of works, it's good enough for our purposes.
-echo -e '#pragma once\n#define LAST_COMMIT_POSITION "@GN"' > out/last_commit_position.h
-ninja -C out gn
-cd ..
-
 unset LDFLAGS
+
 mkdir -p out
 cat >out/args.gn <<EOF
 go_exe = "$PWD/build/go-shim.sh"
@@ -130,7 +118,8 @@ override_release_version = "@VERSION"
 is_stable_build = true
 %endif
 EOF
-gn/out/gn gen out
+
+gn gen out
 ninja -C out
 
 %install

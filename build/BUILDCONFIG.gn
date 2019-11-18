@@ -53,10 +53,7 @@ declare_args() {
   rpmbuild_exe = "rpmbuild"
 
   # The Fedora release to build RPMs for.
-  fedora_rpm_target_release = "30"
-
-  # The version of GN to use for the built packages.
-  package_gn = "2f5276089c50cc76bc9282ec1246304c4dafc5b8"
+  fedora_rpm_target_release = "31"
 
   # Override the release number for build purposes.
   override_release_version = ""
