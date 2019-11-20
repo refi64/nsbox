@@ -11,4 +11,10 @@ module.exports = {
     smoothScroll: true,
   },
   title: 'nsbox',
+  plugins: [
+    '@vuepress/google-analytics',
+    {
+      'ga': 'UA-55018880-2'
+    }
+  ],
 }

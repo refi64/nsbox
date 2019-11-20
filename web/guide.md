@@ -28,6 +28,15 @@ The nsbox-edge package installs the nsbox binary as *nsbox-edge*, that way the p
 be installed alongside the (future) stable releases. If you want to be able to call it as just
 *nsbox*, install the *nsbox-alias* package.
 
+### Arch Linux
+
+You can install the edge builds from the AUR (note that this automatically adds the nsbox
+symlink, but it will be changed eventually):
+
+```bash
+$ yay -S nsbox-edge-git
+```
+
 ### Other distros
 
 Currently you must [build from source](https://github.com/refi64/nsbox).
