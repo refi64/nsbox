@@ -1,8 +1,5 @@
 # nsbox
 
-**NOTE:** The new Go rewrite has been merged. If you want the older version, use the old-python
-branch.
-
 nsbox is a multi-purpose, nspawn-powered container manager. Please see the
 [website](https://nsbox.dev) for more user-friendly information and documentation.
 
