@@ -83,6 +83,17 @@ func bindHome(builder *nspawn.Builder, usrdata *userdata.Userdata) error {
 	return nil
 }
 
+func bindGraphics(builder *nspawn.Builder) error {
+	tmpdir := os.TempDir()
+	x11 := filepath.Join(tmpdir, ".X11-unix")
+	if _, err := os.Stat(x11); err == nil {
+		builder.AddBind(x11)
+	}
+
+	builder.AddBind("/dev/dri")
+	return nil
+}
+
 func stripLeadingSlash(path string) string {
 	result, err := filepath.Rel("/", path)
 	if err != nil {
@@ -269,7 +280,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	if ct.Config.Boot {
 		// Bind the entire xdg runtime directory, then nsbox-init.sh will manually symlink
 		// stuff into the in-container runtime directory as needed.
-		builder.AddBindTo(xdgRuntimeDir, filepath.Join(paths.InContainerPrivPath, "usr-run"))
+		builder.AddRecursiveBindTo(xdgRuntimeDir, filepath.Join(paths.InContainerPrivPath, "usr-run"))
 
 		dataDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "data")
 		if err != nil {
@@ -287,7 +298,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	} else {
 		// Binding coredumps for a booted container really doesn't make that much sense...
 		builder.AddBind("/var/lib/systemd/coredump")
-		builder.AddBind(xdgRuntimeDir)
+		builder.AddRecursiveBind(xdgRuntimeDir)
 
 		if value, ok := usrdata.Environ["DBUS_SYSTEM_BUS_ADDRESS"]; ok {
 			builder.AddBind(value)
@@ -311,6 +322,10 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	if err := bindHome(builder, usrdata); err != nil {
 		return errors.Wrap(err, "failed to bind home")
+	}
+
+	if err := bindGraphics(builder); err != nil {
+		return errors.Wrap(err, "failed to bind graphics")
 	}
 
 	setUserEnv(machineId, mainImage, ct, usrdata)
