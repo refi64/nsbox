@@ -76,7 +76,7 @@ template("rpmbuild") {
     }
 
     script = "//build/bin_proxy.py"
-    args = [".", "rpmbuild", "-ba", rebase_path(invoker.spec),
+    args = [".", rpmbuild_exe, "-ba", rebase_path(invoker.spec),
             "--define", "_topdir $absolute_topdir", "--undefine", "_disable_source_fetch"]
 
     if (defined(invoker.sources)) {
