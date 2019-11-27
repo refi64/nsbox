@@ -1,0 +1,14 @@
+pkgname=$NSBOX_PRODUCT_NAME-guest-tools
+pkgver=$NSBOX_VERSION
+pkgrel=1
+pkgdesc='The guest tools for nsbox-managed containers'
+arch=('any')
+license=('mpl-2.0')
+source=(nsbox-trigger.hook)
+sha256sums=(SKIP)
+
+package() {
+  install -Dm 644 nsbox-trigger.hook -t "${pkgdir}/usr/share/libalpm/hooks"
+  mkdir -p "${pkgdir}/usr/bin"
+  ln -s /run/host/nsbox/nsbox-host "${pkgdir}/usr/bin/nsbox-host"
+}

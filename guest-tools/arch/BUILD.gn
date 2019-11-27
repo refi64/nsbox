@@ -1,0 +1,31 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+import("//build/copy_target_outputs.gni")
+import("//build/makepkg.gni")
+
+makepkg("pkg") {
+  package_name = "$product_name-guest-tools"
+
+  sources = [
+    "nsbox-trigger.hook",
+  ]
+
+  release = 1
+  version = release_version
+
+  vars = [
+    ["NSBOX_PRODUCT_NAME", product_name],
+    ["NSBOX_VERSION", release_version],
+  ]
+}
+
+copy_target_outputs("install") {
+  deps = [":pkg"]
+  outputs = ["$root_build_dir/arch/{{source_file_part}}"]
+}
+
+group("arch") {
+  deps = [":install"]
+}

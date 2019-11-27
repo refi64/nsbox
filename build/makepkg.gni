@@ -1,0 +1,56 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+template("makepkg") {
+  action(target_name) {
+    pool = "//:console"
+
+    if (defined(invoker.package_name)) {
+      package_name = invoker.package_name
+    } else {
+      package_name = invoker.target_name
+    }
+
+    forward_variables_from(invoker, ["deps", "release", "version"])
+
+    if (defined(invoker.pkgbuild)) {
+      pkgbuild = invoker.pkgbuild
+    } else {
+      pkgbuild = "PKGBUILD"
+    }
+
+    sources = [pkgbuild]
+
+    if (defined(invoker.sources)) {
+      sources += invoker.sources
+    #   sources += get_target_outputs(":${target_name}_sources")
+    }
+
+    # binary_packages = [package_name]
+    # if (defined(invoker.has_debug) && invoker.has_debug) {
+    #   binary_packages += ["$package_name-debuginfo", "$package_name-debugsource"]
+    # }
+
+    # if (defined(invoker.extra_packages)) {
+    #   binary_packages += invoker.extra_packages
+    # }
+
+    outputs = ["$target_gen_dir/$package_name-$version-$release-any.pkg.tar.zst"]
+
+    pkgdest = rebase_path(target_gen_dir)
+    builddir = rebase_path("$target_gen_dir/build-$target_name")
+    buildfile_dir = rebase_path(get_path_info(pkgbuild, "dir"), root_out_dir)
+    buildfile = get_path_info(pkgbuild, "file")
+
+    script = "//build/bin_proxy.py"
+    args = [buildfile_dir, makepkg_exe, "-f", "BUILDFILE=$buildfile", "BUILDDIR=$builddir",
+            "PKGDEST=$pkgdest", "PKGEXT=.pkg.tar.zst"]
+
+    if (defined(invoker.vars)) {
+      foreach(var, invoker.vars) {
+        args += ["${var[0]}=${var[1]}"]
+      }
+    }
+  }
+}

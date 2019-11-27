@@ -1,0 +1,11 @@
+[Trigger]
+Type = Package
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Target = usr/share/applications/*.desktop
+
+[Action]
+Description = Asking nsbox to reload the exports...
+When = PostTransaction
+Exec = /usr/bin/nsbox-host reload-exports

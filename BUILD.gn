@@ -283,6 +283,12 @@ if (fedora_guest_tools) {
   }
 }
 
+if (arch_guest_tools) {
+  group("arch_guest_tools") {
+    deps = ["//guest-tools/arch"]
+  }
+}
+
 group("images") {
   deps = ["//images"]
 }

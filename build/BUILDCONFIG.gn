@@ -55,6 +55,12 @@ declare_args() {
   # The Fedora release to build RPMs for.
   fedora_rpm_target_release = "31"
 
+  # Build the Arch guest tools.
+  arch_guest_tools = false
+
+  # The path to the makepkg executable.
+  makepkg_exe = "makepkg"
+
   # Override the release number for build purposes.
   override_release_version = ""
 }
