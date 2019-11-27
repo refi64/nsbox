@@ -24,6 +24,7 @@
     line: '\1'
     backrefs: true
 
-- name: Delete the cached packages
-  shell: 'pacman -Scc --noconfirm'
-  tags: bend
+- name: Preserve the package cache
+  file:
+    path: /usr/share/libalpm/hooks/package-cleanup.hook
+    state: absent
