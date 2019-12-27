@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import("//build/go.gni")
+import("//build/install.gni")
 import("//build/python_binary.gni")
 import("//build/substitute_file.gni")
 import("//build/symlink.gni")
@@ -163,54 +164,47 @@ python_binary("$product_name-bender") {
   python_files_dir = "$install_dir/$share_dir/$product_name/python"
 }
 
-copy("install-bin") {
-  sources = get_target_outputs(":$product_name")
-  outputs = ["$install_dir/$bin_dir/{{source_file_part}}"]
-  deps = [":$product_name", ":$product_name-bender"]
+install_files("install_bin") {
+  targets = [":$product_name"]
+  deps = [":$product_name-bender"]
+  output = "$bin_dir/{{source_file_part}}"
 }
 
 if (!is_stable_build) {
-  symlink("install-bin-edge-alias") {
+  symlink("install_bin_edge_alias") {
     name = "$install_dir/$bin_dir/nsbox"
     value = "./nsbox-edge"
     deps = [":nsbox-edge"]
   }
 
-  symlink("install-bin-edge-bender-alias") {
+  symlink("install_bin_edge_bender_alias") {
     name = "$install_dir/$bin_dir/nsbox-bender"
     value = "./nsbox-edge-bender"
     deps = [":nsbox-edge-bender"]
   }
 }
 
-copy("install-etc") {
-  sources = get_target_outputs(":nsbox_profile")
-  outputs = ["$install_dir/$config_dir/profile.d/$product_name.sh"]
-  deps = [":nsbox_profile"]
+install_files("install_etc") {
+  output = "$config_dir/profile.d/$product_name.sh"
+  targets = [":nsbox_profile"]
 }
 
-copy("install-polkit-actions") {
-  sources = get_target_outputs(":nsbox_policy")
-  outputs = ["$install_dir/$share_dir/polkit-1/actions/$rdns_name.policy"]
-  deps = [":nsbox_policy"]
+install_files("install_polkit_actions") {
+  output = "$share_dir/polkit-1/actions/$rdns_name.policy"
+  targets = [":nsbox_policy"]
 }
 
-copy("install-polkit-rules") {
-  sources = get_target_outputs(":nsbox_polkit_rules")
-  outputs = ["$install_dir/$share_dir/polkit-1/rules.d/$rdns_name.rules"]
-  deps = [":nsbox_polkit_rules"]
+install_files("install_polkit_rules") {
+  output = "$share_dir/polkit-1/rules.d/$rdns_name.rules"
+  targets = [":nsbox_polkit_rules"]
 }
 
-copy("install-private-exec") {
-  deps = [":nsboxd", ":nsbox-invoker", ":nsbox-host"]
-  sources = []
-  foreach(dep, deps) {
-    sources += get_target_outputs(dep)
-  }
-  outputs = ["$install_dir/$libexec_dir/$product_name/{{source_file_part}}"]
+install_files("install_private_exec") {
+  targets = [":nsboxd", ":nsbox-invoker", ":nsbox-host"]
+  output = "$libexec_dir/$product_name/{{source_file_part}}"
 }
 
-copy("install-share-data") {
+install_files("install_share_data") {
   sources = [
     "data/getty-override.conf",
     "data/nsbox-container.target",
@@ -220,10 +214,10 @@ copy("install-share-data") {
     "data/scripts/nsbox-enter-setup.sh",
     "data/scripts/nsbox-init.sh",
   ]
-  outputs = ["$install_dir/$share_dir/$product_name/{{source}}"]
+  output = "$share_dir/$product_name/{{source}}"
 }
 
-copy("install-share-images") {
+install_files("install_share_images") {
   sources = [
     "images/arch/Dockerfile",
     "images/arch/metadata.json",
@@ -238,37 +232,36 @@ copy("install-share-images") {
     "images/fedora/roles/main/tasks/main.yaml",
     "images/fedora/roles/main/templates/nsbox.repo",
   ]
-  outputs = ["$install_dir/$share_dir/$product_name/{{source}}"]
+  output = "$share_dir/$product_name/{{source}}"
 }
 
-copy("install-share-release") {
-  sources = get_target_outputs(":release_files")
-  deps = [":release_files"]
-  outputs = ["$install_dir/$share_dir/$product_name/release/{{source_file_part}}"]
+install_files("install_share_release") {
+  targets = [":release_files"]
+  output = "$share_dir/$product_name/release/{{source_file_part}}"
 }
 
-group("nsbox-install-root") {
+group("install") {
   deps = [
-    ":install-bin",
-    ":install-etc",
-    ":install-polkit-actions",
-    ":install-polkit-rules",
-    ":install-private-exec",
-    ":install-share-data",
-    ":install-share-images",
-    ":install-share-release",
+    ":install_bin",
+    ":install_etc",
+    ":install_polkit_actions",
+    ":install_polkit_rules",
+    ":install_private_exec",
+    ":install_share_data",
+    ":install_share_images",
+    ":install_share_release",
   ]
 
   if (!is_stable_build) {
     deps += [
-      ":install-bin-edge-alias",
-      ":install-bin-edge-bender-alias",
+      ":install_bin_edge_alias",
+      ":install_bin_edge_bender_alias",
     ]
   }
 }
 
 group("default") {
-  deps = [":nsbox-install-root"]
+  deps = [":install"]
 }
 
 if (fedora_package) {
