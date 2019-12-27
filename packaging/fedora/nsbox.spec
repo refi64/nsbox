@@ -42,7 +42,6 @@ BuildRequires: systemd-devel
 Requires: polkit
 Requires: sudo
 Requires: systemd-container
-Requires: tar
 Source0: nsbox-sources.tar
 @SPECDEFS
 
