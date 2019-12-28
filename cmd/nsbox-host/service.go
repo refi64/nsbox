@@ -25,7 +25,11 @@ func startPtyServiceAndNotifyHost(name string) error {
 		return err
 	}
 
-	defer conn.Close()
+	// NOTE: the connection is not closed because we will generally never die normally:
+	// - If an error occurs, then it needs to be logged before the connection is closed, at
+	// 	 which point nsboxd dies before we can log the message. On error, nsbox-host dies
+	//   anyway.
+	// - If no error occurs, this will run forever until killed.
 
 	if err := devnsbox.NotifyStart().Call(conn); err != nil {
 		return errors.Wrap(err, "failed to notify of start")
