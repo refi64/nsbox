@@ -47,7 +47,7 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd, name string, usrdata *userdata.
 		return errors.Wrap(err, "opening journal reader")
 	}
 
-	// These errors aren't that significant.
+	// If a unit reset failed, it likely just never was running.
 	_ = systemd.ResetFailedUnit(serviceName)
 
 	env := append([]string{"SUDO_UID=" + usrdata.User.Uid}, userdata.WhitelistedEnviron()...)

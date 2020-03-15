@@ -22,6 +22,7 @@ func (host *VarlinkHost) NotifyStart(call devnsbox.VarlinkCall) error {
 	log.Debug("received NotifyStart()")
 
 	if _, err := daemon.SdNotify(true, daemon.SdNotifyReady); err != nil {
+		log.Alert("notifying systemd of start", err)
 		return err
 	}
 
@@ -32,7 +33,7 @@ func (host *VarlinkHost) NotifyReloadExports(call devnsbox.VarlinkCall) error {
 	log.Debug("received NotifyReloadExports()")
 
 	if err := integration.UpdateDesktopFiles(host.container); err != nil {
-		log.Alert(err)
+		log.Alert("updating desktop files", err)
 		return err
 	}
 

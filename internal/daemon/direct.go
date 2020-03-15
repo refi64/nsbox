@@ -145,6 +145,11 @@ func writeContainerFiles(ct *container.Container, hostPrivPath string, usrdata *
 			return errors.Wrap(err, "failed to get shadow line")
 		}
 
+		shadowEntryPath := filepath.Join(hostPrivPath, "shadow-entry")
+		if err := os.Remove(shadowEntryPath); err != nil && !os.IsNotExist(err) {
+		 return errors.Wrap(err, "failed to delete old shadow-entry")
+		}
+
 		shadowEntry, err := os.Create(filepath.Join(hostPrivPath, "shadow-entry"))
 		if err != nil {
 			return err
@@ -188,7 +193,7 @@ func startVarlinkService(ct *container.Container, hostPrivPath string) (*net.Lis
 
 	go func() {
 		if err := service.DoListen(0); err != nil {
-			log.Fatal(err)
+			log.Alert("failed to listen on host service socket:", err)
 		}
 	}()
 
