@@ -53,8 +53,11 @@ rpmbuild("rpm") {
   release = "1"
   has_debug = true
 
+  extra_binary_packages = ["$product_name-bender"]
+  extra_noarch_packages = ["$product_name-selinux"]
+
   if (!is_stable_build) {
-    extra_packages = ["nsbox-edge-alias"]
+    extra_binary_packages += ["nsbox-edge-alias", "nsbox-edge-bender-alias"]
   }
 
   archive_source = get_target_outputs(":archive")

@@ -13,6 +13,7 @@ import (
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/ptyservice"
+	"github.com/refi64/nsbox/internal/selinux"
 	"github.com/refi64/nsbox/internal/userdata"
 	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/sys/unix"
@@ -217,6 +218,10 @@ func EnterContainer(ct *container.Container, command []string, usrdata *userdata
 			inheritSize()
 		}
 	}()
+
+	if err := selinux.SetExecProcessContextContainer(); err != nil {
+		log.Alert("failed to set exec context to enter container:", err)
+	}
 
 	// Finally run nsenter.
 	cmd := exec.Command(args[0], args[1:]...)

@@ -49,6 +49,15 @@ declare_args() {
   # Build the Fedora guest tools.
   fedora_guest_tools = false
 
+  # Enable SELinux support.
+  enable_selinux = false
+
+  # Path to the SELinux make executable.
+  selinux_make = "make"
+
+  # Path to the SELinux build makefile.
+  selinux_makefile = "/usr/share/selinux/devel/Makefile"
+
   # The path to the rpmbuild executable.
   rpmbuild_exe = "rpmbuild"
 
@@ -100,3 +109,5 @@ if (override_release_version != "") {
     assert(release_commit != "")
   }
 }
+
+selinux_variant = "targeted"

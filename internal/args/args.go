@@ -7,10 +7,11 @@ package args
 import (
 	"context"
 	"flag"
+	"os"
+
 	"github.com/google/subcommands"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
-	"os"
 )
 
 type App interface {

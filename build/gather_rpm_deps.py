@@ -37,6 +37,7 @@ MANUALLY_DOWNLOADED_DEPS = {
 
 F31_ONLY_REPO_DEPS = {
     'github.com/google/go-cmp',
+    'github.com/opencontainers/selinux',
 
     # Too old in F30.
     'github.com/godbus/dbus',
@@ -282,7 +283,7 @@ def main():
     parser.add_argument('--source-offset', type=int, default=0)
     args = parser.parse_args()
 
-    deps = go_list(args.go, 'all')
+    deps = go_list(args.go, 'all', tags={'selinux'})
 
     sources = SourceGatherEngine.gather_sources(deps)
     with open(args.output, 'w') as fp:

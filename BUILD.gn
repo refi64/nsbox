@@ -108,6 +108,7 @@ copy("gofiles") {
     "internal/ptyservice/client.go",
     "internal/ptyservice/service.go",
     "internal/release/release.go",
+    "internal/selinux/selinux.go",
     "internal/session/enter.go",
     "internal/session/setup.go",
     "internal/userdata/check_privs.go",
@@ -162,6 +163,12 @@ python_binary("$product_name-bender") {
   source = "//utils/nsbox-bender.py"
   output = "$install_dir/$bin_dir/$target_name"
   python_files_dir = "$install_dir/$share_dir/$product_name/python"
+}
+
+if (enable_selinux) {
+  group("sepolicy") {
+    deps = ["//sepolicy"]
+  }
 }
 
 install_files("install_bin") {
@@ -257,6 +264,10 @@ group("install") {
       ":install_bin_edge_alias",
       ":install_bin_edge_bender_alias",
     ]
+  }
+
+  if (enable_selinux) {
+    deps += ["//sepolicy:install_sepolicy"]
   }
 }
 

@@ -34,9 +34,37 @@ template("rpmbuild") {
       deps += invoker.deps
     }
 
+    topdir = "$target_gen_dir/rpmbuild"
+
+    absolute_topdir = rebase_path(topdir)
+
+    sources = [invoker.spec]
+    if (defined(invoker.sources)) {
+      sources += get_target_outputs(":${target_name}_sources")
+    }
+
+    binary_packages = []
+    noarch_packages = []
+
     if (defined(invoker.noarch) && invoker.noarch) {
-      arch = "noarch"
+      noarch_packages += [package_name]
     } else {
+      binary_packages += [package_name]
+    }
+
+    if (defined(invoker.has_debug) && invoker.has_debug) {
+      binary_packages += ["$package_name-debuginfo", "$package_name-debugsource"]
+    }
+
+    if (defined(invoker.extra_binary_packages)) {
+      binary_packages += invoker.extra_binary_packages
+    }
+
+    if (defined(invoker.extra_noarch_packages)) {
+      noarch_packages += invoker.extra_noarch_packages
+    }
+
+    if (binary_packages != []) {
       if (target_cpu == "x86") {
         arch = "x86"
       } else if (target_cpu == "x64") {
@@ -52,27 +80,12 @@ template("rpmbuild") {
       }
     }
 
-    topdir = "$target_gen_dir/rpmbuild"
-
-    absolute_topdir = rebase_path(topdir)
-
-    sources = [invoker.spec]
-    if (defined(invoker.sources)) {
-      sources += get_target_outputs(":${target_name}_sources")
-    }
-
-    binary_packages = [package_name]
-    if (defined(invoker.has_debug) && invoker.has_debug) {
-      binary_packages += ["$package_name-debuginfo", "$package_name-debugsource"]
-    }
-
-    if (defined(invoker.extra_packages)) {
-      binary_packages += invoker.extra_packages
-    }
-
     outputs = ["$topdir/SRPMS/$package_name-$version-$release.src.rpm"]
     foreach(pkg, binary_packages) {
       outputs += ["$topdir/RPMS/$arch/$pkg-$version-$release.$arch.rpm"]
+    }
+    foreach(pkg, noarch_packages) {
+      outputs += ["$topdir/RPMS/noarch/$pkg-$version-$release.noarch.rpm"]
     }
 
     script = "//build/bin_proxy.py"

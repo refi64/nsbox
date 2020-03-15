@@ -1,0 +1,1 @@
+@PREFIX/@LIBEXEC_DIR/@PRODUCT_NAME/nsboxd -- gen_context(system_u:object_r:@{TYPE_PREFIX}_nsboxd_exec_t,s0)

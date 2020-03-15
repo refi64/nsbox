@@ -38,7 +38,10 @@ BuildRequires: go-compilers-golang-compiler
 BuildRequires: golang
 BuildRequires: ninja-build
 BuildRequires: python3
+BuildRequires: selinux-policy-devel
 BuildRequires: systemd-devel
+Requires: container-selinux
+Requires: %{name}-selinux == %{version}-%{release}
 Requires: polkit
 Requires: sudo
 Requires: systemd-container
@@ -47,6 +50,13 @@ Source0: nsbox-sources.tar
 
 %description
 nsbox is a multi-purpose, nspawn-powered container manager.
+
+%package selinux
+BuildArch: noarch
+Summary: SELinux policy for %{name}
+%{?selinux_requires}
+%description selinux
+This is the SELinux policy for %{name}.
 
 %package bender
 Summary: Build images for nsbox
@@ -109,6 +119,7 @@ libexec_dir = "%{rellibexecdir}"
 share_dir = "%{reldatadir}"
 state_dir = "%{_sharedstatedir}"
 config_dir = "%{_sysconfdir}"
+enable_selinux = true
 override_release_version = "@VERSION"
 %if "%{name}" != "nsbox-edge"
 is_stable_build = true
@@ -123,6 +134,24 @@ mkdir -p %{buildroot}/%{_prefix}
 cp -r out/install/%{_sysconfdir} %{buildroot}
 cp -r out/install/{%{relbindir},%{rellibexecdir},%{reldatadir}} %{buildroot}/%{_prefix}
 chmod -R g-w %{buildroot}
+
+%post
+# XXX: I don't even know why I need this
+restorecon %{_libexecdir}/%{name}/nsboxd
+
+%pre selinux
+%selinux_relabel_pre
+
+%post selinux
+%selinux_modules_install %{_data}/selinux/packages/%{name}.pp.bz2
+
+%postun selinux
+if [ $1 -eq 0 ]; then
+  %selinux_modules_uninstall %{name}
+fi
+
+%posttrans selinux
+%selinux_relabel_post
 
 %files
 %{_bindir}/%{name}
@@ -153,6 +182,9 @@ chmod -R g-w %{buildroot}
 %{_datadir}/%{name}/release/BRANCH
 %{_datadir}/polkit-1/actions/@RDNS_NAME.policy
 %{_datadir}/polkit-1/rules.d/@RDNS_NAME.rules
+
+%files selinux
+%{_datadir}/selinux/packages/%{name}.pp.bz2
 
 %files bender
 %{_bindir}/%{name}-bender

@@ -21,5 +21,9 @@ template("go_binary") {
     if (defined(invoker.static) && invoker.static) {
       args += ["--static"]
     }
+
+    if (enable_selinux) {
+      args += ["--selinux"]
+    }
   }
 }

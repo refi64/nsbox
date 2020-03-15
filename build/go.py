@@ -15,8 +15,9 @@ import subprocess
 import sys
 
 
-def load_deps(args):
-    deps = go_list(args.go, args.package, cwd=str(args.gofiles_root), vendor=True)
+def load_deps(args, tags):
+    deps = go_list(args.go, args.package, cwd=str(args.gofiles_root), vendor=True,
+                   tags=tags)
 
     bin_relative_to_depfile = os.path.relpath(args.out_bin, args.out_dep)
 
@@ -39,7 +40,7 @@ def load_deps(args):
         print(f'{args.out_bin}: {" ".join(map(str, makefile_deps))}', file=fp)
 
 
-def build(args):
+def build(args, tags):
     command = [args.go, 'build', '-mod=vendor', '-o', os.path.abspath(args.out_bin)]
     env = os.environ.copy()
 
@@ -51,6 +52,9 @@ def build(args):
         # building Go binaries, but it causes statically-linked binaries like nsbox-host
         # to segfault.
         command.extend(['-ldflags', '-extldflags "-static"', '-buildmode=exe'])
+
+    if tags:
+        command.append(f'-tags={" ".join(tags)}')
 
     command.append(args.package)
 
@@ -68,12 +72,17 @@ def main():
     parser.add_argument('--package')
     parser.add_argument('--out-bin')
     parser.add_argument('--out-dep')
+    parser.add_argument('--selinux', action='store_true', default=False)
     parser.add_argument('--static', action='store_true', default=False)
 
     args = parser.parse_args()
 
-    load_deps(args)
-    build(args)
+    tags = set()
+    if args.selinux:
+        tags.add('selinux')
+
+    load_deps(args, tags)
+    build(args, tags)
 
 
 if __name__ == '__main__':

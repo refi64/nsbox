@@ -1,0 +1,44 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+import("//build/install.gni")
+import("//build/selinux.gni")
+import("//build/substitute_file.gni")
+
+selinux_vars = [
+  ["PRODUCT_NAME", product_name],
+  ["TYPE_PREFIX", string_replace(product_name, "-", "_")],
+  ["VERSION", release_version],
+
+  ["PREFIX", prefix],
+  ["LIBEXEC_DIR", libexec_dir],
+  ["SHARE_DIR", share_dir],
+]
+
+substitute_file("nsbox.te") {
+  source = "nsbox.te"
+  output = "$target_out_dir/$product_name.te"
+  vars = selinux_vars
+}
+
+substitute_file("nsbox.fc") {
+  source = "nsbox.fc"
+  output = "$target_out_dir/$product_name.fc"
+  vars = selinux_vars
+}
+
+selinux_package("nsbox_policy") {
+  name = product_name
+  sources = get_target_outputs(":nsbox.te") + get_target_outputs(":nsbox.fc")
+  deps = [":nsbox.te", ":nsbox.fc"]
+}
+
+group("sepolicy") {
+  deps = [":nsbox_policy"]
+}
+
+install_files("install_sepolicy") {
+  targets = [":nsbox_policy"]
+  output = "$share_dir/selinux/packages/{{source_file_part}}"
+}

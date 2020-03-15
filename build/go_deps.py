@@ -7,10 +7,11 @@
 import json
 import subprocess
 
-def go_list(go, package, *, cwd=None, vendor=False):
+def go_list(go, package, *, cwd=None, vendor=False, tags=set()):
     mod_arg = 'vendor' if vendor else 'readonly'
 
-    process = subprocess.run([go, 'list', f'-mod={mod_arg}', '-json', '-deps', package],
+    process = subprocess.run([go, 'list', f'-mod={mod_arg}', '-json', '-deps',
+                              f'-tags={" ".join(tags)}', package],
                              stdout=subprocess.PIPE, universal_newlines=True, check=True,
                              cwd=cwd)
 

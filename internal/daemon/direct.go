@@ -15,6 +15,7 @@ import (
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/nspawn"
 	"github.com/refi64/nsbox/internal/paths"
+	"github.com/refi64/nsbox/internal/selinux"
 	"github.com/refi64/nsbox/internal/userdata"
 	"github.com/refi64/nsbox/internal/varlinkhost"
 	"github.com/varlink/go/varlink"
@@ -355,6 +356,10 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	nspawnArgs := builder.Build()
 
 	log.Debug("running:", nspawnArgs)
+
+	if err := selinux.SetExecProcessContextContainer(); err != nil {
+		log.Alert("failed to set exec context:", err)
+	}
 
 	nspawnCmd := exec.Command(nspawnArgs[0], nspawnArgs[1:]...)
 	nspawnCmd.Stdout = os.Stdout
