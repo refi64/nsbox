@@ -1,0 +1,12 @@
+{
+    "files.exclude": {
+        "**/out-arch/**": true,
+        "out/**": true
+    },
+    "files.watcherExclude": {
+        "**/.vuepress/dist/**": true,
+        "out-arch/**": true,
+        "out/**": true
+    },
+    "editor.smoothScrolling": true
+}
