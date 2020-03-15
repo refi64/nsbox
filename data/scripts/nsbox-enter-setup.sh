@@ -58,4 +58,4 @@ if [[ -n "$to_update" ]]; then
   done
 fi
 
-exec runuser -s /bin/bash - "$NSBOX_USER" /run/host/nsbox/scripts/nsbox-enter-run.sh "$@"
+exec runuser -s /bin/bash -- - "$NSBOX_USER" /run/host/nsbox/scripts/nsbox-enter-run.sh "$@"
