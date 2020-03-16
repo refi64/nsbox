@@ -43,13 +43,13 @@ func readExportsId(path string) (int, error) {
 }
 
 type exportContext struct {
-	ct *container.Container
+	ct       *container.Container
 	iconCtxs []*gtkicons.LookupContext
-	icons []gtkicons.Icon
+	icons    []gtkicons.Icon
 
-	targetRoot string
+	targetRoot            string
 	targetApplicationsDir string
-	targetIconsDir string
+	targetIconsDir        string
 }
 
 func (ctx *exportContext) exportDesktopFile(desktopFilePath string) error {
@@ -79,7 +79,15 @@ func (ctx *exportContext) exportDesktopFile(desktopFilePath string) error {
 					line = fmt.Sprintf("Exec=%s run -- %s %s", paths.ProductName, ctx.ct.Name, parts[1])
 				} else if parts[0] == "Icon" {
 					for _, iconCtx := range ctx.iconCtxs {
-						ctx.icons = append(ctx.icons, iconCtx.FindIcon(parts[1])...)
+						icons := iconCtx.FindIcon(parts[1])
+						log.Debug("Icon matches:", icons)
+						// If it's an icon outside a theme, don't bother to do any fancy
+						// magic. Just save the full path into the desktop file.
+						if len(icons) == 1 && icons[0].Size == 0 {
+							line = fmt.Sprintf("Icon=%s", icons[0].Path)
+							break
+						}
+						ctx.icons = append(ctx.icons, icons...)
 					}
 				}
 			}
@@ -133,6 +141,17 @@ func (ctx *exportContext) exportDesktopFiles(desktopFilesDir string) error {
 	}
 
 	return nil
+}
+
+func (ctx *exportContext) addIconLoaderContext(iconDir string) (*gtkicons.LookupContext, error) {
+	log.Debug("Scanning icon directory:", iconDir)
+	iconCtx, err := gtkicons.CreateContext(iconDir)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create icon context")
+	}
+
+	ctx.iconCtxs = append(ctx.iconCtxs, iconCtx)
+	return iconCtx, err
 }
 
 func (ctx *exportContext) exportIcons() {
@@ -209,14 +228,22 @@ func UpdateDesktopFiles(ct *container.Container) error {
 
 	for _, dir := range xdgDataDirs {
 		iconDir := ct.StorageChild(filepath.Join(dir, "icons"))
-		log.Debug("Scanning icon directory:", iconDir)
-		iconCtx, err := gtkicons.CreateContext(iconDir)
+		iconCtx, err := ctx.addIconLoaderContext(iconDir)
 		if err != nil {
-			return errors.Wrap(err, "failed to create icon context")
+			return err
 		}
 
 		defer iconCtx.Destroy()
-		ctx.iconCtxs = append(ctx.iconCtxs, iconCtx)
+	}
+
+	pixmaps := ct.StorageChild("usr/share/pixmaps")
+	if _, err := os.Stat(pixmaps); err == nil {
+		iconCtx, err := ctx.addIconLoaderContext(pixmaps)
+		if err != nil {
+			return err
+		}
+
+		defer iconCtx.Destroy()
 	}
 
 	ctx.targetApplicationsDir = filepath.Join(ctx.targetRoot, "applications")

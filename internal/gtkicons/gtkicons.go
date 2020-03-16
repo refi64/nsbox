@@ -90,6 +90,21 @@ func (ctx *LookupContext) Destroy() {
 	C.nsbox_g_object_unref(unrefSym, unsafe.Pointer(ctx.iconTheme))
 }
 
+func (ctx *LookupContext) lookupIconBySize(icon string, cicon *C.char, size int) (info Icon, err error) {
+	iconInfo := C.nsbox_gtk_icon_theme_lookup_icon(lookupIconSym, ctx.iconTheme, cicon, C.int(size), 0)
+	if iconInfo == nil {
+		err = errors.Errorf("Could not find %s@%d", icon, size)
+		return
+	}
+
+	defer C.nsbox_g_object_unref(unrefSym, unsafe.Pointer(iconInfo))
+
+	cpath := C.nsbox_gtk_icon_info_get_filename(getFilenameSym, iconInfo)
+	path := C.GoString(cpath)
+	info = Icon{ctx.Path, path, size}
+	return
+}
+
 func (ctx *LookupContext) FindIcon(icon string) []Icon {
 	var result []Icon
 
@@ -99,20 +114,24 @@ func (ctx *LookupContext) FindIcon(icon string) []Icon {
 	iconSizes := C.nsbox_gtk_icon_theme_get_icon_sizes(getIconSizesSym, ctx.iconTheme, cicon)
 	defer C.free(unsafe.Pointer(iconSizes))
 
+	if *iconSizes == 0 {
+		// If the icon is in pixmaps, it will not be found by get_icon_sizes.
+		// Therefore, try to look it up manually.
+		info, err := ctx.lookupIconBySize(icon, cicon, 0)
+		if err == nil {
+			result = append(result, info)
+		}
+	}
+
 	for *iconSizes != 0 {
-		iconInfo := C.nsbox_gtk_icon_theme_lookup_icon(lookupIconSym, ctx.iconTheme, cicon, *iconSizes, 0)
-		if iconInfo == nil {
-			log.Alertf("Could not find %s@%d", icon, int(*iconSizes))
-			continue
+		info, err := ctx.lookupIconBySize(icon, cicon, int(*iconSizes))
+		if err != nil {
+			log.Alert(err)
+		} else {
+			result = append(result, info)
 		}
 
-		cpath := C.nsbox_gtk_icon_info_get_filename(getFilenameSym, iconInfo)
-		path := C.GoString(cpath)
-		result = append(result, Icon{ctx.Path, path, int(*iconSizes)})
-
 		iconSizes = (*C.int)(unsafe.Pointer(uintptr(unsafe.Pointer(iconSizes)) + unsafe.Sizeof(*iconSizes)))
-
-		C.nsbox_g_object_unref(unrefSym, unsafe.Pointer(iconInfo))
 	}
 
 	return result
