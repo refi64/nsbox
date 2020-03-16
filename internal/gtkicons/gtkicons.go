@@ -20,17 +20,17 @@ import "C"
 var (
 	gtkHandle *dlopen.LibHandle
 
-	newSym unsafe.Pointer
-	unrefSym unsafe.Pointer
+	newSym           unsafe.Pointer
+	unrefSym         unsafe.Pointer
 	setSearchPathSym unsafe.Pointer
-	getIconSizesSym unsafe.Pointer
-	lookupIconSym unsafe.Pointer
-	getFilenameSym unsafe.Pointer
+	getIconSizesSym  unsafe.Pointer
+	lookupIconSym    unsafe.Pointer
+	getFilenameSym   unsafe.Pointer
 )
 
 type LookupContext struct {
 	iconTheme *C.GtkIconTheme
-	Path 			string
+	Path      string
 }
 
 type Icon struct {
@@ -48,12 +48,12 @@ func loadGtk() error {
 	// We never bother to close the handle, because this will all be freed when the program dies.
 
 	symbols := map[string]*unsafe.Pointer{
-		"gtk_icon_theme_new": &newSym,
-		"g_object_unref": &unrefSym,
+		"gtk_icon_theme_new":             &newSym,
+		"g_object_unref":                 &unrefSym,
 		"gtk_icon_theme_set_search_path": &setSearchPathSym,
-		"gtk_icon_theme_get_icon_sizes": &getIconSizesSym,
-		"gtk_icon_theme_lookup_icon": &lookupIconSym,
-		"gtk_icon_info_get_filename": &getFilenameSym,
+		"gtk_icon_theme_get_icon_sizes":  &getIconSizesSym,
+		"gtk_icon_theme_lookup_icon":     &lookupIconSym,
+		"gtk_icon_info_get_filename":     &getFilenameSym,
 	}
 
 	for name, target := range symbols {
