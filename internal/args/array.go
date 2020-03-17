@@ -5,9 +5,10 @@
 package args
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
-	"strings"
 )
 
 type arrayTransformKind int

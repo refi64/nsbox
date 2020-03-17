@@ -6,10 +6,11 @@ package userdata
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
-	"github.com/refi64/nsbox/internal/log"
 	"os"
 	"os/exec"
+
+	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/log"
 )
 
 type cvtsudoersUser struct {
@@ -28,7 +29,7 @@ type cvtsudoersCommandSpec struct {
 }
 
 type cvtsudoersUserSpec struct {
-	UserList     []cvtsudoersUser `json:"User_List"`
+	UserList     []cvtsudoersUser        `json:"User_List"`
 	CommandSpecs []cvtsudoersCommandSpec `json:"Cmnd_Specs"`
 }
 
@@ -61,10 +62,12 @@ func (usrdata *Userdata) checkSudoAccess() (bool, error) {
 
 	userCanSudo := false
 
-	userSpecSearch: for _, userSpec := range cvtsudoers.UserSpecs {
+userSpecSearch:
+	for _, userSpec := range cvtsudoers.UserSpecs {
 		canRunAnyCommand := false
 
-		allCommandSearch: for _, commandSpec := range userSpec.CommandSpecs {
+	allCommandSearch:
+		for _, commandSpec := range userSpec.CommandSpecs {
 			for _, command := range commandSpec.Commands {
 				if command.Command == "ALL" {
 					canRunAnyCommand = true

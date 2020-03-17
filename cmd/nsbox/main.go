@@ -7,14 +7,15 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+	"os/exec"
+
 	"github.com/google/subcommands"
 	"github.com/refi64/nsbox/internal/args"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/userdata"
 	"golang.org/x/sys/unix"
-	"os"
-	"os/exec"
 )
 
 type nsboxApp struct {

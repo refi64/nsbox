@@ -6,11 +6,12 @@ package userdata
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"os"
 	"os/exec"
 	"os/user"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // Stored as a map to make membership tests fast.
@@ -39,10 +40,10 @@ var whitelistedEnvNames = map[string]interface{}{
 
 // Encapsulates data about the user's session that we're representing.
 type Userdata struct {
-	User     *user.User
-	Shell    string
-	Groups   []*user.Group
-	Environ  map[string]string
+	User    *user.User
+	Shell   string
+	Groups  []*user.Group
+	Environ map[string]string
 }
 
 // XXX: This sucks.
@@ -139,10 +140,10 @@ func userdataForUser(usr *user.User) (*Userdata, error) {
 	}
 
 	return &Userdata{
-		User:     usr,
-		Shell:    shell,
-		Groups:   groups,
-		Environ:  parseEnviron(),
+		User:    usr,
+		Shell:   shell,
+		Groups:  groups,
+		Environ: parseEnviron(),
 	}, nil
 }
 

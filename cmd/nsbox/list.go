@@ -6,12 +6,13 @@ package main
 
 import (
 	"flag"
+	"path/filepath"
+
 	"github.com/google/subcommands"
 	"github.com/refi64/nsbox/internal/args"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/inventory"
 	"github.com/refi64/nsbox/internal/log"
-	"path/filepath"
 )
 
 type listCommand struct {

@@ -6,6 +6,8 @@ package main
 
 import (
 	"flag"
+	"os"
+
 	"github.com/google/subcommands"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/args"
@@ -13,7 +15,6 @@ import (
 	"github.com/refi64/nsbox/internal/daemon"
 	"github.com/refi64/nsbox/internal/inventory"
 	"github.com/refi64/nsbox/internal/session"
-	"os"
 )
 
 type runCommand struct {

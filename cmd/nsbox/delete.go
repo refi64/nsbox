@@ -7,12 +7,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strings"
+
 	"github.com/google/subcommands"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/args"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/inventory"
-	"strings"
 )
 
 type deleteCommand struct {

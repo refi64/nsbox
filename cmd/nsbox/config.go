@@ -7,12 +7,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+
 	"github.com/google/subcommands"
 	"github.com/refi64/nsbox/internal/args"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/integration"
 	"golang.org/x/crypto/ssh/terminal"
-	"os"
 )
 
 type configCommand struct {
@@ -20,7 +21,7 @@ type configCommand struct {
 
 	xdgDesktopExtra   args.ArrayTransformValue
 	xdgDesktopExports args.ArrayTransformValue
-	auth							container.Auth
+	auth              container.Auth
 }
 
 func newConfigCommand(app args.App) subcommands.Command {
@@ -62,7 +63,7 @@ func (cmd *configCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.Ex
 		return args.HandleError(err)
 	}
 
-	fs.Visit(func (f *flag.Flag) {
+	fs.Visit(func(f *flag.Flag) {
 		// XXX: This is ridiculous, all I want to know is if -auth was actually given...
 		if f.Name == "auth" {
 			ct.Config.Auth = cmd.auth

@@ -9,11 +9,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"path/filepath"
+	"strings"
+
 	"github.com/google/subcommands"
 	"github.com/refi64/nsbox/internal/args"
 	"github.com/refi64/nsbox/internal/image"
-	"path/filepath"
-	"strings"
 )
 
 type imagesCommand struct {

@@ -10,13 +10,14 @@ import (
 	"fmt"
 	// NOTE: This is technically outdated, but it's pretty much identical to the newer
 	// creack/pty and is *actually packaged in Fedora*.
+	"net"
+	"os"
+
 	"github.com/kr/pty"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"golang.org/x/sys/unix"
-	"net"
-	"os"
 )
 
 // If we have a PTY over this size, something is very, very wrong...

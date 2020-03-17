@@ -7,10 +7,11 @@
 package gtkicons
 
 import (
+	"unsafe"
+
 	"github.com/coreos/pkg/dlopen"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
-	"unsafe"
 )
 
 // #include "nsbox-gtkicons.h"

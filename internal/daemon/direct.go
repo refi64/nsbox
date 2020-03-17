@@ -8,6 +8,11 @@ package daemon
 
 import (
 	"fmt"
+	"net"
+	"os"
+	"os/exec"
+	"path/filepath"
+
 	sdutil "github.com/coreos/go-systemd/util"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
@@ -20,10 +25,6 @@ import (
 	"github.com/refi64/nsbox/internal/varlinkhost"
 	"github.com/varlink/go/varlink"
 	"golang.org/x/sys/unix"
-	"net"
-	"os"
-	"os/exec"
-	"path/filepath"
 )
 
 func getXdgRuntimeDir(usrdata *userdata.Userdata) (string, error) {
@@ -148,7 +149,7 @@ func writeContainerFiles(ct *container.Container, hostPrivPath string, usrdata *
 
 		shadowEntryPath := filepath.Join(hostPrivPath, "shadow-entry")
 		if err := os.Remove(shadowEntryPath); err != nil && !os.IsNotExist(err) {
-		 return errors.Wrap(err, "failed to delete old shadow-entry")
+			return errors.Wrap(err, "failed to delete old shadow-entry")
 		}
 
 		shadowEntry, err := os.Create(filepath.Join(hostPrivPath, "shadow-entry"))

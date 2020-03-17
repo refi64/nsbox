@@ -7,22 +7,23 @@ package container
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+
 	crypt "github.com/GehirnInc/crypt/sha512_crypt"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/userdata"
 	"golang.org/x/sys/unix"
-	"os"
-	"path/filepath"
-	"regexp"
-	"strings"
 )
 
 type Auth int
 
 const (
-	AuthAuto 	 Auth = iota
+	AuthAuto Auth = iota
 	AuthManual
 )
 
@@ -33,7 +34,7 @@ var (
 	}
 
 	stringToAuth = map[string]Auth{
-		"auto":	  AuthAuto,
+		"auto":   AuthAuto,
 		"manual": AuthManual,
 	}
 )
@@ -51,7 +52,6 @@ func (auth *Auth) Set(value string) error {
 	*auth = newAuth
 	return nil
 }
-
 
 func (auth Auth) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + auth.String() + `"`), nil

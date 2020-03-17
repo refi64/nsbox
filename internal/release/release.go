@@ -5,12 +5,13 @@
 package release
 
 import (
-	"github.com/pkg/errors"
-	"github.com/refi64/nsbox/internal/paths"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/paths"
 )
 
 type Branch int
@@ -32,7 +33,7 @@ func (branch Branch) String() string {
 }
 
 type ReleaseInfo struct {
-	Branch	Branch
+	Branch  Branch
 	Version string
 }
 

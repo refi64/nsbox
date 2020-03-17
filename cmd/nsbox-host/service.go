@@ -6,13 +6,14 @@ package main
 
 import (
 	"flag"
+	"os"
+
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/google/subcommands"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/args"
 	"github.com/refi64/nsbox/internal/ptyservice"
 	devnsbox "github.com/refi64/nsbox/internal/varlink"
-	"os"
 )
 
 func startPtyServiceAndNotifyHost(name string) error {

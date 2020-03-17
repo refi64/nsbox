@@ -5,15 +5,16 @@
 package inventory
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/userdata"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 func List(usrdata *userdata.Userdata) ([]*container.Container, error) {

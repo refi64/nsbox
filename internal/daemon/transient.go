@@ -7,6 +7,9 @@ package daemon
 
 import (
 	"fmt"
+	"os"
+	"time"
+
 	systemd1 "github.com/coreos/go-systemd/dbus"
 	"github.com/coreos/go-systemd/machine1"
 	"github.com/coreos/go-systemd/sdjournal"
@@ -16,8 +19,6 @@ import (
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/userdata"
-	"os"
-	"time"
 )
 
 func startNsboxd(systemd *systemd1.Conn, nsboxd, name string, usrdata *userdata.Userdata) error {

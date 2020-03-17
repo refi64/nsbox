@@ -5,9 +5,10 @@
 package nspawn
 
 import (
-	"github.com/pkg/errors"
 	"os/exec"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type BindMount struct {

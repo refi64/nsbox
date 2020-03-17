@@ -8,10 +8,11 @@ package paths
 // build scripts (see BUILD.gn in the root directory).
 
 import (
-	"github.com/refi64/nsbox/internal/userdata"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/refi64/nsbox/internal/userdata"
 )
 
 const InContainerPrivPath = "/var/lib/.nsbox-priv"

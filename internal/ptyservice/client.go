@@ -6,13 +6,14 @@ package ptyservice
 
 import (
 	"fmt"
+	"net"
+	"os"
+
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"golang.org/x/sys/unix"
-	"net"
-	"os"
 )
 
 func OpenPtyInContainer(ct *container.Container) (*os.File, error) {

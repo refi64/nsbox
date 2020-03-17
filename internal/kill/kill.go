@@ -5,14 +5,15 @@
 package kill
 
 import (
+	"os"
+	"strings"
+
 	"github.com/coreos/go-systemd/machine1"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/userdata"
 	"golang.org/x/sys/unix"
-	"os"
-	"strings"
 )
 
 // Package unix doesn't provide SIGRTMIN.

@@ -5,11 +5,12 @@
 package main
 
 import (
+	"os"
+
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/userdata"
 	"golang.org/x/sys/unix"
-	"os"
 )
 
 func main() {

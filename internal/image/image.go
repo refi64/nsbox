@@ -6,14 +6,15 @@ package image
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
-	"github.com/refi64/nsbox/internal/log"
-	"github.com/refi64/nsbox/internal/paths"
-	"github.com/refi64/nsbox/internal/release"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/log"
+	"github.com/refi64/nsbox/internal/paths"
+	"github.com/refi64/nsbox/internal/release"
 )
 
 type Image struct {
@@ -21,7 +22,7 @@ type Image struct {
 	Base      string   `json:"base"`
 	Remote    string   `json:"remote"`
 	Target    string   `json:"target"`
-	Parent 		string   `json:"parent"`
+	Parent    string   `json:"parent"`
 	SudoGroup string   `json:"sudo_group"`
 	ValidTags []string `json:"valid_tags"`
 }

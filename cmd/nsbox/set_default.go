@@ -6,6 +6,7 @@ package main
 
 import (
 	"flag"
+
 	"github.com/google/subcommands"
 	"github.com/refi64/nsbox/internal/args"
 	"github.com/refi64/nsbox/internal/inventory"

@@ -6,9 +6,10 @@
 package session
 
 import (
+	"os"
+
 	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"
-	"os"
 )
 
 func ConnectPtys(stdinPty, stdoutPty, stderrPty string) error {

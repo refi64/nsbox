@@ -6,15 +6,16 @@ package container
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"text/tabwriter"
+	"time"
+
 	"github.com/coreos/go-systemd/dbus"
 	"github.com/coreos/go-systemd/machine1"
 	"github.com/dustin/go-humanize"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/userdata"
-	"os"
-	"strings"
-	"text/tabwriter"
-	"time"
 )
 
 func boolYesNo(value bool) string {

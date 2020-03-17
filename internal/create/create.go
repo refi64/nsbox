@@ -5,6 +5,10 @@
 package create
 
 import (
+	"io"
+	"os"
+	"time"
+
 	"github.com/artyom/untar"
 	"github.com/briandowns/spinner"
 	"github.com/dustin/go-humanize"
@@ -20,9 +24,6 @@ import (
 	"github.com/refi64/nsbox/internal/inventory"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/userdata"
-	"io"
-	"os"
-	"time"
 )
 
 type spinnerProgress struct {
@@ -86,7 +87,7 @@ func saveImageToContainer(img *image.Image, ct *container.Container, tarOverride
 	rd := cremutate.Extract(dockerImage)
 	defer rd.Close()
 
-	spinner := spinner.New(spinner.CharSets[43], 200 * time.Millisecond)
+	spinner := spinner.New(spinner.CharSets[43], 200*time.Millisecond)
 	spinner.Prefix = "Fetching image: "
 	spinner.Start()
 	defer spinner.Stop()

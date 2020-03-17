@@ -7,6 +7,13 @@ package session
 
 import (
 	"fmt"
+	"io"
+	"os"
+	"os/exec"
+	"os/signal"
+	"strconv"
+	"syscall"
+
 	"github.com/coreos/go-systemd/machine1"
 	krpty "github.com/kr/pty"
 	"github.com/pkg/errors"
@@ -17,12 +24,6 @@ import (
 	"github.com/refi64/nsbox/internal/userdata"
 	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/sys/unix"
-	"io"
-	"os"
-	"os/exec"
-	"os/signal"
-	"strconv"
-	"syscall"
 )
 
 func getLeader(name string) (uint32, error) {
