@@ -21,6 +21,8 @@ var whitelistedEnvNames = map[string]interface{}{
 	"DBUS_SYSTEM_BUS_ADDRESS":  nil,
 	"DESKTOP_SESSION":          nil,
 	"DISPLAY":                  nil,
+	"GDK_SCALE":                nil,
+	"GDK_DPI_SCALE":            nil,
 	"LANG":                     nil,
 	"SHELL":                    nil,
 	"SSH_AUTH_SOCK":            nil,
