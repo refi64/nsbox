@@ -51,7 +51,11 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd, name string, usrdata *userdata.
 	// If a unit reset failed, it likely just never was running.
 	_ = systemd.ResetFailedUnit(serviceName)
 
-	env := append([]string{"SUDO_UID=" + usrdata.User.Uid}, userdata.WhitelistedEnviron()...)
+	xdgRuntimeDir, err := getXdgRuntimeDir(usrdata)
+	if err != nil {
+		return err
+	}
+	env := append([]string{"SUDO_UID=" + usrdata.User.Uid, "XDG_RUNTIME_DIR=" + xdgRuntimeDir})
 
 	properties := []systemd1.Property{
 		systemd1.PropType("notify"),
