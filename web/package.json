@@ -6,6 +6,7 @@
   "private": true,
   "dependencies": {
     "@vuepress/plugin-active-header-links": "^1.2.0",
+    "@vuepress/plugin-google-analytics": "^1.2.0",
     "@vuepress/plugin-nprogress": "^1.2.0",
     "@vuepress/plugin-search": "^1.2.0",
     "lodash": "^4.17.15",
@@ -18,8 +19,5 @@
   "scripts": {
     "dev": "vuepress dev",
     "build": "vuepress build"
-  },
-  "devDependencies": {
-    "@vuepress/plugin-google-analytics": "^1.2.0"
   }
 }
