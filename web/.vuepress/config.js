@@ -20,6 +20,13 @@ module.exports = {
   head: [
     [
       'link', {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com/',
+        crossorigin: ''
+      }
+    ],
+    [
+      'link', {
         rel: 'stylesheet',
         href:
             'https://fonts.googleapis.com/css2?family=Advent+Pro:wght@500;600&display=swap'
