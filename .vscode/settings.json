@@ -8,5 +8,8 @@
         "out-arch/**": true,
         "out/**": true
     },
-    "editor.smoothScrolling": true
+    "editor.smoothScrolling": true,
+    "[vue]": {
+        "editor.formatOnSave": false
+    }
 }

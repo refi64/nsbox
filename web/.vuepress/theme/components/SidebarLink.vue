@@ -130,4 +130,8 @@ a.sidebar-link
     border-left none
     &.active
       font-weight 500
+
+@media (prefers-color-scheme: dark)
+  a.sidebar-link
+    color $darkTextColor
 </style>

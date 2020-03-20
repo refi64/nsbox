@@ -1,5 +1,10 @@
 .custom-block
+  background-color #f3f5f7
+
   .custom-block-title
+    font-family 'Advent Pro', sans-serif
+    letter-spacing 0.4px
+    font-size 1.4rem
     font-weight 600
     margin-bottom -0.4rem
   &.tip, &.warning, &.danger
@@ -8,31 +13,21 @@
     border-left-style solid
     margin 1rem 0
   &.tip
-    background-color #f3f5f7
-    border-color #42b983
+    border-color $accentColor
   &.warning
-    background-color rgba(255,229,100,.3)
-    border-color darken(#ffe564, 35%)
-    color darken(#ffe564, 70%)
+    border-color #88008e
     .custom-block-title
-      color darken(#ffe564, 50%)
-    a
-      color $textColor
+      color #88008e
   &.danger
-    background-color #ffe6e6
-    border-color darken(red, 20%)
-    color darken(red, 70%)
+    border-color #b10000
     .custom-block-title
-      color darken(red, 40%)
-    a
-      color $textColor
+      color d#b10000
   &.details
     display block
     position relative
     border-radius 2px
     margin 1.6em 0
     padding 1.6em
-    background-color #eee
     h4
       margin-top 0
     figure, p
@@ -42,3 +37,11 @@
     summary
       outline none
       cursor pointer
+
+@media (prefers-color-scheme: dark)
+  .custom-block
+    background-color #363636
+    &.warning
+      border-color #f970ff
+      .custom-block-title
+        color #f970ff

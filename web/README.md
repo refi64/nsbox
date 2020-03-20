@@ -1,6 +1,7 @@
 ---
 home: true
-heroText: nsbox
+heroText: ηsbοχ
+heroLabel: nsbox
 tagline: A powerful pet container manager
 actionText: Get Started →
 actionLink: /guide/

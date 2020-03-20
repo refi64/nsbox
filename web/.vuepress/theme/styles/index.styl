@@ -10,12 +10,16 @@ html, body
   margin 0
   background-color #fff
 
+html
+  height 100%
+
 body
   font-family -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif
   -webkit-font-smoothing antialiased
   -moz-osx-font-smoothing grayscale
   font-size 16px
   color $textColor
+  min-height 100%
 
 .page
   padding-left $sidebarWidth
@@ -27,7 +31,7 @@ body
   left 0
   right 0
   height $navbarHeight
-  background-color #fff
+  background-color alpha(#fff, 0.97)
   box-sizing border-box
   border-bottom 1px solid $borderColor
 
@@ -113,6 +117,8 @@ h1, h2, h3, h4, h5, h6
   font-weight 600
   line-height 1.25
 
+  accentFont()
+
   {$contentClass}:not(.custom) > &
     margin-top (0.5rem - $navbarHeight)
     padding-top ($navbarHeight + 1rem)
@@ -129,15 +135,24 @@ h1, h2, h3, h4, h5, h6
     opacity: 1
 
 h1
-  font-size 2.2rem
+  font-size 3rem
+
+  code
+    font-size 2.2rem !important
 
 h2
-  font-size 1.65rem
+  font-size 2.5rem
   padding-bottom .3rem
   border-bottom 1px solid $borderColor
 
+  code
+    font-size 1.65rem !important
+
 h3
-  font-size 1.35rem
+  font-size 2rem
+
+  code
+    font-size 1.35rem !important
 
 a.header-anchor
   font-size 0.85em
@@ -197,5 +212,14 @@ th, td
 
     .page
       padding-left 0
+
+@media (prefers-color-scheme: dark)
+  html, body, .sidebar
+    color $darkTextColor
+    background-color $darkBackgroundColor
+
+  .navbar
+    color $darkTextColor
+    background-color alpha($darkBackgroundColor, 0.97)
 
 @require 'mobile.styl'

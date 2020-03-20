@@ -12,12 +12,12 @@
         :src="$withBase($site.themeConfig.logo)"
         :alt="$siteTitle"
       >
-      <span
+      <!-- <span
         v-if="$siteTitle"
         ref="siteName"
         class="site-name"
         :class="{ 'can-hide': $site.themeConfig.logo }"
-      >{{ $siteTitle }}</span>
+      >{{ $siteTitle }}</span> -->
     </RouterLink>
 
     <div
@@ -112,11 +112,12 @@ $navbar-horizontal-padding = 1.5rem
     color $textColor
     position relative
   .links
+    accentFont()
     padding-left 1.5rem
     box-sizing border-box
     background-color white
     white-space nowrap
-    font-size 0.9rem
+    font-size 1.2rem
     position absolute
     right $navbar-horizontal-padding
     top $navbar-vertical-padding
@@ -124,6 +125,10 @@ $navbar-horizontal-padding = 1.5rem
     .search-box
       flex: 0 0 auto
       vertical-align top
+
+@media (prefers-color-scheme: dark)
+  .navbar .links
+    background-color $darkBackgroundColor
 
 @media (max-width: $MQMobile)
   .navbar
@@ -133,7 +138,7 @@ $navbar-horizontal-padding = 1.5rem
     .links
       padding-left 1.5rem
     .site-name
-      width calc(100vw - 9.4rem)
+      width calc(100vw - 9.4em)
       overflow hidden
       white-space nowrap
       text-overflow ellipsis

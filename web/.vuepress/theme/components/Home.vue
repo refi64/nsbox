@@ -10,12 +10,15 @@
         :alt="data.heroAlt || 'hero'"
       >
 
-      <h1
+      <!-- <h1
         v-if="data.heroText !== null"
+        :aria-label="data.heroLabel || data.heroText"
         id="main-title"
       >
         {{ data.heroText || $title || 'Hello' }}
-      </h1>
+      </h1> -->
+
+      <img :aria-label="data.heroLabel" :src="$withBase('/text.svg')" width="200">
 
       <p
         v-if="data.tagline !== null"
@@ -96,18 +99,20 @@ export default {
       max-height 280px
       display block
       margin 3rem auto 1.5rem
-    h1
-      font-size 3rem
-    h1, .description, .action
+    // h1
+    //   font-family Inter, sans-serif
+    //   font-size 3rem
+    // h1, .description, .action
+    .description, .action
       margin 1.8rem auto
     .description
       max-width 35rem
       font-size 1.6rem
       line-height 1.3
-      color $textColor
     .action-button
+      accentFont()
       display inline-block
-      font-size 1.2rem
+      font-size 1.5rem
       color #fff
       background-color $accentColor
       padding 0.8rem 1.6rem
@@ -135,14 +140,14 @@ export default {
       font-weight 500
       border-bottom none
       padding-bottom 0
-      color $textColor
-    p
-      color $textColor
   .footer
     padding 2.5rem
     border-top 1px solid $borderColor
     text-align center
-    color $textColor
+
+@media (prefers-color-scheme: dark)
+  .hero img
+    filter invert(100%)
 
 @media (max-width: $MQMobile)
   .home

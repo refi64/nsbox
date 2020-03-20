@@ -5,11 +5,8 @@
 ### Fedora
 
 ::: warning
-On the Fedora 31 betas, [the default SELinux policies for systemd-machined and,
-by extension, systemd-nspawn, are somewhat
-broken](https://bugzilla.redhat.com/show_bug.cgi?id=1760146). To work around this, you can
-manually apply the audit2allow-generated policies in bug report (somewhat preferred) or set
-SELinux to permissive ([not that ideal](https://stopdisablingselinux.com/)).
+At the moment, the SELinux policies for nsbox do not work. This will be fixed
+soon, but for now you may need to set selinux to permissive in order to use it.
 :::
 
 Testing builds based off of the master branch are available on COPR:

@@ -1,6 +1,6 @@
 <template>
   <ul
-    v-if="items.length"
+    v-if="items.length && items[0].children.length"
     class="sidebar-links"
   >
     <li

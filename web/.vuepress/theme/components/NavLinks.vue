@@ -131,6 +131,7 @@ export default {
     &:hover, &.router-link-active
       color $accentColor
   .nav-item
+    font-family 'Advent Pro', sans-serif
     position relative
     display inline-block
     margin-left 1.5rem

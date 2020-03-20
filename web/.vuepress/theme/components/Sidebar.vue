@@ -39,6 +39,7 @@ export default {
     padding 0.5rem 0 0.75rem 0
     a
       font-weight 600
+      letter-spacing 0.4px
     .nav-item, .repo-link
       display block
       line-height 1.25rem
