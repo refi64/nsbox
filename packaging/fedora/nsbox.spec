@@ -135,15 +135,11 @@ cp -r out/install/%{_sysconfdir} %{buildroot}
 cp -r out/install/{%{relbindir},%{rellibexecdir},%{reldatadir}} %{buildroot}/%{_prefix}
 chmod -R g-w %{buildroot}
 
-%post
-# XXX: I don't even know why I need this
-restorecon %{_libexecdir}/%{name}/nsboxd
-
 %pre selinux
 %selinux_relabel_pre
 
 %post selinux
-%selinux_modules_install %{_data}/selinux/packages/%{name}.pp.bz2
+%selinux_modules_install %{_datadir}/selinux/packages/%{name}.pp.bz2
 
 %postun selinux
 if [ $1 -eq 0 ]; then
