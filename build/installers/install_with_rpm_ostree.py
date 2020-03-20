@@ -91,16 +91,18 @@ def main():
     parser.add_argument('outdir', help='The build directory to install', default='out', type=Path)
     parser.add_argument('--branch', help='The release branch', default='edge', choices=['edge', 'stable'])
     parser.add_argument('--version', help='The release version')
+    parser.add_argument('--extra-args', help='Extra arguments to pass to rpm-ostree', default=[], nargs='*')
     args = parser.parse_args()
 
     rpms = get_matching_rpms(args)
     to_uninstall = get_packages_to_uninstall(args)
 
-    args = ['install']
-    args.extend(f'--uninstall={package}' for package in to_uninstall)
-    args.extend(map(str, rpms))
+    command = ['install']
+    command.extend(f'--uninstall={package}' for package in to_uninstall)
+    command.extend(args.extra_args)
+    command.extend(map(str, rpms))
 
-    subprocess.run(rpm_ostree(args), check=True)
+    subprocess.run(rpm_ostree(command), check=True)
 
 
 if __name__ == '__main__':
