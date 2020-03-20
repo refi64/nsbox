@@ -18,7 +18,7 @@
         {{ data.heroText || $title || 'Hello' }}
       </h1> -->
 
-      <img :aria-label="data.heroLabel" :src="$withBase('/text.svg')" width="200">
+      <img alt="nsbox" id="main-title" :aria-label="data.heroLabel" :src="$withBase('/text.svg')" width="200">
 
       <p
         v-if="data.tagline !== null"

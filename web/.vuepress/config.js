@@ -1,13 +1,4 @@
 module.exports = {
-  head: [
-    [
-      'link', {
-        rel: 'stylesheet',
-        href:
-            'https://fonts.googleapis.com/css2?family=Advent+Pro:wght@500;600&display=swap'
-      }
-    ],
-  ],
   themeConfig: {
     logo: '/nsbox.svg',
     nav: [
@@ -25,5 +16,15 @@ module.exports = {
     },
   },
   title: 'nsbox',
+  description: 'A powerful pet container manager',
+  head: [
+    [
+      'link', {
+        rel: 'stylesheet',
+        href:
+            'https://fonts.googleapis.com/css2?family=Advent+Pro:wght@500;600&display=swap'
+      }
+    ],
+  ],
   plugins: ['@vuepress/google-analytics', {'ga': 'UA-55018880-2'}],
 }
