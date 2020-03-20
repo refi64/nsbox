@@ -335,6 +335,10 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		return errors.Wrap(err, "failed to bind graphics")
 	}
 
+	if ct.Config.ShareCgroupfs {
+		builder.AddBind("/sys/fs/cgroup")
+	}
+
 	setUserEnv(machineId, mainImage, ct, usrdata)
 
 	if err := writeContainerFiles(ct, hostPrivPath, usrdata); err != nil {
@@ -369,6 +373,10 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	// We don't want nspawn notifying of start, since nsbox-init is responsible for that.
 	nspawnCmd.Env = os.Environ()
 	nspawnCmd.Env = append(nspawnCmd.Env, "NOTIFY_SOCKET=")
+
+	if ct.Config.ShareCgroupfs {
+		nspawnCmd.Env = append(nspawnCmd.Env, "SYSTEMD_NSPAWN_USE_CGNS=0")
+	}
 
 	// Make sure nspawn dies if we do.
 	nspawnCmd.SysProcAttr = &unix.SysProcAttr{

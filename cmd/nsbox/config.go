@@ -22,6 +22,7 @@ type configCommand struct {
 	xdgDesktopExtra   args.ArrayTransformValue
 	xdgDesktopExports args.ArrayTransformValue
 	auth              container.Auth
+	shareCgroupfs     bool
 }
 
 func newConfigCommand(app args.App) subcommands.Command {
@@ -44,6 +45,7 @@ func (*configCommand) Usage() string {
 }
 
 func (cmd *configCommand) SetFlags(fs *flag.FlagSet) {
+	fs.BoolVar(&cmd.shareCgroupfs, "share-cgroupfs", false, "share the host's cgroupfs")
 	fs.Var(&cmd.auth, "auth", "password authentication method")
 	fs.Var(&cmd.xdgDesktopExtra, "xdg-desktop-extra", "extra desktop file directories")
 	fs.Var(&cmd.xdgDesktopExports, "xdg-desktop-exports", "exported desktop files patterns")
@@ -64,7 +66,7 @@ func (cmd *configCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.Ex
 	}
 
 	fs.Visit(func(f *flag.Flag) {
-		// XXX: This is ridiculous, all I want to know is if -auth was actually given...
+		// XXX: This is ridiculous, all I want to know is if flags were actually given...
 		if f.Name == "auth" {
 			ct.Config.Auth = cmd.auth
 
@@ -84,6 +86,8 @@ func (cmd *configCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.Ex
 					return
 				}
 			}
+		} else if f.Name == "share-cgroupfs" {
+			ct.Config.ShareCgroupfs = true
 		}
 	})
 

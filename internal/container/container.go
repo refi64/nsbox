@@ -72,6 +72,7 @@ type Config struct {
 	Auth              Auth
 	XdgDesktopExports []string
 	XdgDesktopExtra   []string
+	ShareCgroupfs     bool
 }
 
 type Container struct {
