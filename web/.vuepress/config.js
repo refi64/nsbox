@@ -33,5 +33,5 @@ module.exports = {
       }
     ],
   ],
-  plugins: ['@vuepress/google-analytics', {'ga': 'UA-55018880-2'}],
+  plugins: [['@vuepress/google-analytics', {'ga': 'UA-55018880-2'}]],
 }
