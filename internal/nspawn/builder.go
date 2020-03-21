@@ -11,6 +11,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+const NetworkZonePrefix = "vz-"
+
 type BindMount struct {
 	Host      string
 	Dest      string
@@ -25,6 +27,8 @@ type Builder struct {
 	AsPid2           bool
 	Boot             bool
 	KeepUnit         bool
+	NetworkVeth      bool
+	NetworkZone      string
 	MachineDirectory string
 	LinkJournal      string
 	MachineName      string
@@ -112,10 +116,15 @@ func (builder *Builder) Build() []string {
 		addArg(&args, "keep-unit")
 	}
 
+	if builder.NetworkVeth {
+		addArg(&args, "network-veth")
+	}
+
 	addArgValue(&args, "directory", builder.MachineDirectory)
 	maybeAddArgValue(&args, "link-journal", builder.LinkJournal)
 	maybeAddArgValue(&args, "machine", builder.MachineName)
 	maybeAddArgValue(&args, "hostname", builder.Hostname)
+	maybeAddArgValue(&args, "network-zone", builder.NetworkZone)
 
 	for _, bind := range builder.Binds {
 		dest := escapeMountPath(bind.Dest)

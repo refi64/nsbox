@@ -23,6 +23,7 @@ type configCommand struct {
 	xdgDesktopExports args.ArrayTransformValue
 	auth              container.Auth
 	shareCgroupfs     bool
+	virtualNetwork    bool
 }
 
 func newConfigCommand(app args.App) subcommands.Command {
@@ -46,6 +47,7 @@ func (*configCommand) Usage() string {
 
 func (cmd *configCommand) SetFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&cmd.shareCgroupfs, "share-cgroupfs", false, "share the host's cgroupfs")
+	fs.BoolVar(&cmd.virtualNetwork, "virtual-network", false, "use a virtualized network")
 	fs.Var(&cmd.auth, "auth", "password authentication method")
 	fs.Var(&cmd.xdgDesktopExtra, "xdg-desktop-extra", "extra desktop file directories")
 	fs.Var(&cmd.xdgDesktopExports, "xdg-desktop-exports", "exported desktop files patterns")
@@ -88,6 +90,8 @@ func (cmd *configCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.Ex
 			}
 		} else if f.Name == "share-cgroupfs" {
 			ct.Config.ShareCgroupfs = cmd.shareCgroupfs
+		} else if f.Name == "virtual-network" {
+			ct.Config.VirtualNetwork = cmd.virtualNetwork
 		}
 	})
 

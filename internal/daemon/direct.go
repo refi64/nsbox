@@ -18,6 +18,7 @@ import (
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/image"
 	"github.com/refi64/nsbox/internal/log"
+	"github.com/refi64/nsbox/internal/network"
 	"github.com/refi64/nsbox/internal/nspawn"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/selinux"
@@ -203,6 +204,8 @@ func startVarlinkService(ct *container.Container, hostPrivPath string) (*net.Lis
 }
 
 func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdata) error {
+	var firewall network.Firewall
+
 	if err := ct.LockUntilProcessDeath(container.NoWaitForLock); err != nil {
 		return err
 	}
@@ -219,6 +222,32 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	builder.Quiet = true
 	builder.KeepUnit = true
+	builder.NetworkVeth = ct.Config.VirtualNetwork
+	if ct.Config.VirtualNetwork {
+		builder.NetworkZone, err = network.GenerateUniqueLinkName(ct.Name, nspawn.NetworkZonePrefix)
+		if err != nil {
+			return errors.Wrapf(err, "generating zone name for %s", ct.Name)
+		}
+
+		firewall = network.GetFirewall()
+		if firewall != nil {
+			defer func() {
+				if err := firewall.Close(); err != nil {
+					log.Alert("Failed to close firewall:", err)
+				}
+			}()
+
+			if err := firewall.TrustInterface(nspawn.NetworkZonePrefix + builder.NetworkZone); err != nil {
+				log.Alertf("Failed to trust zone %s: %v", builder.NetworkZone, err)
+			} else {
+				defer func() {
+					if err := firewall.UntrustInterface(nspawn.NetworkZonePrefix + builder.NetworkZone); err != nil {
+						log.Alertf("Failed to untrust zone %s: %v", builder.NetworkZone, err)
+					}
+				}()
+			}
+		}
+	}
 	builder.MachineDirectory = ct.Storage()
 	builder.LinkJournal = "host"
 	builder.MachineName = ct.Name
@@ -302,6 +331,11 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 		gettyOverride := filepath.Join(dataDir, "getty-override.conf")
 		builder.AddBindTo(gettyOverride, "/etc/systemd/system/console-getty.service.d/00-nsbox.conf")
+
+		if ct.Config.VirtualNetwork {
+			wantsNetworkd := filepath.Join(dataDir, "wants-networkd.conf")
+			builder.AddBindTo(wantsNetworkd, "/etc/systemd/system/nsbox-container.target.d/00-nsbox-networkd.conf")
+		}
 	} else {
 		// Binding coredumps for a booted container really doesn't make that much sense...
 		builder.AddBind("/var/lib/systemd/coredump")

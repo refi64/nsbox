@@ -21,8 +21,8 @@ import (
 	"github.com/refi64/nsbox/internal/userdata"
 )
 
-func startNsboxd(systemd *systemd1.Conn, nsboxd, name string, usrdata *userdata.Userdata) error {
-	serviceName := fmt.Sprintf("nsbox-%s.service", name)
+func startNsboxd(systemd *systemd1.Conn, nsboxd string, ct *container.Container, usrdata *userdata.Userdata) error {
+	serviceName := fmt.Sprintf("nsbox-%s.service", ct.Name)
 
 	journal, err := sdjournal.NewJournalReader(sdjournal.JournalReaderConfig{
 		// XXX: use a 1-nanosecond duration to get it to filter starting now.
@@ -59,9 +59,9 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd, name string, usrdata *userdata.
 
 	properties := []systemd1.Property{
 		systemd1.PropType("notify"),
-		systemd1.PropDescription("nsbox " + name),
+		systemd1.PropDescription("nsbox " + ct.Name),
 		systemd1.PropExecStart(
-			[]string{nsboxd, fmt.Sprint("-v=", log.Verbose()), name},
+			[]string{nsboxd, fmt.Sprint("-v=", log.Verbose()), ct.Name},
 			false,
 		),
 		systemd1.Property{
@@ -72,6 +72,10 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd, name string, usrdata *userdata.
 			Name:  "NotifyAccess",
 			Value: godbus.MakeVariant("all"),
 		},
+	}
+
+	if ct.Config.VirtualNetwork {
+		properties = append(properties, systemd1.PropRequires("systemd-networkd.service"))
 	}
 
 	journalUntil := make(chan time.Time)
@@ -119,7 +123,7 @@ func RunContainerViaTransientUnit(ct *container.Container, usrdata *userdata.Use
 			return errors.Wrap(err, "cannot locate nsboxd")
 		}
 
-		if err := startNsboxd(systemd, nsboxd, ct.Name, usrdata); err != nil {
+		if err := startNsboxd(systemd, nsboxd, ct, usrdata); err != nil {
 			return errors.Wrap(err, "cannot start nsboxd")
 		}
 	}

@@ -20,6 +20,7 @@ FEDORA_REPO_AVAILABLE_DEPS = {
     'github.com/godbus/dbus',
     'github.com/kr/pty',
     'github.com/pkg/errors',
+    'github.com/vishvananda/netlink',
     'golang.org/x/crypto',
     'golang.org/x/sync',
     'golang.org/x/sys',

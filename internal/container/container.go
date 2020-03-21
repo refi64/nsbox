@@ -73,6 +73,7 @@ type Config struct {
 	XdgDesktopExports []string
 	XdgDesktopExtra   []string
 	ShareCgroupfs     bool
+	VirtualNetwork    bool
 }
 
 type Container struct {
@@ -183,6 +184,10 @@ func Open(usrdata *userdata.Userdata, name string) (*Container, error) {
 }
 
 func (container Container) UpdateConfig() error {
+	if container.Config.VirtualNetwork && !container.Config.Boot {
+		return errors.New("cannot use private networking on a non-booted container")
+	}
+
 	configPath := filepath.Join(container.Path, configJson)
 	tempConfigPath := configPath + ".tmp"
 
