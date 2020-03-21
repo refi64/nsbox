@@ -223,6 +223,49 @@ $ nsbox-edge config -auth=manual my-container
 nsbox will ask you to enter the custom password. This will be applied to the container the
 next time you run it. (If it's already running, you will have to kill it first.)
 
+## Virtual networking
+
+You can have your nsbox containers use a fully private network device. The container will
+have its own IP address and DHCP.
+
+::: warning
+systemd-nspawn's virtual networks tend to react badly with firewalls, which tend to filter
+out the virtual network's connections. There is built-in support in nsbox for use with
+[firewalld](https://firewalld.org/), but if you're using another firewall, then the virtual
+network will not be able to connect.
+:::
+
+In order to enable virtual networks, set `virtual-network` config option:
+
+```bash
+$ nsbox-edge config -virtual-network my-container
+```
+
+Note that systemd-networkd will be started on the host, and both systemd-networkd and
+systemd-resolved will be started inside the container.
+
+## Running Docker inside an nsbox container
+
+::: warning
+If you're on Fedora 31+, note that [cgroups v2 is enabled by default](
+https://www.redhat.com/sysadmin/fedora-31-control-group-v2), which breaks Docker.
+In order to use cgroups v1 instead, you can add the `systemd.unified_cgroup_hierarchy=0`
+kernel parameter option to your boot command line, either [temporarily](
+https://docs.fedoraproject.org/en-US/fedora/rawhide/system-administrators-guide/kernel-module-driver-configuration/Working_with_the_GRUB_2_Boot_Loader/#sec-Making_Temporary_Changes_to_a_GRUB_2_Menu)
+or [permanently](https://fedoramagazine.org/setting-kernel-command-line-arguments-with-fedora-30/).
+:::
+
+In order to run Docker inside an nsbox container, you need two things:
+
+- [Virtual networking.](#virtual-networking)
+- A system call filter that allows kernel keyring access.
+
+Both of these can be accomplished with a single config command:
+
+```bash
+$ nsbox-edge config -virtual-network -syscall-filters=':@default,@keyring' my-container
+```
+
 ## Got issues?
 
 Check out the [FAQ](faq.md) for solutions to some common problems you may encounter.
