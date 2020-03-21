@@ -317,7 +317,10 @@ func (container Container) UpdateManualPassword(pass []byte) error {
 
 	defer passFile.Close()
 
-	passFile.Chmod(0)
+	if err := passFile.Chmod(0); err != nil {
+		return errors.Wrap(err, "failed to modify shadow password file permissions")
+	}
+
 	fmt.Fprint(passFile, hashed)
 	return nil
 }
