@@ -370,7 +370,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	}
 
 	if ct.Config.ShareCgroupfs {
-		builder.AddBind("/sys/fs/cgroup")
+		builder.AddRecursiveBind("/sys/fs/cgroup")
 	}
 
 	setUserEnv(machineId, mainImage, ct, usrdata)
