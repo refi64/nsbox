@@ -87,7 +87,7 @@ func (cmd *configCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.Ex
 				}
 			}
 		} else if f.Name == "share-cgroupfs" {
-			ct.Config.ShareCgroupfs = true
+			ct.Config.ShareCgroupfs = cmd.shareCgroupfs
 		}
 	})
 
