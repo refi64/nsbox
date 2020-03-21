@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	sdutil "github.com/coreos/go-systemd/util"
 	"github.com/pkg/errors"
@@ -252,6 +253,8 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	builder.LinkJournal = "host"
 	builder.MachineName = ct.Name
 	builder.Hostname = ct.Name
+	builder.Capabilities = ct.Config.ExtraCapabilities
+	builder.SystemCallFilter = strings.Join(ct.Config.SyscallFilters, " ")
 
 	if ct.Config.Boot {
 		builder.Boot = true

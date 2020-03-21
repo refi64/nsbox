@@ -72,6 +72,8 @@ type Config struct {
 	Auth              Auth
 	XdgDesktopExports []string
 	XdgDesktopExtra   []string
+	ExtraCapabilities []string
+	SyscallFilters    []string
 	ShareCgroupfs     bool
 	VirtualNetwork    bool
 }
@@ -186,6 +188,13 @@ func Open(usrdata *userdata.Userdata, name string) (*Container, error) {
 func (container Container) UpdateConfig() error {
 	if container.Config.VirtualNetwork && !container.Config.Boot {
 		return errors.New("cannot use private networking on a non-booted container")
+	}
+
+	syscallRegex := regexp.MustCompile(`@[a-z\-]+$|[a-z0-9_]+$`)
+	for _, filter := range container.Config.SyscallFilters {
+		if !syscallRegex.MatchString(filter) {
+			return errors.Errorf("invalid syscall filter: %s", filter)
+		}
 	}
 
 	configPath := filepath.Join(container.Path, configJson)

@@ -33,6 +33,8 @@ type Builder struct {
 	LinkJournal      string
 	MachineName      string
 	Hostname         string
+	Capabilities     []string
+	SystemCallFilter string
 	Binds            []BindMount
 	Command          []string
 }
@@ -125,6 +127,11 @@ func (builder *Builder) Build() []string {
 	maybeAddArgValue(&args, "machine", builder.MachineName)
 	maybeAddArgValue(&args, "hostname", builder.Hostname)
 	maybeAddArgValue(&args, "network-zone", builder.NetworkZone)
+	maybeAddArgValue(&args, "system-call-filter", builder.SystemCallFilter)
+
+	for _, capability := range builder.Capabilities {
+		addArgValue(&args, "capability", capability)
+	}
 
 	for _, bind := range builder.Binds {
 		dest := escapeMountPath(bind.Dest)

@@ -19,6 +19,8 @@ import (
 type configCommand struct {
 	name string
 
+	extraCapabilities args.ArrayTransformValue
+	syscallFilters    args.ArrayTransformValue
 	xdgDesktopExtra   args.ArrayTransformValue
 	xdgDesktopExports args.ArrayTransformValue
 	auth              container.Auth
@@ -49,6 +51,8 @@ func (cmd *configCommand) SetFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&cmd.shareCgroupfs, "share-cgroupfs", true, "share the host's cgroupfs")
 	fs.BoolVar(&cmd.virtualNetwork, "virtual-network", true, "use a virtualized network")
 	fs.Var(&cmd.auth, "auth", "password authentication method")
+	fs.Var(&cmd.extraCapabilities, "extra-capabilities", "extra capabilities to grant")
+	fs.Var(&cmd.syscallFilters, "syscall-filters", "system call filters")
 	fs.Var(&cmd.xdgDesktopExtra, "xdg-desktop-extra", "extra desktop file directories")
 	fs.Var(&cmd.xdgDesktopExports, "xdg-desktop-exports", "exported desktop files patterns")
 }
@@ -99,6 +103,8 @@ func (cmd *configCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.Ex
 		return args.HandleError(err)
 	}
 
+	cmd.extraCapabilities.Apply(&ct.Config.ExtraCapabilities)
+	cmd.syscallFilters.Apply(&ct.Config.SyscallFilters)
 	cmd.xdgDesktopExtra.Apply(&ct.Config.XdgDesktopExtra)
 	cmd.xdgDesktopExports.Apply(&ct.Config.XdgDesktopExports)
 
