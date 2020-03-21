@@ -17,6 +17,7 @@ template("nsbox_image") {
       "--export", rebase_path(outputs[0], root_build_dir),
       "--override-nsbox-version", release_version,
       "--override-nsbox-branch", release_branch,
+      "--builder", image_builder,
     ]
 
     if (defined(invoker.tag) && invoker.tag != "") {
