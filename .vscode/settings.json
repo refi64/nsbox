@@ -11,5 +11,12 @@
     "editor.smoothScrolling": true,
     "[vue]": {
         "editor.formatOnSave": false
-    }
+    },
+    "[json]": {
+        "editor.formatOnSave": false
+    },
+    "go.lintFlags": [
+        "internal",
+        "cmd"
+    ]
 }
