@@ -5,10 +5,11 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
-	"github.com/coreos/go-systemd/daemon"
+	"github.com/coreos/go-systemd/v22/daemon"
 	"github.com/google/subcommands"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/args"
@@ -32,7 +33,7 @@ func startPtyServiceAndNotifyHost(name string) error {
 	//   anyway.
 	// - If no error occurs, this will run forever until killed.
 
-	if err := devnsbox.NotifyStart().Call(conn); err != nil {
+	if err := devnsbox.NotifyStart().Call(context.Background(), conn); err != nil {
 		return errors.Wrap(err, "failed to notify of start")
 	}
 

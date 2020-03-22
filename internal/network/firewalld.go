@@ -5,7 +5,7 @@
 package network
 
 import (
-	godbus "github.com/godbus/dbus"
+	godbus "github.com/godbus/dbus/v5"
 	"github.com/refi64/nsbox/internal/log"
 )
 

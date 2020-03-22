@@ -5,7 +5,9 @@
 package varlinkhost
 
 import (
-	"github.com/coreos/go-systemd/daemon"
+	"context"
+
+	"github.com/coreos/go-systemd/v22/daemon"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/integration"
 	"github.com/refi64/nsbox/internal/log"
@@ -18,7 +20,7 @@ type VarlinkHost struct {
 	container *container.Container
 }
 
-func (host *VarlinkHost) NotifyStart(call devnsbox.VarlinkCall) error {
+func (host *VarlinkHost) NotifyStart(ctx context.Context, call devnsbox.VarlinkCall) error {
 	log.Debug("received NotifyStart()")
 
 	if _, err := daemon.SdNotify(true, daemon.SdNotifyReady); err != nil {
@@ -26,10 +28,10 @@ func (host *VarlinkHost) NotifyStart(call devnsbox.VarlinkCall) error {
 		return err
 	}
 
-	return call.ReplyNotifyStart()
+	return call.ReplyNotifyStart(ctx)
 }
 
-func (host *VarlinkHost) NotifyReloadExports(call devnsbox.VarlinkCall) error {
+func (host *VarlinkHost) NotifyReloadExports(ctx context.Context, call devnsbox.VarlinkCall) error {
 	log.Debug("received NotifyReloadExports()")
 
 	if err := integration.UpdateDesktopFiles(host.container); err != nil {
@@ -37,7 +39,7 @@ func (host *VarlinkHost) NotifyReloadExports(call devnsbox.VarlinkCall) error {
 		return err
 	}
 
-	return call.ReplyNotifyReloadExports()
+	return call.ReplyNotifyReloadExports(ctx)
 }
 
 func New(ct *container.Container) *devnsbox.VarlinkInterface {

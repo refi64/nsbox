@@ -63,7 +63,7 @@ func OpenPtyInContainer(ct *container.Container) (*os.File, error) {
 
 	file := os.NewFile(uintptr(fd), path)
 	if file == nil {
-		panic(fmt.Sprintf("given invalid fd by pty service: ", fd))
+		panic(fmt.Sprint("given invalid fd by pty service: ", fd))
 	}
 
 	log.Debugf("pty service sent %d, %s", fd, path)

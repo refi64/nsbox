@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/coreos/go-systemd/machine1"
+	"github.com/coreos/go-systemd/v22/machine1"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"

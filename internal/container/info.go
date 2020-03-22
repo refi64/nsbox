@@ -11,8 +11,8 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/coreos/go-systemd/dbus"
-	"github.com/coreos/go-systemd/machine1"
+	"github.com/coreos/go-systemd/v22/dbus"
+	"github.com/coreos/go-systemd/v22/machine1"
 	"github.com/dustin/go-humanize"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/userdata"

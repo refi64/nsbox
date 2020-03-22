@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 
 	"github.com/google/subcommands"
@@ -21,7 +22,7 @@ func reloadExports() error {
 
 	defer conn.Close()
 
-	if err := devnsbox.NotifyReloadExports().Call(conn); err != nil {
+	if err := devnsbox.NotifyReloadExports().Call(context.Background(), conn); err != nil {
 		return errors.Wrap(err, "failed to send reload exports message")
 	}
 

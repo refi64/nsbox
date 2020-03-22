@@ -13,7 +13,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/kr/pty"
+	"github.com/creack/pty"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"

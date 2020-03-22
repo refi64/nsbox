@@ -12,36 +12,38 @@
 package devnsbox
 
 import (
+	"context"
+
 	"github.com/varlink/go/varlink"
 )
 
 type NotifyStart_methods interface {
-	Call(c *varlink.Connection) error
+	Call(ctx context.Context, c *varlink.Connection) error
 }
 
 func NotifyStart() NotifyStart_methods
 
 type NotifyReloadExports_methods interface {
-	Call(c *varlink.Connection) error
+	Call(ctx context.Context, c *varlink.Connection) error
 }
 
 func NotifyReloadExports() NotifyReloadExports_methods
 
 type VarlinkCall interface {
-	ReplyNotifyStart() error
-	ReplyNotifyReloadExports() error
+	ReplyNotifyStart(ctx context.Context) error
+	ReplyNotifyReloadExports(ctx context.Context) error
 }
 
 type iface interface {
-	NotifyStart(c VarlinkCall) error
-	NotifyReloadExports(c VarlinkCall) error
+	NotifyStart(ctx context.Context, c VarlinkCall) error
+	NotifyReloadExports(ctx context.Context, c VarlinkCall) error
 }
 
 type VarlinkInterface struct {
 	iface
 }
 
-func (VarlinkInterface) VarlinkDispatch(call varlink.Call, methodname string) error
+func (VarlinkInterface) VarlinkDispatch(ctx context.Context, call varlink.Call, methodname string) error
 func (VarlinkInterface) VarlinkGetName() string
 func (VarlinkInterface) VarlinkGetDescription() string
 

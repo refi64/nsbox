@@ -7,6 +7,7 @@
 package daemon
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -14,7 +15,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	sdutil "github.com/coreos/go-systemd/util"
+	sdutil "github.com/coreos/go-systemd/v22/util"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/image"
@@ -186,7 +187,7 @@ func startVarlinkService(ct *container.Container, hostPrivPath string) (*net.Lis
 	}
 
 	serviceUri := "unix://" + filepath.Join(hostPrivPath, paths.HostServiceSocketName)
-	if err := service.Bind(serviceUri); err != nil {
+	if err := service.Bind(context.Background(), serviceUri); err != nil {
 		return nil, errors.Wrap(err, "failed to bind to varlink service")
 	}
 
@@ -196,12 +197,12 @@ func startVarlinkService(ct *container.Container, hostPrivPath string) (*net.Lis
 	}
 
 	go func() {
-		if err := service.DoListen(0); err != nil {
+		if err := service.DoListen(context.Background(), 0); err != nil {
 			log.Alert("failed to listen on host service socket:", err)
 		}
 	}()
 
-	return listener, err
+	return &listener, err
 }
 
 func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdata) error {
