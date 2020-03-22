@@ -1,0 +1,26 @@
+name: Build and push the images
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/build_images.*'
+      - 'images/**'
+      - 'utils/nsbox-bender.py'
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  build:
+    name: 'Build and push the images'
+    runs-on: ubuntu-latest
+    container:
+      image: registry.fedoraproject.org/fedora:31
+      options: '--privileged'
+    steps:
+      - name: 'Checkout the nsbox repo'
+        uses: actions/checkout@v1
+      - name: 'Build the containers'
+        run: ./.github/workflows/build_images.sh
+        env:
+          GCR_JSON_KEY: ${{secrets.GCR_JSON_KEY}}
