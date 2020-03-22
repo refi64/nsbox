@@ -9,15 +9,10 @@ require (
 	github.com/coreos/go-systemd/v22 v22.0.0
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f
 	github.com/creack/pty v1.1.9
-	github.com/docker/cli v0.0.0-20191017083524-a8ff7f821017
-	github.com/docker/docker v1.4.2-0.20190924003213-a8608b5b67c7
 	github.com/dustin/go-humanize v1.0.0
-	github.com/fatih/color v1.7.0
 	github.com/godbus/dbus/v5 v5.0.3
 	github.com/google/go-containerregistry v0.0.0-20200320200342-35f57d7d4930
 	github.com/google/subcommands v1.2.0
-	github.com/mattn/go-colorable v0.1.2
-	github.com/mattn/go-isatty v0.0.8
 	github.com/opencontainers/selinux v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/refi64/go-lxtempdir v0.0.0-20190815193640-e8f0a4e7825f

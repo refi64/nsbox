@@ -12,7 +12,7 @@ else
   git_branch=master
 fi
 
-go mod tidy
+go mod tidy -v
 go mod vendor
 
 gn gen out --args="${gn_args[*]}"
