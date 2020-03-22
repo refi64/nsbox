@@ -18,42 +18,33 @@ FEDORA_REPO_AVAILABLE_DEPS = {
     'github.com/coreos/go-systemd',
     'github.com/dustin/go-humanize',
     'github.com/godbus/dbus',
+    'github.com/google/go-cmp',
+    'github.com/google/subcommands',
     'github.com/kr/pty',
     'github.com/pkg/errors',
+    'github.com/opencontainers/selinux',
     'github.com/vishvananda/netlink',
     'golang.org/x/crypto',
     'golang.org/x/sync',
     'golang.org/x/sys',
+    'k8s.io/apimachinery',
+    'k8s.io/klog',
 }
-
 
 MANUALLY_DOWNLOADED_DEPS = {
     'github.com/artyom/untar',
     'github.com/GehirnInc/crypt',
     'github.com/google/go-containerregistry',
-    'github.com/google/subcommands',
     'github.com/refi64/go-lxtempdir',
     'github.com/varlink/go',
-}
-
-F31_ONLY_REPO_DEPS = {
-    'github.com/google/go-cmp',
-    'github.com/opencontainers/selinux',
-
-    # Too old in F30.
-    'github.com/godbus/dbus',
-    'github.com/kr/pty',
-
-    'k8s.io/apimachinery',
-    'k8s.io/klog',
 }
 
 NSBOX_PACKAGE_NAME = 'github.com/refi64/nsbox'
 
 Module = collections.namedtuple('Module', ['name', 'revision', 'indirect', 'child_deps'])
 
-RepoSource = collections.namedtuple('RepoSource', ['url', 'imports', 'f31_only', 'indirect'])
-VendorSource = collections.namedtuple('VendorSource', ['url', 'revision', 'pre_f31_only'])
+RepoSource = collections.namedtuple('RepoSource', ['url', 'imports', 'indirect'])
+VendorSource = collections.namedtuple('VendorSource', ['url', 'revision'])
 
 
 # We don't want to count indirect deps of stuff available in repos, but we *do* need to count
@@ -103,17 +94,16 @@ class SourceGatherEngine:
 
             self._importmap[dep['ImportPath']] = name
 
-    def _process_module(self, module, *, parent=None, f31_only_parent=False):
+    def _process_module(self, module, *, parent=None):
         if module.name in self._pkg_sources:
             return
 
         found = False
 
-        if (module.name in FEDORA_REPO_AVAILABLE_DEPS | F31_ONLY_REPO_DEPS
+        if (module.name in FEDORA_REPO_AVAILABLE_DEPS
             or (parent is not None
                 and all(isinstance(src, RepoSource) for src in self._pkg_sources[parent.name]))):
             source = RepoSource(imports=[child['ImportPath'] for child in module.child_deps],
-                                f31_only=module.name in F31_ONLY_REPO_DEPS,
                                 # Don't treat it as indirect unless its parent is also in the
                                 # repos, otherwise we will omit dependencies for vendored
                                 # sources.
@@ -125,11 +115,9 @@ class SourceGatherEngine:
 
             found = True
 
-        if module.name in MANUALLY_DOWNLOADED_DEPS | F31_ONLY_REPO_DEPS:
+        if module.name in MANUALLY_DOWNLOADED_DEPS:
             source = VendorSource(url=module.name,
-                                  revision=module.revision,
-                                  pre_f31_only=module.name in F31_ONLY_REPO_DEPS
-                                                or f31_only_parent)
+                                  revision=module.revision)
             self._pkg_sources[module.name].append(source)
 
             found = True
@@ -142,9 +130,7 @@ class SourceGatherEngine:
             for imp in child.get('Imports', []):
                 imp_module = self._importmap[imp]
                 if imp_module is not None:
-                    self._process_module(self._modmap[imp_module], parent=module,
-                                         f31_only_parent=module.name in F31_ONLY_REPO_DEPS
-                                                            or f31_only_parent)
+                    self._process_module(self._modmap[imp_module], parent=module)
 
     def _process_direct_modules(self):
         for module in self._modmap.values():
@@ -188,16 +174,6 @@ class SpecGenerator:
         self._add(f'Source{self._source_offset}: {url}')
         self._source_offset += 1
 
-    @contextlib.contextmanager
-    def f31_only_if(self, f31_only):
-        if f31_only:
-            self._add('%if 0%{?fedora} >= 31')
-
-        yield
-
-        if f31_only:
-            self._add('%endif')
-
     def _map_sorted_sources(self, sources, ty, func):
         for _, module_sources in sorted(sources.items(), key=lambda p: p[0]):
             for source in module_sources:
@@ -208,9 +184,8 @@ class SpecGenerator:
         if source.indirect:
             return
 
-        with self.f31_only_if(source.f31_only):
-            for imp in source.imports:
-                self._build_requires(f'golang({imp})')
+        for imp in source.imports:
+            self._build_requires(f'golang({imp})')
 
     def _setup_repo_source(self, source):
         self._add(f'mkdir -p vendor/{os.path.dirname(source.url)}')
@@ -235,20 +210,10 @@ class SpecGenerator:
         self._setup_offset += 1
 
     def _generate_universal_vendor_source(self, source):
-        if not source.pre_f31_only:
-            self._add_vendor_source(source)
+        self._add_vendor_source(source)
 
     def _setup_universal_vendor_source(self, source):
-        if not source.pre_f31_only:
-            self._setup_vendor_source(source)
-
-    def _generate_pre_f31_only_vendor_source(self, source):
-        if source.pre_f31_only:
-            self._add_vendor_source(source)
-
-    def _setup_pre_f31_only_vendor_source(self, source):
-        if source.pre_f31_only:
-            self._setup_vendor_source(source)
+        self._setup_vendor_source(source)
 
     def _generate_for_sources(self, sources):
         self._map_sorted_sources(sources, RepoSource, self._generate_repo_source)
@@ -261,15 +226,6 @@ class SpecGenerator:
 
         with self._with_macro('setup_go_archives_universal'):
             self._map_sorted_sources(sources, VendorSource, self._setup_universal_vendor_source)
-
-        self._add('%if 0%{?fedora} < 31')
-        self._map_sorted_sources(sources, VendorSource, self._generate_pre_f31_only_vendor_source)
-
-        with self._with_macro('setup_go_archives_pre_f31_only'):
-            self._map_sorted_sources(sources, VendorSource,
-                                     self._setup_pre_f31_only_vendor_source)
-
-        self._add('%endif')
 
     @staticmethod
     def generate(fp, source_offset, sources):

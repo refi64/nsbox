@@ -16,9 +16,11 @@ require (
 	github.com/opencontainers/selinux v1.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/refi64/go-lxtempdir v0.0.0-20190815193640-e8f0a4e7825f
+	github.com/spf13/cobra v0.0.6 // indirect
 	github.com/varlink/go v0.0.0-20190728103713-b83e34ab175f
 	github.com/vishvananda/netlink v1.1.0
 	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58 // indirect
 	golang.org/x/sys v0.0.0-20190826190057-c7b8b68b1456
 	k8s.io/apimachinery v0.17.4 // indirect

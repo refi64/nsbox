@@ -30,11 +30,7 @@ License: MPL-2.0
 URL: https://nsbox.dev/
 BuildRequires: gcc
 BuildRequires: gn
-%if 0%{?fedora} >= 31
 BuildRequires: go-rpm-macros
-%else
-BuildRequires: go-compilers-golang-compiler
-%endif
 BuildRequires: golang
 BuildRequires: ninja-build
 BuildRequires: python3
@@ -86,7 +82,6 @@ rm -rf %{name}-%{version}
 
 # Order of these commands is important!
 %setup_go_archives_universal
-%{?setup_go_archives_pre_f31_only}
 
 %setup -q -D
 
