@@ -18,5 +18,8 @@
     "go.lintFlags": [
         "internal",
         "cmd"
+    ],
+    "python.autoComplete.extraPaths": [
+        "build"
     ]
 }
