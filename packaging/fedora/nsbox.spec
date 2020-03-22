@@ -156,6 +156,7 @@ fi
 %{_libexecdir}/%{name}/nsbox-invoker
 %{_libexecdir}/%{name}/nsbox-host
 %{_datadir}/%{name}/data/getty-override.conf
+%{_datadir}/%{name}/data/wants-networkd.conf
 %{_datadir}/%{name}/data/nsbox-container.target
 %{_datadir}/%{name}/data/nsbox-init.service
 %{_datadir}/%{name}/data/scripts/nsbox-apply-env.sh
