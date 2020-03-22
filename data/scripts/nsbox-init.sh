@@ -48,7 +48,11 @@ if [[ -n "$update" ]]; then
   chmod 000 /etc/shadow
 fi
 
-echo "$HOSTNAME" > /etc/hostname
+if [[ "$NSBOX_BOOTED" == "1" ]]; then
+  hostnamectl set-hostname "$HOSTNAME"
+else
+  echo "$HOSTNAME" > /etc/hostname
+fi
 
 ln -sf {/run/host,}/etc/locale.conf
 

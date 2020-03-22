@@ -262,6 +262,8 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		builder.AsPid2 = true
 	}
 
+	usrdata.Environ["HOSTNAME"] = ct.Name
+
 	hostPrivPath := ct.StorageChild(stripLeadingSlash(paths.InContainerPrivPath))
 	if err := os.MkdirAll(hostPrivPath, 0755); err != nil {
 		return errors.Wrap(err, "failed to create private directory")
