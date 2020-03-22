@@ -16,7 +16,7 @@ shell="$NSBOX_SHELL"
 rm -f /var/mail/"$user"
 
 if grep -q "^$user:" /etc/passwd; then
-  usermod -G "$NSBOX_SUDO_GROUP" -u "$uid" -s "$shell" "$user"
+  usermod -aG "$NSBOX_SUDO_GROUP" -u "$uid" -s "$shell" "$user"
 else
   useradd -MU -G "$NSBOX_SUDO_GROUP" -u "$uid" -s "$shell" "$user"
 fi
