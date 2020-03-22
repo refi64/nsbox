@@ -67,4 +67,6 @@ if [[ -n "$NSBOX_BOOTED" ]]; then
   rm -f "$XDG_RUNTIME_DIR"/wayland-*
 fi
 
+mknod -m 666 /dev/fuse c 10 229
+
 exec /run/host/nsbox/nsbox-host service "$NSBOX_CONTAINER"
