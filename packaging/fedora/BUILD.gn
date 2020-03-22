@@ -15,22 +15,12 @@ action("archive") {
   args = ["--source-root", rebase_path("//", root_build_dir),
           "--prefix", "$product_name-$release_version",
           "--out-tar", rebase_path(outputs[0], root_build_dir),
-          "--out-dep", rebase_path(depfile, root_build_dir)]
-}
-
-action("rpm_deps") {
-  script = "//build/gather_rpm_deps.py"
-  inputs = ["//go.mod"]
-  outputs = ["$target_gen_dir/deps.spec"]
-
-  args = ["--go", go_exe, "--output", rebase_path(outputs[0], root_build_dir),
-          "--source-offset", "2"]
+          "--out-dep", rebase_path(depfile, root_build_dir),
+          "--include-vendor"]
 }
 
 substitute_file("nsbox.spec") {
-  rpm_deps_spec = get_target_outputs(":rpm_deps")
-
-  deps = ["//:release_files", ":rpm_deps"]
+  deps = ["//:release_files"]
 
   source = "nsbox.spec"
 
@@ -39,10 +29,6 @@ substitute_file("nsbox.spec") {
     ["RDNS_NAME", rdns_name],
     ["VERSION", release_version],
     ["COMMIT", release_commit],
-  ]
-
-  file_vars = [
-    ["SPECDEFS", rpm_deps_spec[0]],
   ]
 }
 

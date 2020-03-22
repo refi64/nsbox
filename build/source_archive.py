@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--prefix')
     parser.add_argument('--out-tar')
     parser.add_argument('--out-dep')
+    parser.add_argument('--include-vendor', action='store_true')
 
     args = parser.parse_args()
     dep_parent = os.path.dirname(args.out_dep)
@@ -27,15 +28,19 @@ def main():
                                      check=True, stdout=subprocess.PIPE, universal_newlines=True)
     files -= set(removed_process.stdout.splitlines())
 
+    if args.include_vendor:
+        for root, _, vendored in os.walk(os.path.join(args.source_root, 'vendor')):
+            files.update(os.path.join(root, file) for file in vendored)
+
     # XXX: Avoid a weird issue where the out dependency file's parent dirs don't exist yet.
     os.makedirs(os.path.dirname(args.out_dep), exist_ok=True)
 
     deps = set()
 
     with tarfile.open(args.out_tar, 'w') as tar:
-        for line in files:
-            tar.add(line, os.path.join(args.prefix, os.path.relpath(line, args.source_root)))
-            deps.add(os.path.relpath(line))
+        for file in files:
+            tar.add(file, os.path.join(args.prefix, os.path.relpath(file, args.source_root)))
+            deps.add(os.path.relpath(file))
 
     with open(args.out_dep, 'w') as dep:
         print(f'{args.out_tar}: {" ".join(deps)}', file=dep)

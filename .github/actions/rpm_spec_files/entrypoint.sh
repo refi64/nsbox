@@ -12,6 +12,9 @@ else
   git_branch=master
 fi
 
+go mod tidy
+go mod vendor
+
 gn gen out --args="${gn_args[*]}"
 ninja -C out rpm/nsbox{{,-guest-tools}.spec,-sources.tar}
 

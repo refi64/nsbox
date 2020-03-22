@@ -42,7 +42,6 @@ Requires: polkit
 Requires: sudo
 Requires: systemd-container
 Source0: nsbox-sources.tar
-@SPECDEFS
 
 %description
 nsbox is a multi-purpose, nspawn-powered container manager.
@@ -78,14 +77,7 @@ Installs the nsbox-bender alias for nsbox-edge-bender.
 %endif
 
 %prep
-rm -rf %{name}-%{version}
-
-# Order of these commands is important!
-%setup_go_archives_universal
-
-%setup -q -D
-
-%setup_go_repo_links
+%setup -q
 
 # @@ is here for substitute_file.py.
 cat >build/go-shim.sh <<'EOF'
