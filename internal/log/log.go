@@ -42,13 +42,13 @@ func Infof(format string, args ...interface{}) {
 
 func Debug(args ...interface{}) {
 	if verbose {
-		Info(args...)
+		Alert(args...)
 	}
 }
 
 func Debugf(format string, args ...interface{}) {
 	if verbose {
-		Infof(format, args...)
+		Alertf(format, args...)
 	}
 }
 
