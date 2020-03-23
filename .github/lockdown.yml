@@ -1,0 +1,10 @@
+only: pulls
+comment: >
+  This repository uses [GerritHub](https://gerrithub.io/) for code review. Please submit
+  your changes there instead.
+
+  If you're not familiar with Gerrit, there is a generic walkthrough
+  [here](https://gerrit-review.googlesource.com/Documentation/intro-gerrit-walkthrough.html),
+  where `gerrithost` is replaced with `review.gerrithub.io`. In addition,
+  [this guide](https://gerrit-review.googlesource.com/Documentation/intro-gerrit-walkthrough-github.html)
+  is available for users familiar with GitHub pull requests.
