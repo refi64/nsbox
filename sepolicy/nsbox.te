@@ -36,12 +36,19 @@ read_lnk_files_pattern(@{TYPE_PREFIX}_nsboxd_t, home_root_t, home_root_t)
 read_files_pattern(@{TYPE_PREFIX}_nsboxd_t, mail_spool_t, mail_spool_t)
 read_lnk_files_pattern(@{TYPE_PREFIX}_nsboxd_t, mail_spool_t, mail_spool_t)
 
-# Talking to the init system
+# Talking to the init system.
 dbus_connect_system_bus(@{TYPE_PREFIX}_nsboxd_t)
 dbus_system_bus_client(@{TYPE_PREFIX}_nsboxd_t)
 init_dbus_chat(@{TYPE_PREFIX}_nsboxd_t)
 
-# Misc. permissions
+# Private networking.
+allow @{TYPE_PREFIX}_nsboxd_t self:netlink_route_socket r_netlink_socket_perms;
+optional_policy(`
+firewalld_dbus_chat(@{TYPE_PREFIX}_nsboxd_t)
+')
+
+# Misc. permissions.
+kernel_getattr_proc(@{TYPE_PREFIX}_nsboxd_t)
 allow @{TYPE_PREFIX}_nsboxd_t bin_t:file exec_file_perms;
 allow @{TYPE_PREFIX}_nsboxd_t self:capability dac_read_search;
 
