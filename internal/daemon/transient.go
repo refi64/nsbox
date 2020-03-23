@@ -18,6 +18,7 @@ import (
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
+	"github.com/refi64/nsbox/internal/selinux"
 	"github.com/refi64/nsbox/internal/userdata"
 )
 
@@ -98,6 +99,10 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd string, ct *container.Container,
 	journalUntil <- time.Now()
 
 	if jobResult != "done" {
+		if selinux.Enforcing() {
+			log.Alert("NOTE: If there is a permission denied error, try setting SELinux to permissive.")
+			log.Alert("If that works, please file a bug report with nsbox.")
+		}
 		return fmt.Errorf("job failed (see 'systemctl status %s' for more info)", serviceName)
 	}
 

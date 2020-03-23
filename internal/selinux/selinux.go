@@ -16,12 +16,14 @@ import (
 const systemRole = "system_r"
 const spcType = "spc_t"
 
+func Enforcing() bool {
+	return selinux.EnforceMode() == selinux.Enforcing
+}
+
 func SetExecProcessContextContainer() error {
 	if selinux.EnforceMode() == selinux.Disabled {
 		log.Debug("SELinux is disabled")
 		return nil
-	} else if selinux.EnforceMode() == selinux.Enforcing {
-		log.Alert("WARNING: nsbox support for SELinux enforcing is experimental")
 	}
 
 	label, err := selinux.ExecLabel()
