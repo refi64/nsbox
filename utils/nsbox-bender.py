@@ -47,7 +47,8 @@ def read_metadata(image, extra_vars):
         sys.exit('Metadata base, remote, and target must be strings.')
 
     if (not isinstance(metadata['valid_tags'], list)
-            or not all(isinstance(tag, str) for tag in metadata['valid_tags'])):
+            or not all(isinstance(tag, str)
+                       for tag in metadata['valid_tags'])):
         sys.exit('Metadata valid_tags must be a list of strings.')
 
     for key in string_keys:
@@ -77,25 +78,41 @@ def export_image(metadata, target, builder):
     }
 
     print('Exporting image...')
-    run([BUILDERS_TO_EXPORTERS[builder], 'save', '-o', target, metadata['target']])
+    run([
+        BUILDERS_TO_EXPORTERS[builder], 'save', '-o', target,
+        metadata['target']
+    ])
 
 
 def main():
-    parser = argparse.ArgumentParser(prog='nsbox-bender', description='Build an image')
+    parser = argparse.ArgumentParser(prog='nsbox-bender',
+                                     description='Build an image')
 
-    parser.add_argument('image', help='The path to the image directory to build', type=Path)
+    parser.add_argument('image',
+                        help='The path to the image directory to build',
+                        type=Path)
     parser.add_argument('--debug', action='store_true')
-    parser.add_argument('-x', '--export',
-                        help='Export the image to the given archive after building')
-    parser.add_argument('--builder', help='The builder to use', choices=['docker', 'buildah'],
+    parser.add_argument(
+        '-x',
+        '--export',
+        help='Export the image to the given archive after building')
+    parser.add_argument('--builder',
+                        help='The builder to use',
+                        choices=['docker', 'buildah'],
                         default='buildah')
-    parser.add_argument('--force-color', help='Force colored output', action='store_true')
-    parser.add_argument('--extra-bender-args', help='Extra args to pass to ansible-bender')
-    parser.add_argument('--extra-ansible-args', help='Extra args to pass to ansible-playbook',
+    parser.add_argument('--force-color',
+                        help='Force colored output',
+                        action='store_true')
+    parser.add_argument('--extra-bender-args',
+                        help='Extra args to pass to ansible-bender')
+    parser.add_argument('--extra-ansible-args',
+                        help='Extra args to pass to ansible-playbook',
                         default='')
 
-    parser.add_argument('--override-nsbox-version', help='Override the nsbox release version')
-    parser.add_argument('--override-nsbox-branch', help='Override the nsbox release branch',
+    parser.add_argument('--override-nsbox-version',
+                        help='Override the nsbox release version')
+    parser.add_argument('--override-nsbox-branch',
+                        help='Override the nsbox release branch',
                         choices=['edge', 'stable'])
 
     args = parser.parse_args()
@@ -109,7 +126,9 @@ def main():
         nsbox_branch = args.override_nsbox_branch
 
     if nsbox_version is None or nsbox_branch is None:
-        sys.exit('Could not find version and branch, and --override arguments were not given.')
+        sys.exit(
+            'Could not find version and branch, and --override arguments were not given.'
+        )
 
     assert nsbox_branch in ('edge', 'stable'), nsbox_branch
 
@@ -139,7 +158,9 @@ def main():
         if image_tag is None:
             sys.exit('Metadata requires a tag but none was given.')
         elif image_tag not in metadata['valid_tags']:
-            sys.exit(f'Invalid tag (valid choices are {", ".join(metadata["valid_tags"])})')
+            sys.exit(
+                f'Invalid tag (valid choices are {", ".join(metadata["valid_tags"])})'
+            )
     elif image_tag is not None:
         sys.exit('Metadata does not allow any tags but one was given.')
 
@@ -148,9 +169,12 @@ def main():
     if base == '@local':
         base = metadata['target'] + '-bud'
 
-        run([args.builder, 'bud' if args.builder == 'buildah' else 'build',
-             *(f'--build-arg={k.upper()}={v}' for k, v in extra_vars.items()),
-             f'--tag={base}', str(image)])
+        run([
+            args.builder, 'bud' if args.builder == 'buildah' else 'build',
+            *(f'--build-arg={k.upper()}={v}' for k, v in extra_vars.items()),
+            f'--tag={base}',
+            str(image)
+        ])
 
     command = ['ansible-bender', 'build', f'--builder={args.builder}']
 
@@ -162,8 +186,9 @@ def main():
 
     # XXX: We don't properly quote here, really with the values we are probably getting, we
     # shouldn't really have to...
-    command.append(f'--extra-ansible-args={args.extra_ansible_args} '
-                    + f'--extra-vars="{" ".join(map("=".join, extra_vars.items()))}"')
+    command.append(
+        f'--extra-ansible-args={args.extra_ansible_args} ' +
+        f'--extra-vars="{" ".join(map("=".join, extra_vars.items()))}"')
     command.append(str(image / 'playbook.yaml'))
 
     command.extend((base, metadata['target']))
