@@ -11,7 +11,6 @@ require {
   type spc_t;
   type sysctl_net_t;
   type var_lib_t;
-  class unix_dgram_socket open;
 }
 
 type @{TYPE_PREFIX}_nsboxd_t;
@@ -59,6 +58,11 @@ sssd_manage_lib_files(@{TYPE_PREFIX}_nsboxd_t)
 sssd_read_lib_files(@{TYPE_PREFIX}_nsboxd_t)
 sssd_read_public_files(@{TYPE_PREFIX}_nsboxd_t)
 sssd_stream_connect(@{TYPE_PREFIX}_nsboxd_t)
+# Relevant for systems with systemd-homed (F32+).
+stream_connect_pattern(@{TYPE_PREFIX}_nsboxd_t, init_t, init_t, init_t)
+optional_policy(`
+systemd_userdbd_stream_connect(@{TYPE_PREFIX}_nsboxd_t)
+')
 
 # Golang reads hpage_pmd_size automatically.
 dev_read_sysfs(@{TYPE_PREFIX}_nsboxd_t)
@@ -70,7 +74,5 @@ manage_lnk_files_pattern(@{TYPE_PREFIX}_nsboxd_t, var_lib_t, var_lib_t)
 manage_sock_files_pattern(@{TYPE_PREFIX}_nsboxd_t, var_lib_t, var_lib_t)
 
 # IPC.
-allow @{TYPE_PREFIX}_nsboxd_t kernel_t:unix_dgram_socket { open sendto };
-allow @{TYPE_PREFIX}_nsboxd_t self:unix_dgram_socket {
-  connect create getattr read setopt write
-};
+dgram_send_pattern(@{TYPE_PREFIX}_nsboxd_t, kernel_t, kernel_t, kernel_t)
+allow @{TYPE_PREFIX}_nsboxd_t self:unix_dgram_socket create_socket_perms;
