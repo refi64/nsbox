@@ -21,5 +21,6 @@
     ],
     "python.autoComplete.extraPaths": [
         "build"
-    ]
+    ],
+    "python.formatting.provider": "yapf"
 }
