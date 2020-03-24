@@ -65,7 +65,7 @@ declare_args() {
   rpmbuild_exe = "rpmbuild"
 
   # The Fedora release to build RPMs for.
-  fedora_rpm_target_release = "31"
+  fedora_rpm_target_release = "32"
 
   # Build the Arch guest tools.
   arch_guest_tools = false
