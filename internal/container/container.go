@@ -74,6 +74,7 @@ type Config struct {
 	XdgDesktopExtra   []string
 	ExtraCapabilities []string
 	SyscallFilters    []string
+	ExtraBindMounts   []string
 	ShareCgroupfs     bool
 	VirtualNetwork    bool
 }
@@ -185,16 +186,30 @@ func Open(usrdata *userdata.Userdata, name string) (*Container, error) {
 	return OpenPath(path, name)
 }
 
-func (container Container) UpdateConfig() error {
-	if container.Config.VirtualNetwork && !container.Config.Boot {
-		return errors.New("cannot use private networking on a non-booted container")
+func checkArrayItemsAgainstRegex(items []string, regexStr, errprefix string) error {
+	regex := regexp.MustCompile(regexStr)
+	for _, item := range items {
+		if !regex.MatchString(item) {
+			return errors.Errorf("%s: %s", errprefix, item)
+		}
 	}
 
-	syscallRegex := regexp.MustCompile(`@[a-z\-]+$|[a-z0-9_]+$`)
-	for _, filter := range container.Config.SyscallFilters {
-		if !syscallRegex.MatchString(filter) {
-			return errors.Errorf("invalid syscall filter: %s", filter)
-		}
+	return nil
+}
+
+func (container Container) UpdateConfig() error {
+	if err := checkArrayItemsAgainstRegex(container.Config.ExtraBindMounts,
+		`^.+(:.+)?$`, "invalid bind mount"); err != nil {
+		return err
+	}
+
+	if err := checkArrayItemsAgainstRegex(container.Config.SyscallFilters,
+		`@[a-z\-]+$|[a-z0-9_]+$`, "invalid syscall filter"); err != nil {
+		return err
+	}
+
+	if container.Config.VirtualNetwork && !container.Config.Boot {
+		return errors.New("cannot use private networking on a non-booted container")
 	}
 
 	configPath := filepath.Join(container.Path, configJson)

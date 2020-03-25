@@ -379,6 +379,15 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		builder.AddRecursiveBind("/sys/fs/cgroup")
 	}
 
+	for _, bind := range ct.Config.ExtraBindMounts {
+		parts := strings.SplitN(bind, ":", 2)
+		if len(parts) == 1 {
+			builder.AddBind(parts[0])
+		} else {
+			builder.AddBindTo(parts[0], parts[1])
+		}
+	}
+
 	setUserEnv(machineId, mainImage, ct, usrdata)
 
 	if err := writeContainerFiles(ct, hostPrivPath, usrdata); err != nil {
