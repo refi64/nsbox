@@ -3,6 +3,8 @@
 nsbox is a multi-purpose, nspawn-powered container manager. Please see the
 [website](https://nsbox.dev) for more user-friendly information and documentation.
 
+[Issue tracking is done here.](https://ora.pm/project/211667/kanban)
+
 ## Build dependencies
 
 You need:
