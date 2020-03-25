@@ -31,7 +31,7 @@ func (app *nsboxApp) PreexecHook(cmd subcommands.Command, fs *flag.FlagSet) {
 	}
 
 	var redirector string
-	if app.sudo {
+	if app.sudo || os.Getenv("NSBOX_USE_SUDO") == "1" {
 		redirector = "sudo"
 	} else {
 		redirector = "pkexec"
