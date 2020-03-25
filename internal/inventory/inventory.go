@@ -45,7 +45,7 @@ func List(usrdata *userdata.Userdata) ([]*container.Container, error) {
 		if stat.Mode().IsDir() {
 			ct, err := container.Open(usrdata, item.Name())
 			if err != nil {
-				log.Alertf("warning: failed to open %s: %v", item.Name(), err)
+				log.Alertf("WARNING: failed to open %s: %v", item.Name(), err)
 				continue
 			}
 

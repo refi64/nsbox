@@ -190,7 +190,7 @@ func List() ([]*Image, error) {
 
 			image, err := openImageAtPath(filepath.Join(path, name))
 			if err != nil {
-				log.Alert("warning: failed to open %s: %v", item, err)
+				log.Alert("WARNING: failed to open %s: %v", item, err)
 				continue
 			}
 
