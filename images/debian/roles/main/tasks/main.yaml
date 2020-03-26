@@ -34,6 +34,7 @@
       - libnss-myhostname
       - locales-all
       - sudo
+      - systemd
 
 - name: Use nss-myhostname for hostname resolution before dns
   lineinfile:
