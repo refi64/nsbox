@@ -59,8 +59,8 @@ sssd_read_lib_files(@{TYPE_PREFIX}_nsboxd_t)
 sssd_read_public_files(@{TYPE_PREFIX}_nsboxd_t)
 sssd_stream_connect(@{TYPE_PREFIX}_nsboxd_t)
 # Relevant for systems with systemd-homed (F32+).
+ifdef(`systemd_userdbd_stream_connect', `
 stream_connect_pattern(@{TYPE_PREFIX}_nsboxd_t, init_t, init_t, init_t)
-optional_policy(`
 systemd_userdbd_stream_connect(@{TYPE_PREFIX}_nsboxd_t)
 ')
 
