@@ -19,18 +19,27 @@ def main():
     args = parser.parse_args()
     dep_parent = os.path.dirname(args.out_dep)
 
-    files_process = subprocess.run(['git', 'ls-files', '-oc', '-X', '.gitignore',
-                                    args.source_root],
-                                   check=True, stdout=subprocess.PIPE, universal_newlines=True)
+    files_process = subprocess.run(
+        ['git', 'ls-files', '-oc', '-X', '.gitignore'],
+        cwd=args.source_root,
+        check=True,
+        stdout=subprocess.PIPE,
+        universal_newlines=True)
     files = set(files_process.stdout.splitlines())
 
-    removed_process = subprocess.run(['git', 'ls-files', '-d', args.source_root],
-                                     check=True, stdout=subprocess.PIPE, universal_newlines=True)
+    removed_process = subprocess.run(['git', 'ls-files', '-d'],
+                                     cwd=args.source_root,
+                                     check=True,
+                                     stdout=subprocess.PIPE,
+                                     universal_newlines=True)
     files -= set(removed_process.stdout.splitlines())
 
     if args.include_vendor:
-        for root, _, vendored in os.walk(os.path.join(args.source_root, 'vendor')):
-            files.update(os.path.join(root, file) for file in vendored)
+        for root, _, vendored in os.walk(
+                os.path.join(args.source_root, 'vendor')):
+            files.update(
+                os.path.relpath(os.path.join(root, file), args.source_root)
+                for file in vendored)
 
     # XXX: Avoid a weird issue where the out dependency file's parent dirs don't exist yet.
     os.makedirs(os.path.dirname(args.out_dep), exist_ok=True)
@@ -39,7 +48,8 @@ def main():
 
     with tarfile.open(args.out_tar, 'w') as tar:
         for file in files:
-            tar.add(file, os.path.join(args.prefix, os.path.relpath(file, args.source_root)))
+            tar.add(os.path.join(args.source_root, file),
+                    os.path.join(args.prefix, file))
             deps.add(os.path.relpath(file))
 
     with open(args.out_dep, 'w') as dep:
