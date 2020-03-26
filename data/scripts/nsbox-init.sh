@@ -16,9 +16,9 @@ shell="$NSBOX_SHELL"
 rm -f /var/mail/"$user"
 
 if grep -q "^$user:" /etc/passwd; then
-  usermod -aG "$NSBOX_SUDO_GROUP" -u "$uid" -s "$shell" "$user"
+  usermod -d "$NSBOX_HOME" -aG "$NSBOX_SUDO_GROUP" -u "$uid" -s "$shell" "$user"
 else
-  useradd -MU -G "$NSBOX_SUDO_GROUP" -u "$uid" -s "$shell" "$user"
+  useradd -d "$NSBOX_HOME" -MU -G "$NSBOX_SUDO_GROUP" -u "$uid" -s "$shell" "$user"
 fi
 
 if [[ -d /run/host/nsbox/mail ]]; then
@@ -56,9 +56,9 @@ fi
 
 ln -sf {/run/host,}/etc/locale.conf
 
-if [[ -n "$NSBOX_HOME_LINK_NAME" ]]; then
-  [[ -e "$NSBOX_HOME_LINK_NAME" ]] && rm -d "$NSBOX_HOME_LINK_NAME" ||:
-  ln -s "$NSBOX_HOME_LINK_TARGET_REL" "$NSBOX_HOME_LINK_NAME"
+if [[ -n "$NSBOX_HOME_LINK_TARGET" ]]; then
+  [[ -e /home ]] && rm -d /home ||:
+  ln -s "$NSBOX_HOME_LINK_TARGET" /home
 fi
 
 ln -sf /var/log/journal/$NSBOX_HOST_MACHINE /run/host/journal

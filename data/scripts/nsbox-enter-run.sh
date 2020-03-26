@@ -18,8 +18,9 @@ if [[ -d "$cwd" ]]; then
     cwd="$cwd/"
   fi
 
-  if [[ "$cwd" == "$NSBOX_HOME_LINK_TARGET"/* ]]; then
-    cwd="$NSBOX_HOME_LINK_NAME/${cwd#$NSBOX_HOME_LINK_TARGET/}"
+  if [[ "$NSBOX_HOME_LINK_TARGET_ADJUST_CWD" == "1" \
+        && "$cwd" == "/$NSBOX_HOME_LINK_TARGET"/* ]]; then
+    cwd="$NSBOX_HOME_LINK_NAME/${cwd#/$NSBOX_HOME_LINK_TARGET/}"
   fi
 
   cd "$cwd"

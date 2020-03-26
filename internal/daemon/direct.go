@@ -57,30 +57,38 @@ func bindLoopDevices(builder *nspawn.Builder) {
 }
 
 func bindHome(builder *nspawn.Builder, usrdata *userdata.Userdata) error {
-	homeParent := filepath.Dir(usrdata.User.HomeDir)
+	usrdata.Environ["NSBOX_HOME"] = usrdata.User.HomeDir
 
-	info, err := os.Lstat(homeParent)
+	// There are two cases for /home on Fedora Silverblue:
+	// - The user's $HOME is /home/USER, and /home is a symlink to /var/home.
+	// - The user's $HOME is /var/home/USER, but /home is still a symlink to /var/home.
+	// These both need special handling here.
+
+	info, err := os.Lstat("/home")
 	if err != nil {
 		return errors.Wrap(err, "failed to stat home parent")
 	}
 
-	// Need to handle Silverblue-esque /home symlinks specially.
 	if info.Mode()&os.ModeSymlink != 0 {
-		resolvedHomeParent, err := filepath.EvalSymlinks(homeParent)
+		resolvedHomeRoot, err := filepath.EvalSymlinks("/home")
 		if err != nil {
 			return errors.Wrap(err, "failed to resolve home parent")
 		}
 
-		builder.AddRecursiveBind(resolvedHomeParent)
+		builder.AddRecursiveBind(resolvedHomeRoot)
 
-		relResolvedHomeParent, err := filepath.Rel(filepath.Dir(homeParent), resolvedHomeParent)
+		relResolvedHomeRoot, err := filepath.Rel("/", resolvedHomeRoot)
 		if err != nil {
-			return errors.Wrapf(err, "failed to make home parent %s relative", resolvedHomeParent)
+			return errors.Wrapf(err, "failed to make home parent %s relative", resolvedHomeRoot)
 		}
 
-		usrdata.Environ["NSBOX_HOME_LINK_NAME"] = homeParent
-		usrdata.Environ["NSBOX_HOME_LINK_TARGET"] = resolvedHomeParent
-		usrdata.Environ["NSBOX_HOME_LINK_TARGET_REL"] = relResolvedHomeParent
+		usrdata.Environ["NSBOX_HOME_LINK_TARGET"] = relResolvedHomeRoot
+
+		// If it's an older SB layout ($HOME=/home/USER where /home is a symlink),
+		// then we need special handling later on to ensure the CWD is correct.
+		if homeParent := filepath.Dir(usrdata.User.HomeDir); homeParent == "/home" {
+			usrdata.Environ["NSBOX_HOME_LINK_TARGET_ADJUST_CWD"] = "1"
+		}
 	} else {
 		builder.AddRecursiveBind(usrdata.User.HomeDir)
 	}
