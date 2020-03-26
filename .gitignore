@@ -1,5 +1,9 @@
+# Note that these globs are used as ignores for Vagrant
+# Try to make sure these are all valid at the shell level too
 .firebase/
+.vagrant/
 out*/
+tests/playbooks/*.retry
 vendor/
 web/node_modules/
 web/.vuepress/dist/

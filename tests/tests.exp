@@ -1,0 +1,173 @@
+proc load_config {container} {
+  package require json
+
+  set fp [open "$::nsbox_inventory_root/$container/config.json"]
+  set contents [read $fp]
+  close $fp
+
+  set dict [json::json2dict $contents]
+  set command [list array set config $dict]
+  uplevel 1 $command
+}
+
+proc kill_if_running {container} {
+  # XXX: This is really ugly
+  uplevel 1 [list set _kill_if_running_container $container]
+
+  uplevel 1 {
+    spawn_nsbox info $_kill_if_running_container
+    expect {
+      "Running: since" { exec_nsbox kill $_kill_if_running_container }
+      eof
+    }
+    check_status 0
+
+    unset _kill_if_running_container
+  }
+}
+
+test create-basic "basic container creation" {
+  exec sudo rm -rf $::nsbox_inventory_root/test
+
+  spawn_nsbox create fedora:31 test
+  expect -timeout [expr 5*60] Done!
+  expect_success
+}
+
+test create-booted "booted container creation" {
+  exec sudo rm -rf $::nsbox_inventory_root/test-boot
+
+  spawn_nsbox create -boot fedora:31 test-boot
+  expect -timeout [expr 5*60] Done!
+  expect_success
+}
+
+test config-basic "basic container configuration" {
+  kill_if_running test-boot
+
+  load_config test
+
+  assert_streq $config(ExtraCapabilities) null
+
+  spawn_nsbox config -extra-capabilities=:all test
+  expect_success
+
+  load_config test
+  assert_streq $config(ExtraCapabilities) all
+
+  spawn_nsbox config -extra-capabilities=: test
+  expect_success
+
+  load_config test
+  assert_streq $config(ExtraCapabilities) null
+}
+
+# https://ora.pm/project/211667/task/3057650
+test config-booted-bools "booted container boolean configuration" {
+  kill_if_running test-boot
+
+  load_config test-boot
+  assert_streq $config(ShareCgroupfs) false
+  assert_streq $config(VirtualNetwork) false
+
+  spawn_nsbox config -share-cgroupfs test-boot
+  expect_success
+
+  load_config test-boot
+  assert_streq $config(ShareCgroupfs) true
+  assert_streq $config(VirtualNetwork) false
+
+  spawn_nsbox config -virtual-network test-boot
+  expect_success
+
+  load_config test-boot
+  assert_streq $config(ShareCgroupfs) true
+  assert_streq $config(VirtualNetwork) true
+
+  spawn_nsbox config -share-cgroupfs=false test-boot
+  expect_success
+
+  load_config test-boot
+  assert_streq $config(ShareCgroupfs) false
+  assert_streq $config(VirtualNetwork) true
+
+  spawn_nsbox config -virtual-network=false test-boot
+  expect_success
+
+  load_config test-boot
+  assert_streq $config(ShareCgroupfs) false
+  assert_streq $config(VirtualNetwork) false
+}
+
+test run-basic "running basic containers" {
+  kill_if_running test
+
+  spawn_nsbox run test
+  expect -timeout [expr 5*60] "$ "
+
+  send "echo 123\n"
+  expect "123"
+  expect "$ "
+
+  close
+  check_status 0
+
+  spawn_nsbox run test
+  expect "$ "
+
+  send "echo 123\n"
+  expect 123
+  expect "$ "
+
+  close
+  check_status 0
+}
+
+test run-boot "running booted containers" {
+  kill_if_running test-boot
+
+  spawn_nsbox run test-boot
+  expect -timeout [expr 5*60] "$ "
+
+  send "echo 123\n"
+  expect "123"
+  expect "$ "
+
+  close
+  check_status 0
+
+  spawn_nsbox run test-boot
+  expect "$ "
+
+  send "echo 123\n"
+  expect 123
+  expect "$ "
+
+  close
+  check_status 0
+}
+
+test run-boot-networked "running containers with virtual networking" {
+  kill_if_running test-boot
+
+  exec_nsbox config -virtual-network test-boot
+
+	# Often FAILS due to timeout, https://ora.pm/project/211667/task/3057479
+  spawn_nsbox run test-boot
+  expect -timeout [expr 5*60] "$ "
+
+  sleep 10
+
+  send "networkctl status host0\n"
+  expect configured
+  expect "$ "
+
+  send "resolvectl query google.com\n"
+  expect "Information acquired"
+  expect "$ "
+
+  close
+  check_status 0
+
+  exec_nsbox config -virtual-network=false test-boot
+}

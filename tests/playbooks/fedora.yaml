@@ -1,0 +1,77 @@
+- hosts: all
+  tasks:
+    - name: Add the gn COPR repo
+      yum_repository:
+        name: nsbox-edge
+        description: 'Copr repo for gn owned by refi64'
+        baseurl: https://copr-be.cloud.fedoraproject.org/results/refi64/gn/fedora-$releasever-$basearch/
+        gpgkey: https://copr-be.cloud.fedoraproject.org/results/refi64/gn/pubkey.gpg
+      become: true
+
+    - name: Install the dependencies
+      dnf:
+        name:
+          - container-selinux
+          - expect
+          - gcc
+          - git
+          - gn
+          - golang-bin
+          - go-rpm-macros
+          - ninja-build
+          - python3
+          - rpm-build
+          - selinux-policy-devel
+          - sudo
+          - systemd-container
+          - systemd-devel
+          - tcllib
+        state: latest
+      become: true
+
+    - name: Clear the build directory
+      file:
+        path: /out
+        state: absent
+      become: true
+
+    - name: Create the build directory
+      file:
+        path: /out
+        state: directory
+        # Make it world-writable, so gn can touch it later.
+        mode: '0777'
+      become: true
+
+    - name: Build the nsbox RPMs
+      shell: |
+          set -e
+          gn gen ../out --args='fedora_package=true fedora_rpm_target_release="{{ ansible_distribution_version }}"'
+          ninja -C ../out fedora
+          touch ../out/.built
+      args:
+        chdir: /vagrant
+        creates: /out/.built
+
+    - name: Find the nsbox RPMs
+      find:
+        paths: /out/rpm
+        patterns: 'nsbox-edge-(\d|alias|selinux).*(noarch|{{ ansible_machine }})\.rpm'
+        recurse: false
+        use_regex: true
+      register: nsbox_rpms
+
+    - name: Remove any old nsbox installations
+      dnf:
+        name:
+          - nsbox-edge
+          - nsbox-edge-alias
+          - nsbox-edge-selinux
+        state: absent
+      become: true
+
+    - name: Install nsbox
+      dnf:
+        name: "{{ nsbox_rpms.files | map(attribute='path') | list }}"
+        state: latest
+      become: true

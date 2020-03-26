@@ -1,0 +1,153 @@
+#!/usr/bin/env expect
+
+package require term::ansi::code::ctrl
+
+set nsbox_inventory_root /var/lib/nsbox/$::env(USER)/inventory
+
+set all_tests {}
+
+proc test {tag name body} {
+  set script [file rootname [file tail [uplevel 1 { info script }]]]
+
+  global all_tests
+  lappend all_tests [dict create script $script tag $tag name "$script :: $name" body $body]
+}
+
+proc xspawn {args} {
+  uplevel 1 spawn $args
+
+  uplevel 1 {
+    expect_before {
+      -re "WARNING: (.+)" { error "Got a warning: $expect_out(1,string)" }
+    }
+
+    expect_after {
+      timeout { error "Timed out" }
+      eof     { error "Hit EOF" }
+    }
+  }
+}
+
+proc expect_eof {} {
+  uplevel 1 {
+    expect {
+      -re {\S+} { error "Expected EOF, got '$expect_out(0,string)'" }
+      eof
+    }
+  }
+}
+
+proc check_status {status} {
+  set ret [uplevel 1 wait]
+  if {[lindex $ret 2] == -1} {
+    error "wait failed with errno [lindex $ret 3]"
+  } elseif {[lindex $ret 3] != $status} {
+    error "Process exited with status [lindex $ret 3]"
+  }
+}
+
+proc expect_success {} {
+  uplevel 1 {
+    expect_eof
+    check_status 0
+  }
+}
+
+proc assert_streq {a b} {
+  if {[string compare $a $b]} {
+    error "'$a' != '$b'"
+  }
+}
+
+proc spawn_nsbox {args} {
+  uplevel 1 [list xspawn nsbox-edge -sudo {*}$args]
+}
+
+proc exec_nsbox {args} {
+  uplevel 1 [list exec nsbox-edge -sudo {*}$args]
+}
+
+proc main {} {
+  if {[string compare $::env(USER) vagrant]} {
+    puts stderr "This must only be run inside vagrant!"
+    exit 1
+  }
+
+  namespace import ::term::ansi::code::ctrl::sda_*
+
+  puts -nonewline [sda_reset]
+
+  puts "[sda_bold][sda_fgblue]**** Killing old nsbox processes[sda_reset]"
+  exec sh -c {sudo pkill -KILL nsbox ||:}
+
+  set tests_dir [ file dirname [ file normalize [ info script ] ] ]
+  foreach test_file [glob -type f $tests_dir/*.exp] {
+    if {![string compare [file tail $test_file] main.exp]} {
+      continue
+    }
+
+    source $test_file
+  }
+
+  set run 0
+  set failed 0
+
+  global all_tests
+  foreach test_dict $all_tests {
+    # Convert to an array first for ease of access.
+    array set test $test_dict
+
+    if {$::argc > 0} {
+      set can_run 0
+      set match_status -1
+
+      foreach pattern $::argv {
+        if {![string compare $pattern include]} {
+          set match_status 1
+        } elseif {![string compare $pattern exclude]} {
+          set match_status 0
+        } elseif {[expr [string match $pattern $test(tag)] || [string match $pattern $test(script)-$test(tag)]]
+                   && $match_status != -1} {
+          set can_run $match_status
+          break
+        }
+      }
+
+      if {!$can_run} {
+        continue
+      }
+    }
+
+    incr run
+
+    puts "[sda_bold][sda_fggreen]**** $test(name)[sda_reset]"
+    puts -nonewline "[sda_dim]"
+    flush stdout
+
+    if {[catch { eval $test(body) }]} {
+      puts "\n[sda_reset][sda_bold][sda_fgred]**** $test(name) FAILED:[sda_fgwhite]"
+      set lines [split $::errorInfo \n]
+      foreach line $lines {
+        puts "  $line"
+      }
+
+      incr failed
+    }
+
+    puts -nonewline "[sda_reset]"
+    flush stdout
+  }
+
+  if {$failed > 0} {
+    set color [sda_fgmagenta]
+  } else {
+    set color [sda_fggreen]
+  }
+
+  puts ""
+  puts "[sda_bold]$color***** Ran $run test(s), $failed failed.[sda_reset]"
+
+  exit [expr $failed > 0]
+}
+
+main
