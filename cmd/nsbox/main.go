@@ -51,9 +51,22 @@ func (app *nsboxApp) PreexecHook(cmd subcommands.Command, fs *flag.FlagSet) {
 	redirect = append(redirect, userdata.WhitelistedEnviron()...)
 	redirect = append(redirect, "::")
 
-	fs.VisitAll(func(f *flag.Flag) {
-		redirect = append(redirect, fmt.Sprintf("-%s=%s", f.Name, f.Value.String()))
+	/*
+		polkit will reset our cwd, so we need to pass -workdir in order to remain in the
+		proper directory. However, if -workdir was already passed, then passing it twice
+		will give an error, so we ensure it's only passed once by skipping it in Visit.
+
+		Note that VisitAll must *not* be used, because it breaks the checks in config.go
+		to only modify boolean settings if they were given on the CLI.
+	*/
+
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name != "workdir" {
+			redirect = append(redirect, fmt.Sprintf("-%s=%s", f.Name, f.Value.String()))
+		}
 	})
+
+	redirect = append(redirect, fmt.Sprintf("-workdir=%s", app.workdir))
 
 	redirect = append(redirect, "--")
 	redirect = append(redirect, fs.Args()...)
