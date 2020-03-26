@@ -33,7 +33,7 @@ if [[ -n "$NSBOX_BOOTED" ]]; then
   fi
 
   if [[ ! -e "$XDG_RUNTIME_DIR/pulse" ]]; then
-    ln -s "/run/host/nsbox/usr-run/pulse" "$XDG_RUNTIME_DIR"
+    ln -sf "/run/host/nsbox/usr-run/pulse" "$XDG_RUNTIME_DIR"
   fi
 fi
 
