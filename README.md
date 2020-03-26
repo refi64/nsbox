@@ -3,7 +3,7 @@
 nsbox is a multi-purpose, nspawn-powered container manager. Please see the
 [website](https://nsbox.dev) for more user-friendly information and documentation.
 
-[Issue tracking is done here.](https://ora.pm/project/211667/kanban)
+[![View issues](https://img.shields.io/badge/issues-here-yellow)](https://ora.pm/project/211667/kanban)
 
 ## Build dependencies
 
@@ -49,6 +49,45 @@ $ yarn run dev
 # Build the production docs:
 $ yarn run build
 ```
+
+## Contributing
+
+### Using Gerrit
+
+[GerritHub](http://gerrithub.io) is used for all contributions (the Gerrit repository is just `refi64/nsbox`).
+
+If you're not familiar with Gerrit, there is a generic walkthrough
+[here](https://gerrit-review.googlesource.com/Documentation/intro-gerrit-walkthrough.html),
+where `gerrithost` is replaced with `review.gerrithub.io`. In addition,
+[this guide](https://gerrit-review.googlesource.com/Documentation/intro-gerrit-walkthrough-github.html)
+is available for users familiar with GitHub pull requests.
+
+### Running the tests
+
+Unit testing is done by running [Expect](https://www.tcl.tk/man/expect5.31/expect.1.html) scripts inside
+an isolated environment. **Do not run the tests on your host system, as they will modify your containers.**
+
+Vagrant is used to manage the virtual environments (as a VM is required to test SELinux integration).
+The libvirt provider is required.
+
+Run:
+
+```bash
+vagrant up
+```
+
+to bring up and provision the box (this includes building and installing nsbox inside). Once that is complete,
+you can run:
+
+```bash
+vagrant ssh -c /vagrant/tests/main.exp
+```
+
+to run the unit tests.
+
+TODO: document test runner
+
+## Misc. notes
 
 ### Updating the theme
 
