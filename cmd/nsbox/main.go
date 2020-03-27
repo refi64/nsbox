@@ -60,11 +60,14 @@ func (app *nsboxApp) PreexecHook(cmd subcommands.Command, fs *flag.FlagSet) {
 		to only modify boolean settings if they were given on the CLI.
 	*/
 
-	fs.Visit(func(f *flag.Flag) {
+	visitor := func(f *flag.Flag) {
 		if f.Name != "workdir" {
 			redirect = append(redirect, fmt.Sprintf("-%s=%s", f.Name, f.Value.String()))
 		}
-	})
+	}
+
+	flag.Visit(visitor)
+	fs.Visit(visitor)
 
 	redirect = append(redirect, fmt.Sprintf("-workdir=%s", app.workdir))
 
