@@ -4,8 +4,8 @@
 
 [Unit]
 Description=Initialize the nsbox environment
-Wants=console-getty.service
-After=console-getty.service
+Wants=console-getty.service default.target
+After=console-getty.service default.target
 
 [Service]
 Type=notify
