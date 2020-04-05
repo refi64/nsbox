@@ -66,6 +66,11 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd string, ct *container.Container,
 			false,
 		),
 		systemd1.Property{
+			// This is needed for safety with use of nsbus, see there for more info.
+			Name:  "PrivateTmp",
+			Value: godbus.MakeVariant(true),
+		},
+		systemd1.Property{
 			Name:  "Environment",
 			Value: godbus.MakeVariant(env),
 		},

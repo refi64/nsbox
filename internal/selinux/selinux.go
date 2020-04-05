@@ -20,31 +20,44 @@ func Enforcing() bool {
 	return selinux.EnforceMode() == selinux.Enforcing
 }
 
-func SetExecProcessContextContainer() error {
-	if selinux.EnforceMode() == selinux.Disabled {
-		log.Debug("SELinux is disabled")
-		return nil
-	}
+func Enabled() bool {
+	return selinux.EnforceMode() != selinux.Disabled
+}
 
+func GetCurrentLabel() (string, error) {
 	label, err := selinux.ExecLabel()
 	if err == io.EOF {
 		label, err = selinux.CurrentLabel()
 	}
 
-	if err != nil {
-		return errors.Wrap(err, "failed to get label")
-	}
+	return label, err
+}
 
-	parts := strings.Split(label, ":")
+func GetExecLabel(currentLabel string) (string, error) {
+	parts := strings.Split(currentLabel, ":")
 	if len(parts) != 4 && len(parts) != 5 {
-		return errors.Errorf("invalid SELinux label: %s")
+		return "", errors.Errorf("invalid SELinux label: %s")
 	}
 
 	parts[1] = systemRole
 	parts[2] = spcType
 
-	newLabel := strings.Join(parts, ":")
-	log.Debug("SELinux exec transition", label, "->", newLabel)
+	return strings.Join(parts, ":"), nil
+}
+
+func SetExecProcessContextContainer() error {
+	if !Enabled() {
+		log.Debug("SELinux is disabled")
+		return nil
+	}
+
+	currentLabel, err := GetCurrentLabel()
+	if err != nil {
+		return errors.Wrap(err, "get current label")
+	}
+
+	newLabel, err := GetExecLabel(currentLabel)
+	log.Debug("SELinux exec transition", currentLabel, "->", newLabel)
 
 	if err := selinux.SetExecLabel(newLabel); err != nil {
 		return errors.Wrap(err, "failed to set label")

@@ -13,6 +13,7 @@ require (
 	github.com/godbus/dbus/v5 v5.0.3
 	github.com/google/go-containerregistry v0.0.0-20200320200342-35f57d7d4930
 	github.com/google/subcommands v1.2.0
+	github.com/google/uuid v1.1.1
 	github.com/opencontainers/selinux v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/refi64/go-lxtempdir v0.0.0-20190815193640-e8f0a4e7825f

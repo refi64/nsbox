@@ -27,7 +27,10 @@ func ConnectPtys(stdinPty, stdoutPty, stderrPty string) error {
 			flags = unix.O_RDONLY
 
 			if _, err := unix.Setsid(); err != nil {
-				return errors.Wrapf(err, "failed to setsid")
+				if errno, ok := err.(unix.Errno); !ok || errno != unix.EPERM {
+					// EPERM means this is already a session leader.
+					return errors.Wrapf(err, "failed to setsid")
+				}
 			}
 		} else {
 			flags = unix.O_WRONLY
