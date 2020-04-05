@@ -23,9 +23,23 @@ proc xspawn {args} {
 
     expect_after {
       timeout { error "Timed out" }
-      eof     { error "Hit EOF" }
     }
   }
+}
+
+proc expect_always {args} {
+  # Emulate expect's flip support of both plain args and braces.
+  # Test is based on exp_one_arg_braced in the expect source.
+  if {[llength $args] == 1 && [regexp {^\s*?\n\s*\S} {*}$args]} {
+    set args [lindex $args 0]
+  }
+
+  uplevel 1 [subst -nocommands {
+    expect {
+      eof { error "Hit EOF" }
+      $args
+    }
+  }]
 }
 
 proc expect_eof {} {
