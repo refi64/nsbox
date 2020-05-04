@@ -65,16 +65,16 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd string, ct *container.Container,
 			[]string{nsboxd, fmt.Sprint("-v=", log.Verbose()), ct.Name},
 			false,
 		),
-		systemd1.Property{
+		{
 			// This is needed for safety with use of nsbus, see there for more info.
 			Name:  "PrivateTmp",
 			Value: godbus.MakeVariant(true),
 		},
-		systemd1.Property{
+		{
 			Name:  "Environment",
 			Value: godbus.MakeVariant(env),
 		},
-		systemd1.Property{
+		{
 			Name:  "NotifyAccess",
 			Value: godbus.MakeVariant("all"),
 		},
@@ -128,6 +128,8 @@ func RunContainerViaTransientUnit(ct *container.Container, usrdata *userdata.Use
 	}
 
 	if _, err := machined.GetMachine(ct.Name); err != nil {
+		log.Debug("GetMachine:", err)
+
 		nsboxd, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, paths.ProductName, "nsboxd")
 		if err != nil {
 			return errors.Wrap(err, "cannot locate nsboxd")

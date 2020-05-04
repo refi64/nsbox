@@ -226,7 +226,7 @@ func EnterContainer(ct *container.Container, command []string, usrdata *userdata
 		inheritSize()
 
 		go func() {
-			for _ = range sigchan {
+			for range sigchan {
 				inheritSize()
 			}
 		}()

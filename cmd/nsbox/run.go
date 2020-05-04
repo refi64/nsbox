@@ -14,6 +14,7 @@ import (
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/daemon"
 	"github.com/refi64/nsbox/internal/inventory"
+	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/session"
 )
 
@@ -74,6 +75,8 @@ func (cmd *runCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.ExitS
 	if err := daemon.RunContainerViaTransientUnit(ct, usrdata); err != nil {
 		return args.HandleError(err)
 	}
+
+	log.Debug("Container presumed to be ready, entering...")
 
 	exitCode, err := session.EnterContainer(ct, cmd.command, usrdata, app.(*nsboxApp).workdir)
 	if err != nil {
