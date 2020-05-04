@@ -109,7 +109,7 @@ func (door *systemdDoor) Enter(ct *container.Container, spec *containerEntrySpec
 		systemdRun = append(systemdRun, fmt.Sprintf("--property=%s=%s", prop.name, prop.value))
 	}
 
-	systemdRun = append(systemdRun, "--env=NSBOX_INTERNAL=1", "--")
+	systemdRun = append(systemdRun, "--setenv=NSBOX_INTERNAL=1", "--")
 	systemdRun = append(systemdRun, spec.buildNsboxHostCommand()...)
 
 	log.Debug("Starting transient unit in container:", systemdRun)
