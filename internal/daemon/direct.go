@@ -271,6 +271,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		builder.AsPid2 = true
 	}
 
+	usrdata.Environ["NSBOX_INTERNAL"] = "1"
 	usrdata.Environ["HOSTNAME"] = ct.Name
 
 	hostPrivPath := ct.StorageChild(stripLeadingSlash(paths.InContainerPrivPath))

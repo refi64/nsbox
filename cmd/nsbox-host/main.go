@@ -6,10 +6,13 @@ package main
 
 import (
 	"flag"
+	"os"
 
 	"github.com/google/subcommands"
 	"github.com/refi64/nsbox/internal/args"
 )
+
+const internalEnv = "NSBOX_INTERNAL"
 
 type nsboxHostApp struct{}
 
@@ -22,9 +25,15 @@ func main() {
 	subcommands.Register(subcommands.HelpCommand(), "")
 	subcommands.Register(subcommands.FlagsCommand(), "")
 	subcommands.Register(subcommands.CommandsCommand(), "")
-	subcommands.Register(newServiceCommand(app), "")
-	subcommands.Register(newEnterCommand(app), "")
+
 	subcommands.Register(newReloadExportsCommand(app), "")
+
+	if os.Getenv(internalEnv) != "" {
+		subcommands.Register(newServiceCommand(app), "")
+		subcommands.Register(newEnterCommand(app), "")
+
+		os.Unsetenv(internalEnv)
+	}
 
 	args.Execute(app)
 }

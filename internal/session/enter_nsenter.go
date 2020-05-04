@@ -40,6 +40,10 @@ func (door *nsenterDoor) Enter(ct *container.Container, spec *containerEntrySpec
 		return nil, errors.Wrap(err, "getting leader process")
 	}
 
+	if err := os.Setenv("NSBOX_INTERNAL", "1"); err != nil {
+		return nil, errors.Wrap(err, "set NSBOX_INTERNAL")
+	}
+
 	nsenterCmd := []string{"nsenter", "-at", strconv.Itoa(int(leader))}
 	nsenterCmd = append(nsenterCmd, spec.buildNsboxHostCommand()...)
 

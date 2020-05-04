@@ -31,11 +31,11 @@ func (*enterCommand) Name() string {
 }
 
 func (*enterCommand) Synopsis() string {
-	return "INTERNAL COMMAND - enter a session"
+	return "enter a session"
 }
 
 func (*enterCommand) Usage() string {
-	return "INTERNAL COMMAND - are you blind??"
+	return ""
 }
 
 func (cmd *enterCommand) SetFlags(fs *flag.FlagSet) {

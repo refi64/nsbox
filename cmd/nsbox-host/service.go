@@ -59,11 +59,11 @@ func (*serviceCommand) Name() string {
 }
 
 func (*serviceCommand) Synopsis() string {
-	return "INTERNAL COMMAND - starts the PTY service"
+	return "starts the PTY service"
 }
 
 func (*serviceCommand) Usage() string {
-	return "INTERNAL COMMAND - why the heck do you care about the usage, just DON'T USE IT\n"
+	return ""
 }
 
 func (*serviceCommand) SetFlags(fs *flag.FlagSet) {
