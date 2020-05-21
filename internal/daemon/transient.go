@@ -17,10 +17,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
+	"github.com/refi64/nsbox/internal/nsbus"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/selinux"
 	"github.com/refi64/nsbox/internal/userdata"
 )
+
+type temporaryFileSystem struct{ Path, Options string }
 
 func startNsboxd(systemd *systemd1.Conn, nsboxd string, ct *container.Container, usrdata *userdata.Userdata) error {
 	serviceName := fmt.Sprintf("nsbox-%s.service", ct.Name)
@@ -67,8 +70,8 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd string, ct *container.Container,
 		),
 		{
 			// This is needed for safety with use of nsbus, see there for more info.
-			Name:  "PrivateTmp",
-			Value: godbus.MakeVariant(true),
+			Name:  "TemporaryFileSystem",
+			Value: godbus.MakeVariant([]temporaryFileSystem{{Path: nsbus.PrivateBusTmpdir}}),
 		},
 		{
 			Name:  "Environment",

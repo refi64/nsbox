@@ -24,14 +24,15 @@ import (
 	connecting to the D-Bus socket there. However, godbus's NewConn will not
 	give us a UNIX-style transport if we immediately create a connection from
 	the new fd, thus making passing of file descriptors broken. In order to
-	rectify this, a private (thanks to PrivateTmp=true in transient.go) D-Bus
+	rectify this, a private (thanks to mounting a tmpfs in transient.go) D-Bus
 	socket is created that just forwards everything to the true socket, and
 	the D-Bus connection is created by dialing into the forwarding socket
 	instead of the true one.
 */
 
+const PrivateBusTmpdir = "/tmp/nsbox"
+const privateBusPath = PrivateBusTmpdir + "/container_bus_socket"
 const busPath = "/run/dbus/system_bus_socket"
-const privateBusPath = "/tmp/nsbox_container_bus_socket"
 
 // Use an error value to propagate the fd up from inside the dialing.
 type dialSuccessError struct {
