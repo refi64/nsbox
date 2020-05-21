@@ -32,30 +32,32 @@ get_images_to_update() {
   done
 }
 
-to_update="$(get_images_to_update $NSBOX_IMAGE_CHAIN)"
-if [[ -n "$to_update" ]]; then
-  # XXX: duplicated from nsbox-bender.py.
-  branch="$(cat /run/host/nsbox/release/BRANCH)"
-  version="$(cat /run/host/nsbox/release/VERSION)"
+if [[ -z "$NSBOX_NO_REPLAY" ]]; then
+  to_update="$(get_images_to_update $NSBOX_IMAGE_CHAIN)"
+  if [[ -n "$to_update" ]]; then
+    # XXX: duplicated from nsbox-bender.py.
+    branch="$(cat /run/host/nsbox/release/BRANCH)"
+    version="$(cat /run/host/nsbox/release/VERSION)"
 
-  if [[ "$branch" == "edge" ]]; then
-    product_name="nsbox-edge"
-  else
-    product_name="nsbox"
+    if [[ "$branch" == "edge" ]]; then
+      product_name="nsbox-edge"
+    else
+      product_name="nsbox"
+    fi
+
+    extra_vars=()
+    extra_vars+=(ansible_python_interpreter=/usr/bin/python3)
+    extra_vars+=(nsbox_branch=$branch)
+    extra_vars+=(nsbox_version=$version)
+    extra_vars+=(nsbox_product_name=$product_name)
+
+    for image in $to_update; do
+      ANSIBLE_STDOUT_CALLBACK=default ansible-playbook \
+        --connection=local --inventory=localhost, --extra-vars "${extra_vars[*]}" --skip-tags bend \
+        /run/host/nsbox/images/$image/playbook.yaml
+      touch $stamp_root/$image.stamp
+    done
   fi
-
-  extra_vars=()
-  extra_vars+=(ansible_python_interpreter=/usr/bin/python3)
-  extra_vars+=(nsbox_branch=$branch)
-  extra_vars+=(nsbox_version=$version)
-  extra_vars+=(nsbox_product_name=$product_name)
-
-  for image in $to_update; do
-    ANSIBLE_STDOUT_CALLBACK=default ansible-playbook \
-      --connection=local --inventory=localhost, --extra-vars "${extra_vars[*]}" --skip-tags bend \
-      /run/host/nsbox/images/$image/playbook.yaml
-    touch $stamp_root/$image.stamp
-  done
 fi
 
 exec runuser -s /bin/bash -- - "$NSBOX_USER" /run/host/nsbox/scripts/nsbox-enter-run.sh "$@"

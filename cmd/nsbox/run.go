@@ -21,6 +21,7 @@ import (
 type runCommand struct {
 	container string
 	restart   bool
+	noReplay  bool
 	command   []string
 }
 
@@ -45,6 +46,7 @@ func (*runCommand) Usage() string {
 
 func (cmd *runCommand) SetFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&cmd.restart, "restart", false, "Restart the container if it's already running")
+	fs.BoolVar(&cmd.noReplay, "no-replay", false, "Don't attempt to replay any updated Ansible playbooks")
 }
 
 func (cmd *runCommand) ParsePositional(fs *flag.FlagSet) error {
@@ -81,7 +83,7 @@ func (cmd *runCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.ExitS
 
 	log.Debug("Container presumed to be ready, entering...")
 
-	exitCode, err := session.EnterContainer(ct, cmd.command, usrdata, app.(*nsboxApp).workdir)
+	exitCode, err := session.EnterContainer(ct, cmd.command, usrdata, cmd.noReplay, app.(*nsboxApp).workdir)
 	if err != nil {
 		return args.HandleError(err)
 	}

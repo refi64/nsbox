@@ -45,7 +45,13 @@ func ConnectPtys(stdinPty, stdoutPty, stderrPty string) error {
 	return nil
 }
 
-func SetupContainerSession(uid int, cwd string, execCommand []string) error {
+func SetupContainerSession(uid int, cwd string, noReplay bool, execCommand []string) error {
+	if noReplay {
+		if err := os.Setenv("NSBOX_NO_REPLAY", "1"); err != nil {
+			return errors.Wrap(err, "set NSBOX_NO_REPLAY")
+		}
+	}
+
 	script := "/run/host/nsbox/scripts/nsbox-enter-setup.sh"
 	execCmdline := append([]string{script, cwd}, execCommand...)
 	if err := unix.Exec(script, execCmdline, os.Environ()); err != nil {

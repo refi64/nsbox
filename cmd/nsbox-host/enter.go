@@ -15,11 +15,12 @@ import (
 )
 
 type enterCommand struct {
-	stdin  string
-	stdout string
-	stderr string
-	uid    int
-	cwd    string
+	stdin    string
+	stdout   string
+	stderr   string
+	uid      int
+	cwd      string
+	noReplay bool
 }
 
 func newEnterCommand(app args.App) subcommands.Command {
@@ -44,6 +45,7 @@ func (cmd *enterCommand) SetFlags(fs *flag.FlagSet) {
 	fs.StringVar(&cmd.stderr, "stderr", "", "")
 	fs.IntVar(&cmd.uid, "uid", -1, "")
 	fs.StringVar(&cmd.cwd, "cwd", "", "")
+	fs.BoolVar(&cmd.noReplay, "no-replay", false, "")
 }
 
 func (cmd *enterCommand) ParsePositional(fs *flag.FlagSet) error {
@@ -66,7 +68,7 @@ func (cmd *enterCommand) Execute(_ args.App, fs *flag.FlagSet) subcommands.ExitS
 
 	err := session.ConnectPtys(cmd.stdin, cmd.stdout, cmd.stderr)
 	if err == nil {
-		err = session.SetupContainerSession(cmd.uid, cmd.cwd, fs.Args())
+		err = session.SetupContainerSession(cmd.uid, cmd.cwd, cmd.noReplay, fs.Args())
 	}
 
 	return args.HandleError(err)

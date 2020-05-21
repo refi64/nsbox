@@ -34,9 +34,10 @@ type containerEntrySpec struct {
 	ptyIo   ptyIoFlags
 	env     map[string]string
 
-	verbose bool
-	uid     int
-	cwd     string
+	verbose  bool
+	uid      int
+	cwd      string
+	noReplay bool
 
 	command []string
 }
@@ -99,6 +100,10 @@ func (spec containerEntrySpec) buildNsboxHostCommand() []string {
 		cmd = append(cmd, "-v")
 	}
 
+	if spec.noReplay {
+		cmd = append(cmd, "-no-replay")
+	}
+
 	cmd = append(cmd, fmt.Sprintf("-uid=%d", spec.uid), fmt.Sprintf("-cwd=%s", spec.cwd))
 
 	// Add the -stdin,-stdout,-stderr=ptypath args if they are PTYs.
@@ -118,7 +123,8 @@ func (spec containerEntrySpec) buildNsboxHostCommand() []string {
 	return append(cmd, spec.command...)
 }
 
-func EnterContainer(ct *container.Container, command []string, usrdata *userdata.Userdata, workdir string) (int, error) {
+func EnterContainer(ct *container.Container, command []string, usrdata *userdata.Userdata,
+	noReplay bool, workdir string) (int, error) {
 	if len(command) == 0 {
 		command = []string{ct.Shell(usrdata), "-l"}
 	}
@@ -183,9 +189,11 @@ func EnterContainer(ct *container.Container, command []string, usrdata *userdata
 		}
 	}
 
+	spec.verbose = log.Verbose()
 	spec.uid = os.Getuid()
 	spec.cwd = workdir
 	spec.env = usrdata.Environ
+	spec.noReplay = noReplay
 	spec.command = command
 
 	// Set-up the PTY forwarding.
