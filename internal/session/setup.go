@@ -21,22 +21,18 @@ func ConnectPtys(stdinPty, stdoutPty, stderrPty string) error {
 			continue
 		}
 
-		var flags int
 		if fd == 0 {
-			// stdin is readable, not writable.
-			flags = unix.O_RDONLY
-
 			if _, err := unix.Setsid(); err != nil {
 				if errno, ok := err.(unix.Errno); !ok || errno != unix.EPERM {
 					// EPERM means this is already a session leader.
 					return errors.Wrapf(err, "failed to setsid")
 				}
 			}
-		} else {
-			flags = unix.O_WRONLY
 		}
 
-		ptyFd, err := unix.Open(pty, flags, 0)
+		// Some ANSI codes can be *written* to stdin, e.g. https://vt100.net/docs/vt510-rm/DECCKM.html
+		// In addition, it's possible to *read* from stdin... Therefore, flags is always RDWR.
+		ptyFd, err := unix.Open(pty, os.O_RDWR, 0)
 		if err != nil {
 			return errors.Wrapf(err, "failed to open pty %s for %d", pty, fd)
 		}
