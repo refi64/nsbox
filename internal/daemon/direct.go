@@ -96,15 +96,19 @@ func bindHome(builder *nspawn.Builder, usrdata *userdata.Userdata) error {
 	return nil
 }
 
-func bindGraphics(builder *nspawn.Builder) error {
+func bindDevices(builder *nspawn.Builder) {
 	tmpdir := os.TempDir()
 	x11 := filepath.Join(tmpdir, ".X11-unix")
-	if _, err := os.Stat(x11); err == nil {
+	if _, err := os.Stat(x11); err != nil {
+		log.Debug("Failed to access X11 socket:", err)
+	} else {
 		builder.AddBind(x11)
 	}
 
 	builder.AddBind("/dev/dri")
-	return nil
+	builder.AddBind("/dev/input")
+
+	bindLoopDevices(builder)
 }
 
 func stripLeadingSlash(path string) string {
@@ -374,15 +378,11 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		builder.AddBindTo(maildir, filepath.Join(paths.InContainerPrivPath, "mail"))
 	}
 
-	bindLoopDevices(builder)
-
 	if err := bindHome(builder, usrdata); err != nil {
 		return errors.Wrap(err, "failed to bind home")
 	}
 
-	if err := bindGraphics(builder); err != nil {
-		return errors.Wrap(err, "failed to bind graphics")
-	}
+	bindDevices(builder)
 
 	if ct.Config.ShareCgroupfs {
 		builder.AddRecursiveBind("/sys/fs/cgroup")
