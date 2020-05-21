@@ -38,12 +38,12 @@ func getServicePropertyInt(systemd *systemd1.Conn, service, name string) (int, e
 	}
 
 	value := prop.Value.Value()
-	ival, ok := value.(int)
+	ival, ok := value.(int32)
 	if !ok {
-		return 0, errors.Errorf("is %T (%v)", service, name, value, value)
+		return 0, errors.Errorf("is %T (%v)", value, value)
 	}
 
-	return ival, nil
+	return int(ival), nil
 }
 
 func (door *systemdDoor) Enter(ct *container.Container, spec *containerEntrySpec) (*processExitStatus, error) {
