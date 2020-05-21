@@ -85,6 +85,19 @@ type Container struct {
 	Config *Config
 }
 
+type Lock struct {
+	fd int
+}
+
+func (l *Lock) Release() {
+	if l.fd != -1 {
+		if err := unix.Close(l.fd); err != nil {
+			log.Alert("WARNING: lock.Release -> Close:", err)
+		}
+		l.fd = -1
+	}
+}
+
 const configJson = "config.json"
 const StageSuffix = ".stage"
 
@@ -244,10 +257,10 @@ const (
 	NoWaitForLock
 )
 
-func (container Container) LockUntilProcessDeath(wait LockWaitRequest) error {
+func (container Container) Lock(wait LockWaitRequest) (*Lock, error) {
 	fd, err := unix.Open(container.Path, unix.O_DIRECTORY, 0)
 	if err != nil {
-		return errors.Wrap(err, "failed to open container directory")
+		return nil, errors.Wrap(err, "failed to open container directory")
 	}
 
 	operation := unix.LOCK_EX
@@ -256,18 +269,25 @@ func (container Container) LockUntilProcessDeath(wait LockWaitRequest) error {
 	}
 
 	if err := unix.Flock(fd, operation); err != nil {
-		return errors.Wrap(err, "failed to lock container directory")
+		return nil, errors.Wrap(err, "failed to lock container directory")
 	}
 
-	// Let the fd "leak"; Linux will close it anyway once we die, and it will let us
+	return &Lock{fd}, nil
+}
+
+func (container Container) LockUntilProcessDeath(wait LockWaitRequest) error {
+	// Let the lock "leak"; Linux will close it anyway once we die, and it will let us
 	// easily hold the lock until process death.
-	return nil
+	_, err := container.Lock(wait)
+	return err
 }
 
 func (container Container) LockAndDelete(wait LockWaitRequest) error {
-	if err := container.LockUntilProcessDeath(wait); err != nil {
+	lock, err := container.Lock(wait)
+	if err != nil {
 		return err
 	}
+	defer lock.Release()
 
 	if err := os.RemoveAll(container.Path); err != nil {
 		return errors.Wrap(err, "failure during container deletion")

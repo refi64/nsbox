@@ -16,6 +16,7 @@ import (
 	godbus "github.com/godbus/dbus/v5"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/container"
+	"github.com/refi64/nsbox/internal/kill"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/nsbus"
 	"github.com/refi64/nsbox/internal/paths"
@@ -117,7 +118,7 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd string, ct *container.Container,
 	return nil
 }
 
-func RunContainerViaTransientUnit(ct *container.Container, usrdata *userdata.Userdata) error {
+func RunContainerViaTransientUnit(ct *container.Container, restart bool, usrdata *userdata.Userdata) error {
 	ct.ApplyEnvironFilter(usrdata)
 
 	systemd, err := systemd1.NewSystemConnection()
@@ -128,6 +129,26 @@ func RunContainerViaTransientUnit(ct *container.Container, usrdata *userdata.Use
 	machined, err := machine1.New()
 	if err != nil {
 		return err
+	}
+
+	if restart {
+		if _, err := machined.GetMachine(ct.Name); err == nil {
+			log.Debug("Killing previous container instance")
+
+			var signal kill.Signal
+			var all bool
+			if ct.Config.Boot {
+				signal = kill.SigPoweroff
+				all = false
+			} else {
+				signal = kill.SigKill
+				all = true
+			}
+
+			if err := kill.KillContainer(usrdata, ct, signal, all); err != nil {
+				return errors.Wrap(err, "killing previous instance")
+			}
+		}
 	}
 
 	if _, err := machined.GetMachine(ct.Name); err != nil {

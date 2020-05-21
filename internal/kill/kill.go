@@ -54,12 +54,7 @@ func (sig *Signal) Set(value string) error {
 	return nil
 }
 
-func KillContainer(usrdata *userdata.Userdata, name string, signal Signal, all bool) error {
-	ct, err := container.Open(usrdata, name)
-	if err != nil {
-		return err
-	}
-
+func KillContainer(usrdata *userdata.Userdata, ct *container.Container, signal Signal, all bool) error {
 	if ct.Config.Boot && all {
 		return errors.New("-a/--all is not supported for booted containers")
 	}
@@ -78,11 +73,11 @@ func KillContainer(usrdata *userdata.Userdata, name string, signal Signal, all b
 	// but otherwise, we need to send the kill signal ourselves.
 
 	if all {
-		if err := machined.KillMachine(name, "all", unix.Signal(signal)); err != nil {
+		if err := machined.KillMachine(ct.Name, "all", unix.Signal(signal)); err != nil {
 			return errors.Wrap(err, "failed to ask machined to kill container")
 		}
 	} else {
-		props, err := machined.DescribeMachine(name)
+		props, err := machined.DescribeMachine(ct.Name)
 		if err != nil {
 			return errors.Wrap(err, "failed to describe machine")
 		}
@@ -99,9 +94,11 @@ func KillContainer(usrdata *userdata.Userdata, name string, signal Signal, all b
 		}
 	}
 
-	if err := ct.LockUntilProcessDeath(container.WaitForLock); err != nil {
+	lock, err := ct.Lock(container.WaitForLock)
+	if err != nil {
 		return err
 	}
 
+	lock.Release()
 	return nil
 }

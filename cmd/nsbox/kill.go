@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/subcommands"
 	"github.com/refi64/nsbox/internal/args"
+	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/kill"
 )
 
@@ -47,6 +48,13 @@ func (cmd *killCommand) ParsePositional(fs *flag.FlagSet) error {
 }
 
 func (cmd *killCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.ExitStatus {
-	err := kill.KillContainer(app.(*nsboxApp).usrdata, cmd.container, cmd.signal, cmd.all)
+	usrdata := app.(*nsboxApp).usrdata
+
+	ct, err := container.Open(usrdata, cmd.container)
+	if err != nil {
+		return args.HandleError(err)
+	}
+
+	err = kill.KillContainer(app.(*nsboxApp).usrdata, ct, cmd.signal, cmd.all)
 	return args.HandleError(err)
 }

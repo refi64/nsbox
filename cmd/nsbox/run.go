@@ -20,6 +20,7 @@ import (
 
 type runCommand struct {
 	container string
+	restart   bool
 	command   []string
 }
 
@@ -42,7 +43,9 @@ func (*runCommand) Usage() string {
 `
 }
 
-func (cmd *runCommand) SetFlags(fs *flag.FlagSet) {}
+func (cmd *runCommand) SetFlags(fs *flag.FlagSet) {
+	fs.BoolVar(&cmd.restart, "restart", false, "Restart the container if it's already running")
+}
 
 func (cmd *runCommand) ParsePositional(fs *flag.FlagSet) error {
 	if len(fs.Args()) >= 1 {
@@ -72,7 +75,7 @@ func (cmd *runCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.ExitS
 		return args.HandleError(err)
 	}
 
-	if err := daemon.RunContainerViaTransientUnit(ct, usrdata); err != nil {
+	if err := daemon.RunContainerViaTransientUnit(ct, cmd.restart, usrdata); err != nil {
 		return args.HandleError(err)
 	}
 
