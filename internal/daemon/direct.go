@@ -351,6 +351,18 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		gettyOverride := filepath.Join(dataDir, "getty-override.conf")
 		builder.AddBindTo(gettyOverride, "/etc/systemd/system/console-getty.service.d/00-nsbox.conf")
 
+		/*
+			Don't clobber the host's exposed Xorg sockets.
+			XXX: This really would fit better in the individual images, but that would mean that
+			it would be possible for an image to forget, which would result in nasty behavior. */
+		tmpfilesX11 := ct.StorageChild("etc/tmpfiles.d/x11.conf")
+		if err := os.Remove(tmpfilesX11); err != nil && !os.IsNotExist(err) {
+			return errors.Wrap(err, "delete tmpfiles.d/x11.conf")
+		}
+		if err := os.Symlink("/dev/null", tmpfilesX11); err != nil {
+			return errors.Wrap(err, "mask tmpfiles.d/x11.conf")
+		}
+
 		if ct.Config.VirtualNetwork {
 			wantsNetworkd := filepath.Join(dataDir, "wants-networkd.conf")
 			builder.AddBindTo(wantsNetworkd, "/etc/systemd/system/nsbox-container.target.d/00-nsbox-networkd.conf")
