@@ -6,6 +6,12 @@
     - console-getty.service
     - systemd-logind.service
 
+- name: Mask tmpfiles.d's selinux setup
+  file:
+    src: /dev/null
+    dest: /etc/tmpfiles.d/selinux-policy.conf
+    state: link
+
 - name: Require the documentation to be installed
   lineinfile:
     path: /etc/dnf/dnf.conf
