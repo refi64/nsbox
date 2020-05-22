@@ -27,7 +27,7 @@ import (
 type temporaryFileSystem struct{ Path, Options string }
 
 func startNsboxd(systemd *systemd1.Conn, nsboxd string, ct *container.Container, usrdata *userdata.Userdata) error {
-	serviceName := fmt.Sprintf("nsbox-%s.service", ct.Name)
+	serviceName := fmt.Sprintf("nsbox-%s.service", ct.MachineName(usrdata))
 
 	journal, err := sdjournal.NewJournalReader(sdjournal.JournalReaderConfig{
 		// XXX: use a 1-nanosecond duration to get it to filter starting now.
@@ -132,7 +132,7 @@ func RunContainerViaTransientUnit(ct *container.Container, restart bool, usrdata
 	}
 
 	if restart {
-		if _, err := machined.GetMachine(ct.Name); err == nil {
+		if _, err := machined.GetMachine(ct.MachineName(usrdata)); err == nil {
 			log.Debug("Killing previous container instance")
 
 			var signal kill.Signal
@@ -151,7 +151,7 @@ func RunContainerViaTransientUnit(ct *container.Container, restart bool, usrdata
 		}
 	}
 
-	if _, err := machined.GetMachine(ct.Name); err != nil {
+	if _, err := machined.GetMachine(ct.MachineName(usrdata)); err != nil {
 		log.Debug("GetMachine:", err)
 
 		nsboxd, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, paths.ProductName, "nsboxd")

@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -196,4 +197,15 @@ func (usrdata *Userdata) ShadowLine() (string, error) {
 	}
 
 	return out, nil
+}
+
+func (usrdata Userdata) EscapedUsername() string {
+	escapeRe := regexp.MustCompile(`[^A-Za-z0-9]+`)
+	return string(escapeRe.ReplaceAllStringFunc(usrdata.User.Username, func(match string) string {
+		var builder strings.Builder
+		for _, r := range match {
+			fmt.Fprintf(&builder, "\\x%x", r)
+		}
+		return builder.String()
+	}))
 }

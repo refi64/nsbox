@@ -210,6 +210,10 @@ func checkArrayItemsAgainstRegex(items []string, regexStr, errprefix string) err
 	return nil
 }
 
+func (container Container) MachineName(usrdata *userdata.Userdata) string {
+	return fmt.Sprintf("%s-%s", usrdata.EscapedUsername(), container.Name)
+}
+
 func (container Container) UpdateConfig() error {
 	if err := checkArrayItemsAgainstRegex(container.Config.ExtraBindMounts,
 		`^.+(:.+)?$`, "invalid bind mount"); err != nil {
