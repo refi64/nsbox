@@ -76,7 +76,9 @@ func (ctx *exportContext) exportDesktopFile(desktopFilePath string) error {
 				log.Alertf("%s had invalid line: %s", desktopFilePath, line)
 			} else {
 				if parts[0] == "Exec" {
-					line = fmt.Sprintf("Exec=%s run -- %s %s", paths.ProductName, ctx.ct.Name, parts[1])
+					// Exec= should not replay, otherwise the user may be greeted with
+					// random delays on starting GUI apps.
+					line = fmt.Sprintf("Exec=%s run -no-replay -- %s %s", paths.ProductName, ctx.ct.Name, parts[1])
 				} else if parts[0] == "Icon" {
 					for _, iconCtx := range ctx.iconCtxs {
 						icons := iconCtx.FindIcon(parts[1])
