@@ -26,7 +26,7 @@ func boolYesNo(value bool) string {
 	}
 }
 
-func (ct Container) ShowInfo() error {
+func (ct Container) ShowInfo(usrdata *userdata.Userdata) error {
 	systemd, err := dbus.New()
 	if err != nil {
 		return err
@@ -37,12 +37,14 @@ func (ct Container) ShowInfo() error {
 		return err
 	}
 
-	unitMemory, err := systemd.GetServiceProperty(fmt.Sprintf("nsbox-%s.service", ct.Name), "MemoryCurrent")
+	machineName := ct.MachineName(usrdata)
+
+	unitMemory, err := systemd.GetServiceProperty(fmt.Sprintf("nsbox-%s.service", machineName), "MemoryCurrent")
 	if err != nil {
 		log.Debug("failed to get unit MemoryCurrent:", err)
 	}
 
-	machineProps, err := machined.DescribeMachine(ct.Name)
+	machineProps, err := machined.DescribeMachine(machineName)
 	if err != nil {
 		log.Debug("failed to describe machine:", err)
 	}
@@ -81,5 +83,5 @@ func OpenAndShowInfo(usrdata *userdata.Userdata, name string) error {
 		return err
 	}
 
-	return ct.ShowInfo()
+	return ct.ShowInfo(usrdata)
 }

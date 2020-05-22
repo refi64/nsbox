@@ -14,6 +14,7 @@ import (
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/selinux"
+	"github.com/refi64/nsbox/internal/userdata"
 	"golang.org/x/sys/unix"
 )
 
@@ -34,8 +35,9 @@ func convertStateToProcessExit(state *os.ProcessState) (*processExitStatus, erro
 	}
 }
 
-func (door *nsenterDoor) Enter(ct *container.Container, spec *containerEntrySpec) (*processExitStatus, error) {
-	leader, err := getLeader(ct.Name)
+func (door *nsenterDoor) Enter(ct *container.Container,
+	spec *containerEntrySpec, usrdata *userdata.Userdata) (*processExitStatus, error) {
+	leader, err := getLeader(ct, usrdata)
 	if err != nil {
 		return nil, errors.Wrap(err, "getting leader process")
 	}

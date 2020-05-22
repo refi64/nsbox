@@ -18,6 +18,7 @@ import (
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/nsbus"
 	"github.com/refi64/nsbox/internal/selinux"
+	"github.com/refi64/nsbox/internal/userdata"
 )
 
 // A door that enters the container environment via a transient unit.
@@ -46,8 +47,9 @@ func getServicePropertyInt(systemd *systemd1.Conn, service, name string) (int, e
 	return int(ival), nil
 }
 
-func (door *systemdDoor) Enter(ct *container.Container, spec *containerEntrySpec) (*processExitStatus, error) {
-	leader, err := getLeader(ct.Name)
+func (door *systemdDoor) Enter(ct *container.Container, spec *containerEntrySpec,
+	usrdata *userdata.Userdata) (*processExitStatus, error) {
+	leader, err := getLeader(ct, usrdata)
 	if err != nil {
 		return nil, errors.Wrap(err, "get container leader")
 	}
@@ -85,7 +87,9 @@ func (door *systemdDoor) Enter(ct *container.Container, spec *containerEntrySpec
 
 	serviceName := fmt.Sprintf("nsbox-entry-%s.service", uuid.New().String())
 
-	systemdRun := []string{"systemd-run", "--quiet", "--pipe", fmt.Sprintf("--machine=%s", ct.Name), fmt.Sprintf("--unit=%s", serviceName)}
+	systemdRun := []string{"systemd-run", "--quiet", "--pipe",
+		fmt.Sprintf("--machine=%s", ct.MachineName(usrdata)),
+		fmt.Sprintf("--unit=%s", serviceName)}
 	properties := []struct{ name, value string }{}
 
 	if selinux.Enabled() {

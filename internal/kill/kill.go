@@ -64,7 +64,9 @@ func KillContainer(usrdata *userdata.Userdata, ct *container.Container, signal S
 		return err
 	}
 
-	log.Debugf("sending signal %d to %s", int(signal))
+	log.Debugf("sending signal %d to %s", int(signal), ct.Name)
+
+	machineName := ct.MachineName(usrdata)
 
 	// machined's SELinux policies don't allow us to ask it to kill the leader process of a
 	// container that machined didn't start. However, when "all" is given, machined just
@@ -73,11 +75,11 @@ func KillContainer(usrdata *userdata.Userdata, ct *container.Container, signal S
 	// but otherwise, we need to send the kill signal ourselves.
 
 	if all {
-		if err := machined.KillMachine(ct.Name, "all", unix.Signal(signal)); err != nil {
+		if err := machined.KillMachine(machineName, "all", unix.Signal(signal)); err != nil {
 			return errors.Wrap(err, "failed to ask machined to kill container")
 		}
 	} else {
-		props, err := machined.DescribeMachine(ct.Name)
+		props, err := machined.DescribeMachine(machineName)
 		if err != nil {
 			return errors.Wrap(err, "failed to describe machine")
 		}

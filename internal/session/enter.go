@@ -57,16 +57,16 @@ type processExitStatus struct {
 
 // A "door" is responsible for entry into a container's environment.
 type containerDoor interface {
-	Enter(ct *container.Container, spec *containerEntrySpec) (*processExitStatus, error)
+	Enter(ct *container.Container, spec *containerEntrySpec, usrdata *userdata.Userdata) (*processExitStatus, error)
 }
 
-func getLeader(name string) (uint32, error) {
+func getLeader(ct *container.Container, usrdata *userdata.Userdata) (uint32, error) {
 	machined, err := machine1.New()
 	if err != nil {
 		return 0, err
 	}
 
-	props, err := machined.DescribeMachine(name)
+	props, err := machined.DescribeMachine(ct.MachineName(usrdata))
 	if err != nil {
 		return 0, err
 	}
@@ -240,7 +240,7 @@ func EnterContainer(ct *container.Container, command []string, usrdata *userdata
 		}()
 	}
 
-	status, err := door.Enter(ct, &spec)
+	status, err := door.Enter(ct, &spec, usrdata)
 	if err != nil {
 		return 0, err
 	}

@@ -64,7 +64,7 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd string, ct *container.Container,
 
 	properties := []systemd1.Property{
 		systemd1.PropType("notify"),
-		systemd1.PropDescription("nsbox " + ct.Name),
+		systemd1.PropDescription(fmt.Sprintf("nsbox container %s for %s", ct.Name, usrdata.User.Username)),
 		systemd1.PropExecStart(
 			[]string{nsboxd, fmt.Sprint("-v=", log.Verbose()), ct.Name},
 			false,

@@ -264,7 +264,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	}
 	builder.MachineDirectory = ct.Storage()
 	builder.LinkJournal = "host"
-	builder.MachineName = ct.Name
+	builder.MachineName = ct.MachineName(usrdata)
 	builder.Hostname = ct.Name
 	builder.Capabilities = ct.Config.ExtraCapabilities
 	builder.SystemCallFilter = strings.Join(ct.Config.SyscallFilters, " ")
