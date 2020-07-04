@@ -49,8 +49,8 @@ func (*configCommand) Usage() string {
 }
 
 func (cmd *configCommand) SetFlags(fs *flag.FlagSet) {
-	fs.BoolVar(&cmd.shareCgroupfs, "share-cgroupfs", true, "share the host's cgroupfs")
-	fs.BoolVar(&cmd.virtualNetwork, "virtual-network", true, "use a virtualized network")
+	fs.BoolVar(&cmd.shareCgroupfs, "share-cgroupfs", false, "share the host's cgroupfs")
+	fs.BoolVar(&cmd.virtualNetwork, "virtual-network", false, "use a virtualized network")
 	fs.Var(&cmd.auth, "auth", "password authentication method")
 	fs.Var(&cmd.extraBindMounts, "extra-bind-mounts", "extra bind mounts")
 	fs.Var(&cmd.extraCapabilities, "extra-capabilities", "extra capabilities to grant")
