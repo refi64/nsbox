@@ -16,13 +16,12 @@ go mod tidy -v
 go mod vendor
 
 gn gen out --args="${gn_args[*]}"
-ninja -C out rpm/nsbox{{,-guest-tools}.spec,-sources.tar}
+ninja -C out rpm/nsbox{.spec,-sources.tar}
 
 git clone https://github%40nsbox.dev@github.com/nsbox-bot/rpm-spec-files -b $git_branch
 cp \
-  out/rpm/*.spec \
+  out/rpm/nsbox.spec \
   out/rpm/nsbox-sources.tar \
-  guest-tools/fedora/nsbox_trigger.py \
   rpm-spec-files
 cd rpm-spec-files
 git config user.email 'github@nsbox.dev'

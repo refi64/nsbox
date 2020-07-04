@@ -285,19 +285,19 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	builder.AddBindTo(hostPrivPath, "/run/host/nsbox")
 
-	scripts, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "data", "scripts")
+	dataDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "data")
 	if err != nil {
-		return errors.Wrap(err, "failed to locate scripts")
+		return errors.Wrap(err, "failed to locate nsbox data directory")
 	}
 
-	builder.AddBindTo(scripts, filepath.Join(paths.InContainerPrivPath, "scripts"))
+	builder.AddBindTo(filepath.Join(dataDir, "scripts"), filepath.Join(paths.InContainerPrivPath, "scripts"))
 
 	nsboxHost, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, paths.ProductName, "nsbox-host")
 	if err != nil {
 		return errors.Wrap(err, "failed to locate nsbox-host")
 	}
 
-	builder.AddBindTo(nsboxHost, filepath.Join(paths.InContainerPrivPath, "nsbox-host"))
+	builder.AddBindTo(nsboxHost, filepath.Join(paths.InContainerPrivPath, "bin/nsbox-host"))
 
 	mainImage, err := image.Open(ct.Config.Image)
 	if err != nil {
@@ -336,11 +336,6 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		// Bind the entire xdg runtime directory, then nsbox-init.sh will manually symlink
 		// stuff into the in-container runtime directory as needed.
 		builder.AddRecursiveBindTo(xdgRuntimeDir, filepath.Join(paths.InContainerPrivPath, "usr-run"))
-
-		dataDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "data")
-		if err != nil {
-			return errors.Wrap(err, "failed to locate nsbox-init.service")
-		}
 
 		nsboxInit := filepath.Join(dataDir, "nsbox-init.service")
 		builder.AddBindTo(nsboxInit, "/etc/systemd/system/nsbox-init.service")

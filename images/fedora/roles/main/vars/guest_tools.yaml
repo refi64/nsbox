@@ -1,0 +1,4 @@
+min_version: 20.05.22.276
+build_requires:
+  - python3-rpm-macros
+  - rpm-build

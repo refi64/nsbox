@@ -1,25 +1,31 @@
 Name: nsbox-guest-tools
-Version: @VERSION
-%if "@COMMIT" != ""
-Release: 1%{?dist}.@COMMIT
-%else
-Release: 1%{?dist}
-%endif
+Version: %{nsbox_version}
+Release: 1
 Summary: Tools for nsbox host integration
 License: MPL-2.0
 URL: https://nsbox.dev/
 BuildArch: noarch
 Provides: dnf-plugin-nsbox = %{version}-%{release}
-BuildRequires: python3-devel
+BuildRequires: python3-rpm-macros
 Requires: python3-dnf-plugins-core
+
+Requires: ansible
+Requires: findutils
+Requires: glibc-all-langpacks
+Requires: hostname
+Requires: man-pages
+Requires: nsbox-guest-tools
+Requires: iso-codes
+Requires: sudo
+Requires: vte-profile
+
 Source0: nsbox_trigger.py
 
 %description
 Guest tools for nsbox containers that allow integration with the host system.
 
 %build
-cp %{_sourcedir}/nsbox_trigger.py %{_builddir}
-cd %{_builddir}
+cp %{SOURCE0} .
 %{__python3} -m compileall nsbox_trigger.py
 %{__python3} -O -m compileall nsbox_trigger.py
 

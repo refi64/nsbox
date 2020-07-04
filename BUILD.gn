@@ -231,19 +231,27 @@ install_files("install_share_data") {
 }
 
 install_files("install_share_images") {
+  # XXX: Need to dedup this with images/BUILD.gn
   sources = [
     "images/arch/Dockerfile",
     "images/arch/metadata.json",
     "images/arch/playbook.yaml",
+    "images/arch/roles/main/files/nsbox-trigger.hook",
+    "images/arch/roles/main/files/PKGBUILD",
+    "images/arch/roles/main/tasks/build_guest_tools.yaml",
     "images/arch/roles/main/tasks/main.yaml",
+    "images/arch/roles/main/vars/guest_tools.yaml",
     "images/debian/Dockerfile",
     "images/debian/metadata.json",
     "images/debian/playbook.yaml",
     "images/debian/roles/main/tasks/main.yaml",
     "images/fedora/metadata.json",
     "images/fedora/playbook.yaml",
+    "images/fedora/roles/main/files/nsbox-guest-tools.spec",
+    "images/fedora/roles/main/files/nsbox_trigger.py",
+    "images/fedora/roles/main/tasks/build_guest_tools.yaml",
     "images/fedora/roles/main/tasks/main.yaml",
-    "images/fedora/roles/main/templates/nsbox.repo",
+    "images/fedora/roles/main/vars/guest_tools.yaml",
   ]
   output = "$share_dir/$product_name/{{source}}"
 }
@@ -284,18 +292,6 @@ group("default") {
 if (fedora_package) {
   group("fedora") {
     deps = ["//packaging/fedora"]
-  }
-}
-
-if (fedora_guest_tools) {
-  group("fedora_guest_tools") {
-    deps = ["//guest-tools/fedora"]
-  }
-}
-
-if (arch_guest_tools) {
-  group("arch_guest_tools") {
-    deps = ["//guest-tools/arch"]
   }
 }
 

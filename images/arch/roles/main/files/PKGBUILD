@@ -1,9 +1,10 @@
-pkgname=$NSBOX_PRODUCT_NAME-guest-tools
+pkgname=nsbox-guest-tools
 pkgver=$NSBOX_VERSION
 pkgrel=1
 pkgdesc='The guest tools for nsbox-managed containers'
 arch=('any')
 license=('mpl-2.0')
+depends=(ansible grep inetutils sudo vte-common)
 source=(nsbox-trigger.hook)
 sha256sums=(SKIP)
 

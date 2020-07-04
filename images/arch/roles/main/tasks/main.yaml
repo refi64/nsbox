@@ -3,14 +3,7 @@
     update_cache: yes
   tags: bend
 
-- name: Install required packages (this may take a while)
-  pacman:
-    name:
-      - ansible
-      - grep
-      - inetutils
-      - sudo
-      - vte-common
+- import_tasks: build_guest_tools.yaml
 
 - name: Fix the setuid bit on sudo
   file:

@@ -49,9 +49,6 @@ declare_args() {
   # Build the Fedora package.
   fedora_package = false
 
-  # Build the Fedora guest tools.
-  fedora_guest_tools = false
-
   # Enable SELinux support.
   enable_selinux = false
 
@@ -66,9 +63,6 @@ declare_args() {
 
   # The Fedora release to build RPMs for.
   fedora_rpm_target_release = "32"
-
-  # Build the Arch guest tools.
-  arch_guest_tools = false
 
   # The path to the makepkg executable.
   makepkg_exe = "makepkg"

@@ -1,0 +1,75 @@
+- include_vars:
+    file: guest_tools.yaml
+    name: guest_tools
+
+- name: Remove the deprecated guest tools repository
+  file:
+    path: /etc/yum.repos.d/nsbox-edge.repo
+    state: absent
+
+- name: Check for guest tools build requirements
+  shell: "rpm -q {{ guest_tools.build_requires | join(' ') }}"
+  ignore_errors: true
+  register: build_requires_test
+  args:
+    warn: false
+
+- name: Install guest tools build requirements (this may take a while)
+  when: build_requires_test.rc != 0
+  dnf:
+    name: '{{ guest_tools.build_requires }}'
+    update_cache: true
+
+- name: Check the available guest tools version
+  shell: "rpm -q --queryformat '%{VERSION}' nsbox-guest-tools"
+  ignore_errors: true
+  register: guest_tools_test
+  args:
+    warn: false
+
+- when: >-
+    guest_tools_test.rc != 0
+    or (guest_tools_test.stdout_lines | first) is version(guest_tools.min_version, '<')
+  block:
+    - name: Create a temporary build directory
+      tempfile:
+        state: directory
+        prefix: nsbox
+      register: rpm_topdir
+
+    - name: Copy the files for the guest tools
+      copy:
+        src: '{{ item }}'
+        # Trailing / will create the intermediate directories as needed.
+        dest: '{{ rpm_topdir.path }}/SOURCES/'
+      loop:
+        # XXX: Copying everything to SOURCES is a bit ugly, but it works...
+        - nsbox-guest-tools.spec
+        - nsbox_trigger.py
+
+    - name: Build the guest tools
+      shell: >-
+        rpmbuild
+        --define {{ ('nsbox_version ' + nsbox_version) | quote }}
+        --define {{ ('_topdir ' + rpm_topdir.path) | quote }}
+        -bb nsbox-guest-tools.spec
+      args:
+        chdir: '{{ rpm_topdir.path }}/SOURCES'
+
+    - name: Locate the guest tools
+      find:
+        paths: '{{ rpm_topdir.path }}/RPMS/noarch'
+        patterns: 'nsbox-guest-tools*.rpm'
+      register: guest_tools_rpm
+
+    - name: Install the guest tools (this may take a while)
+      dnf:
+        name: '{{ (guest_tools_rpm.files | first).path }}'
+        state: present
+        update_cache: true
+
+  always:
+    - file:
+        path: '{{ rpm_topdir.path }}'
+        state: absent
+      when: rpm_topdir is defined

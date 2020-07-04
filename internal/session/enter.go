@@ -94,7 +94,7 @@ func safeCopy(dest *os.File, source *os.File) {
 }
 
 func (spec containerEntrySpec) buildNsboxHostCommand() []string {
-	cmd := []string{"/run/host/nsbox/nsbox-host", "enter"}
+	cmd := []string{"/run/host/nsbox/bin/nsbox-host", "enter"}
 
 	if spec.verbose {
 		cmd = append(cmd, "-v")

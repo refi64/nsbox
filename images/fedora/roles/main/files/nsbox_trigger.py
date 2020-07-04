@@ -7,12 +7,12 @@
 from dnfpluginscore import logger
 import dnf
 import dnf.cli
-
 import subprocess
+
 
 class NsboxTrigger(dnf.Plugin):
     name = 'nsbox-trigger'
 
     def transaction(self):
         logger.debug('Notifying nsbox host of updates...')
-        subprocess.run(['nsbox-host', 'reload-exports'])
+        subprocess.run(['/run/host/nsbox/bin/nsbox-host', 'reload-exports'])

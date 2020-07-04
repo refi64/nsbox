@@ -18,26 +18,7 @@
     line: tsflags=nodocs
     state: absent
 
-- name: Add the guest tools repo
-  template:
-    src: nsbox.repo
-    dest: /etc/yum.repos.d/{{ nsbox_product_name }}.repo
-    owner: root
-    group: root
-    mode: '0644'
-
-- name: Install required packages (this may take a while)
-  dnf:
-    name:
-      - ansible
-      - findutils
-      - glibc-all-langpacks
-      - hostname
-      - man-pages
-      - nsbox-guest-tools
-      - iso-codes
-      - sudo
-      - vte-profile
+- import_tasks: build_guest_tools.yaml
 
 - name: Clear the dnf cache
   shell: 'dnf clean all'

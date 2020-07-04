@@ -1,0 +1,55 @@
+- include_vars:
+    file: guest_tools.yaml
+    name: guest_tools
+
+# We don't want to pull in the entire base-devel for makepkg, so just grab the absolute
+# bare necessities.
+- name: Install guest tools build requirements (this may take a while)
+  pacman:
+    name:
+      - binutils
+      - fakeroot
+
+- name: Remove the deprecated guest tools if present
+  pacman:
+    name: nsbox-edge-guest-tools
+    state: absent
+
+- name: Check the available guest tools version
+  shell: pacman -Qi nsbox-guest-tools | grep -Po '^Version\s+:\s+\K[^-]*'
+  ignore_errors: true
+  register: guest_tools_test
+  args:
+    warn: false
+
+- when: >-
+    guest_tools_test.rc != 0
+    or (guest_tools_test.stdout_lines | first) is version(guest_tools.min_version, '<')
+  block:
+    - name: Create a temporary build directory
+      tempfile:
+        state: directory
+        prefix: nsbox
+      register: buildroot
+
+    - name: Copy the files for the guest tools
+      copy:
+        src: '{{ item }}'
+        # Trailing / will create the intermediate directories as needed.
+        dest: '{{ buildroot.path }}/'
+      loop:
+        - nsbox-trigger.hook
+        - PKGBUILD
+
+    - name: Build and install the guest tools (this may take a while)
+      # XXX: Overriding EUID to trick makepkg into thinking we're not root is ugly but the
+      # simplest solution
+      shell: env EUID=1 NSBOX_VERSION={{ nsbox_version | quote }} makepkg -si --noconfirm
+      args:
+        chdir: '{{ buildroot.path }}'
+
+  always:
+    - file:
+        path: '{{ buildroot.path }}'
+        state: absent
+      when: buildroot is defined

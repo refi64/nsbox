@@ -69,4 +69,4 @@ fi
 
 mknod -m 666 /dev/fuse c 10 229
 
-NSBOX_INTERNAL=1 exec /run/host/nsbox/nsbox-host service "$NSBOX_CONTAINER"
+NSBOX_INTERNAL=1 exec /run/host/nsbox/bin/nsbox-host service "$NSBOX_CONTAINER"

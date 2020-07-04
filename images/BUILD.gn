@@ -31,9 +31,9 @@ template("nsbox_image") {
       "${invoker.image}/playbook.yaml",
     ]
 
-    if (defined(invoker.role_files)) {
-      foreach(file, invoker.role_files) {
-        sources += ["${invoker.image}/roles/$file"]
+    if (defined(invoker.image_files)) {
+      foreach(file, invoker.image_files) {
+        sources += ["${invoker.image}/$file"]
       }
     }
 
@@ -46,9 +46,12 @@ template("nsbox_image") {
 images_with_tags = [
   {
     name = "fedora"
-    versions = ["30", "31"]
-    extra_role_files = [
-      "main/templates/nsbox.repo",
+    versions = ["30", "31", "32"]
+    extra_image_files = [
+      "roles/main/files/nsbox_trigger.py",
+      "roles/main/files/nsbox-guest-tools.spec",
+      "roles/main/tasks/build_guest_tools.yaml",
+      "roles/main/vars/guest_tools.yaml",
     ]
   },
   {
@@ -62,12 +65,12 @@ foreach(spec, images_with_tags) {
     nsbox_image("${spec.name}-$version-image") {
       image = spec.name
       tag = version
-      role_files = [
-        "main/tasks/main.yaml",
+      image_files = [
+        "roles/main/tasks/main.yaml",
       ]
 
-      if (defined(spec.extra_role_files)) {
-        role_files += spec.extra_role_files
+      if (defined(spec.extra_image_files)) {
+        image_files += spec.extra_image_files
       }
     }
   }
@@ -76,8 +79,12 @@ foreach(spec, images_with_tags) {
 nsbox_image("arch-image") {
   image = "arch"
   local = true
-  role_files = [
-    "main/tasks/main.yaml",
+  image_files = [
+    "roles/main/files/nsbox-trigger.hook",
+    "roles/main/files/PKGBUILD",
+    "roles/main/tasks/build_guest_tools.yaml",
+    "roles/main/tasks/main.yaml",
+    "roles/main/vars/guest_tools.yaml",
   ]
 }
 
