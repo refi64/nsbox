@@ -109,6 +109,7 @@ func (cmd *configCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.Ex
 
 	cmd.extraBindMounts.Apply(&ct.Config.ExtraBindMounts)
 	cmd.extraCapabilities.Apply(&ct.Config.ExtraCapabilities)
+	cmd.privatePaths.Apply(&ct.Config.PrivatePaths)
 	cmd.syscallFilters.Apply(&ct.Config.SyscallFilters)
 	cmd.xdgDesktopExtra.Apply(&ct.Config.XdgDesktopExtra)
 	cmd.xdgDesktopExports.Apply(&ct.Config.XdgDesktopExports)

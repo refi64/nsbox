@@ -217,6 +217,64 @@ func startVarlinkService(ct *container.Container, hostPrivPath string) (*net.Lis
 	return &listener, err
 }
 
+func splitPath(path string) []string {
+	parts := strings.Split(path, string(os.PathSeparator))
+	if filepath.IsAbs(path) {
+		parts[0] = "/"
+	}
+
+	return parts
+}
+
+func bindPrivate(builder *nspawn.Builder, ct *container.Container, usrdata *userdata.Userdata) error {
+	for _, private := range ct.Config.PrivatePaths {
+		parts := splitPath(private)
+
+		if !filepath.IsAbs(private) && parts[0] == "home" {
+			parts = append(splitPath(usrdata.User.HomeDir), parts[1:]...)
+			private = filepath.Join(parts...)
+		}
+
+		privateRoot := ct.StorageChild("var", "lib", "private-storage")
+		if err := os.MkdirAll(privateRoot, 0700); err != nil && !os.IsExist(err) {
+			return errors.Wrap(err, "creating private storage root")
+		}
+
+		internal := filepath.Join(privateRoot, private)
+		if _, err := os.Stat(internal); err != nil && os.IsNotExist(err) {
+			// Walk the paths downwards from the root, applying permissions as needed.
+			currentRoot := "/"
+			// parts[1:] to skip trying to do weird things with the root
+			for _, part := range parts[1:] {
+				currentPath := filepath.Join(currentRoot, part)
+				currentInternal := filepath.Join(privateRoot, currentPath)
+
+				if _, err := os.Stat(currentInternal); err != nil && os.IsNotExist(err) {
+					var st unix.Stat_t
+					err := unix.Stat(currentPath, &st)
+					if err != nil {
+						return errors.Wrapf(err, "stat %s to find permissions", currentPath)
+					}
+
+					if err := os.Mkdir(currentInternal, os.FileMode(st.Mode&07777)); err != nil {
+						return errors.Wrapf(err, "create %s", currentPath)
+					}
+
+					if err := os.Chown(currentInternal, int(st.Uid), int(st.Gid)); err != nil {
+						return errors.Wrapf(err, "chown %s(%d,%d)", currentPath, st.Uid, st.Gid)
+					}
+				}
+
+				currentRoot = currentPath
+			}
+		}
+
+		builder.AddBindTo(internal, private)
+	}
+
+	return nil
+}
+
 func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdata) error {
 	var firewall network.Firewall
 
@@ -385,8 +443,21 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		builder.AddBindTo(maildir, filepath.Join(paths.InContainerPrivPath, "mail"))
 	}
 
-	if err := bindHome(builder, usrdata); err != nil {
-		return errors.Wrap(err, "failed to bind home")
+	// Only bind home if not private.
+	privateHome := false
+	for _, private := range ct.Config.PrivatePaths {
+		if private == "home" || private == "home/" {
+			privateHome = true
+		}
+	}
+
+	if privateHome {
+		// XXX: What should we do if homedir still would've been a symlink?
+		usrdata.Environ["NSBOX_HOME"] = usrdata.User.HomeDir
+	} else {
+		if err := bindHome(builder, usrdata); err != nil {
+			return errors.Wrap(err, "failed to bind home")
+		}
 	}
 
 	bindDevices(builder)
@@ -402,6 +473,10 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		} else {
 			builder.AddBindTo(parts[0], parts[1])
 		}
+	}
+
+	if err := bindPrivate(builder, ct, usrdata); err != nil {
+		return errors.Wrap(err, "bind private storage")
 	}
 
 	setUserEnv(machineId, mainImage, ct, usrdata)

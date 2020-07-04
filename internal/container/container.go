@@ -75,6 +75,7 @@ type Config struct {
 	ExtraCapabilities []string
 	SyscallFilters    []string
 	ExtraBindMounts   []string
+	PrivatePaths      []string
 	ShareCgroupfs     bool
 	VirtualNetwork    bool
 }
@@ -222,7 +223,12 @@ func (container Container) UpdateConfig() error {
 	}
 
 	if err := checkArrayItemsAgainstRegex(container.Config.SyscallFilters,
-		`@[a-z\-]+$|[a-z0-9_]+$`, "invalid syscall filter"); err != nil {
+		`^@[a-z\-]+$|[a-z0-9_]+$`, "invalid syscall filter"); err != nil {
+		return err
+	}
+
+	if err := checkArrayItemsAgainstRegex(container.Config.PrivatePaths,
+		`^(home$|home/|/)`, "invalid private path"); err != nil {
 		return err
 	}
 
