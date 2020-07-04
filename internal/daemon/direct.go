@@ -220,7 +220,7 @@ func startVarlinkService(ct *container.Container, hostPrivPath string) (*net.Lis
 func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdata) error {
 	var firewall network.Firewall
 
-	if err := ct.LockUntilProcessDeath(container.NoWaitForLock); err != nil {
+	if err := ct.LockUntilProcessDeath(container.RunLock, container.NoWaitForLock); err != nil {
 		return err
 	}
 

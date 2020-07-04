@@ -86,16 +86,17 @@ type Container struct {
 }
 
 type Lock struct {
-	fd int
+	fds []int
 }
 
 func (l *Lock) Release() {
-	if l.fd != -1 {
-		if err := unix.Close(l.fd); err != nil {
+	for _, fd := range l.fds {
+		if err := unix.Close(fd); err != nil {
 			log.Alert("WARNING: lock.Release -> Close:", err)
 		}
-		l.fd = -1
 	}
+
+	l.fds = nil
 }
 
 const configJson = "config.json"
@@ -261,8 +262,47 @@ const (
 	NoWaitForLock
 )
 
-func (container Container) Lock(wait LockWaitRequest) (*Lock, error) {
-	fd, err := unix.Open(container.Path, unix.O_DIRECTORY, 0)
+type LockLevel int
+
+// Order is significant! In order to take a full container lock, all levels below it must be locked.
+const (
+	RunLock LockLevel = iota
+	ExportsLock
+	ConfigLock
+	FullContainerLock
+)
+
+func (container Container) Lock(level LockLevel, wait LockWaitRequest) (*Lock, error) {
+	var name string
+	mode := unix.O_RDONLY
+
+	switch level {
+	case RunLock:
+		name = "run"
+		break
+	case ExportsLock:
+		name = "exports"
+		break
+	case ConfigLock:
+		name = "config"
+	case FullContainerLock:
+		// Leave the name empty to lock the entire container.
+		mode = unix.O_DIRECTORY
+		break
+	}
+
+	path := container.Path
+	if level != FullContainerLock {
+		path = filepath.Join(path, name+".lock")
+
+		file, err := os.Create(path)
+		if err != nil {
+			return nil, errors.Wrapf(err, "create %s lock file", name)
+		}
+		file.Close()
+	}
+
+	fd, err := unix.Open(path, mode, 0)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open container directory")
 	}
@@ -276,18 +316,35 @@ func (container Container) Lock(wait LockWaitRequest) (*Lock, error) {
 		return nil, errors.Wrap(err, "failed to lock container directory")
 	}
 
-	return &Lock{fd}, nil
+	var lock Lock
+	lock.fds = []int{fd}
+
+	// If this is a full lock, then it means it implicitly gains all lower levels as well.
+	if level == FullContainerLock {
+		for i := 0; i < int(FullContainerLock); i++ {
+			sublock, err := container.Lock(LockLevel(i), wait)
+			if err != nil {
+				lock.Release()
+				return nil, errors.Wrapf(err, "locking lower level lock %d", i)
+			}
+
+			lock.fds = append(lock.fds, sublock.fds...)
+			sublock.fds = nil
+		}
+	}
+
+	return &lock, nil
 }
 
-func (container Container) LockUntilProcessDeath(wait LockWaitRequest) error {
+func (container Container) LockUntilProcessDeath(level LockLevel, wait LockWaitRequest) error {
 	// Let the lock "leak"; Linux will close it anyway once we die, and it will let us
 	// easily hold the lock until process death.
-	_, err := container.Lock(wait)
+	_, err := container.Lock(level, wait)
 	return err
 }
 
 func (container Container) LockAndDelete(wait LockWaitRequest) error {
-	lock, err := container.Lock(wait)
+	lock, err := container.Lock(FullContainerLock, wait)
 	if err != nil {
 		return err
 	}

@@ -204,6 +204,13 @@ func (ctx *exportContext) exportIcons() {
 }
 
 func UpdateDesktopFiles(ct *container.Container) error {
+	lock, err := ct.Lock(container.ExportsLock, container.NoWaitForLock)
+	if err != nil {
+		return errors.Wrap(err, "acquire exports lock")
+	}
+
+	defer lock.Release()
+
 	activeExportsLink := ct.ExportsLink(false)
 
 	oldExportsInstanceId, err := readExportsId(activeExportsLink)

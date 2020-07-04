@@ -69,7 +69,7 @@ func (cmd *configCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.Ex
 		return args.HandleError(err)
 	}
 
-	if err := ct.LockUntilProcessDeath(container.NoWaitForLock); err != nil {
+	if err := ct.LockUntilProcessDeath(container.ConfigLock, container.NoWaitForLock); err != nil {
 		return args.HandleError(err)
 	}
 

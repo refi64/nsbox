@@ -96,7 +96,7 @@ func KillContainer(usrdata *userdata.Userdata, ct *container.Container, signal S
 		}
 	}
 
-	lock, err := ct.Lock(container.WaitForLock)
+	lock, err := ct.Lock(container.RunLock, container.WaitForLock)
 	if err != nil {
 		return err
 	}

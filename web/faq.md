@@ -2,8 +2,8 @@
 
 ## Why am I getting errors that say `failed to lock container directory`?
 
-Your container is currently running, so the config / delete commands cannot lock the directory.
-Try killing it first.
+Your container is currently running, so the commands cannot lock the directory. Try killing the
+container first.
 
 ## Why am I getting errors about the shadow database / entries?
 
