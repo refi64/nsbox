@@ -6,6 +6,7 @@ module.exports = {
       {text: 'Guide', link: '/guide/'},
       {text: 'Images', link: '/images/'},
       {text: 'FAQ', link: '/faq/'},
+      {text: 'Recipes', link: '/recipes/'},
       {text: 'Issues', link: 'https://ora.pm/project/211667/kanban'},
       {text: 'Source', link: 'https://github.com/refi64/nsbox'},
     ],

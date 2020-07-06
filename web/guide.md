@@ -4,11 +4,6 @@
 
 ### Fedora
 
-::: warning
-At the moment, the SELinux policies for nsbox do not work. This will be fixed
-soon, but for now you may need to set selinux to permissive in order to use it.
-:::
-
 Testing builds based off of the master branch are available on COPR:
 
 ```bash
@@ -40,19 +35,22 @@ Currently you must [build from source](https://github.com/refi64/nsbox).
 
 ## Creating and deleting containers
 
-For now, nsbox only ships with support for a Fedora image, either version 30 or 31. (There is a
-**highly experimental** Arch image available as well; you can use it via the `arch` image name.)
+nsbox ships with a few different images out of the box for container creation:
+
+- `fedora:31` and `fedora:32` (both of these are quite stable at this point).
+- `arch` (mostly stable).
+- `debian` (more experimental, some things with booted containers don't work well by default).
 
 Creating a new container is easy:
 
 ```bash
-$ nsbox-edge fedora:30 my-container-name
+$ nsbox-edge create fedora:32 my-container-name
 ```
 
 If you want the container to run its own systemd instance, pass `-boot`:
 
 ```bash
-$ nsbox-edge -boot fedora:30 my-container-name
+$ nsbox-edge create -boot fedora:30 my-container-name
 ```
 
 ::: tip
@@ -244,27 +242,9 @@ $ nsbox-edge config -virtual-network my-container
 Note that systemd-networkd will be started on the host, and both systemd-networkd and
 systemd-resolved will be started inside the container.
 
-## Running Docker inside an nsbox container
+## Trying out more
 
-::: warning
-If you're on Fedora 31+, note that [cgroups v2 is enabled by default](
-https://www.redhat.com/sysadmin/fedora-31-control-group-v2), which breaks Docker.
-In order to use cgroups v1 instead, you can add the `systemd.unified_cgroup_hierarchy=0`
-kernel parameter option to your boot command line, either [temporarily](
-https://docs.fedoraproject.org/en-US/fedora/rawhide/system-administrators-guide/kernel-module-driver-configuration/Working_with_the_GRUB_2_Boot_Loader/#sec-Making_Temporary_Changes_to_a_GRUB_2_Menu)
-or [permanently](https://fedoramagazine.org/setting-kernel-command-line-arguments-with-fedora-30/).
-:::
-
-In order to run Docker inside an nsbox container, you need two things:
-
-- [Virtual networking.](#virtual-networking)
-- A system call filter that allows kernel keyring access.
-
-Both of these can be accomplished with a single config command:
-
-```bash
-$ nsbox-edge config -virtual-network -syscall-filters=':@default,@keyring' my-container
-```
+See the [recipes](recipes.md) page for some example use cases of nsbox.
 
 ## Got issues?
 
