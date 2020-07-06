@@ -30,7 +30,7 @@ module.exports = {
       'link', {
         rel: 'stylesheet',
         href:
-            'https://fonts.googleapis.com/css2?family=Advent+Pro:wght@500;600&display=swap'
+            'https://fonts.googleapis.com/css2?family=Dosis:wght@500;600&display=swap'
       }
     ],
   ],
