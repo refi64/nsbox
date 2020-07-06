@@ -11,6 +11,7 @@ require {
   type spc_t;
   type sysctl_net_t;
   type var_lib_t;
+  type user_tmp_t;
 }
 
 type @{TYPE_PREFIX}_nsboxd_t;
@@ -28,6 +29,7 @@ selinux_get_fs_mount(@{TYPE_PREFIX}_nsboxd_t)
 selinux_get_enforce_mode(@{TYPE_PREFIX}_nsboxd_t)
 
 # Reading directories for preparation to mount into / manage from a container.
+getattr_dirs_pattern(@{TYPE_PREFIX}_nsboxd_t, user_tmp_t, user_tmp_t)
 read_files_pattern(@{TYPE_PREFIX}_nsboxd_t, sysctl_net_t, sysctl_net_t)
 read_files_pattern(@{TYPE_PREFIX}_nsboxd_t, home_root_t, home_root_t)
 read_lnk_files_pattern(@{TYPE_PREFIX}_nsboxd_t, home_root_t, home_root_t)
