@@ -33,7 +33,7 @@ cp %{SOURCE0} .
 install -Dm 644 -t %{buildroot}/%{python3_sitelib}/dnf-plugins %{_builddir}/nsbox_trigger.py
 install -Dm 644 -t %{buildroot}/%{python3_sitelib}/dnf-plugins/__pycache__ %{_builddir}/__pycache__/nsbox_trigger.*.pyc
 mkdir -p %{buildroot}/%{_bindir}
-ln -s /run/host/nsbox/nsbox-host %{buildroot}/%{_bindir}/nsbox-host
+ln -s /run/host/nsbox/bin/nsbox-host %{buildroot}/%{_bindir}/nsbox-host
 
 %files
 %{_bindir}/nsbox-host

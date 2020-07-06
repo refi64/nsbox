@@ -11,5 +11,5 @@ sha256sums=(SKIP)
 package() {
   install -Dm 644 nsbox-trigger.hook -t "${pkgdir}/usr/share/libalpm/hooks"
   mkdir -p "${pkgdir}/usr/bin"
-  ln -s /run/host/nsbox/nsbox-host "${pkgdir}/usr/bin/nsbox-host"
+  ln -s /run/host/nsbox/bin/nsbox-host "${pkgdir}/usr/bin/nsbox-host"
 }
