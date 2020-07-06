@@ -43,8 +43,15 @@ func GenerateUniqueLinkName(base string, assumedPrefix string) (string, error) {
 		linkNames[link.Attrs().Name] = nil
 	}
 
-	maxLength := netlink.IFNAMSIZ - len(assumedPrefix) - len(nsboxPrefix) - 1
-	name := nsboxPrefix + base[:maxLength]
+	maxBaseLength := netlink.IFNAMSIZ - len(assumedPrefix) - len(nsboxPrefix) - 1
+
+	name := nsboxPrefix
+	if len(base) > maxBaseLength {
+		name += base[:maxBaseLength]
+	} else {
+		name += base
+	}
+
 	unique := false
 
 	for i := len(name) - 1; i >= len(nsboxPrefix); i-- {
