@@ -21,7 +21,7 @@ type configCommand struct {
 
 	extraBindMounts   args.ArrayTransformValue
 	extraCapabilities args.ArrayTransformValue
-	privatePaths      args.ArrayTransformValue
+	privateDirs       args.ArrayTransformValue
 	syscallFilters    args.ArrayTransformValue
 	xdgDesktopExtra   args.ArrayTransformValue
 	xdgDesktopExports args.ArrayTransformValue
@@ -55,7 +55,7 @@ func (cmd *configCommand) SetFlags(fs *flag.FlagSet) {
 	fs.Var(&cmd.auth, "auth", "password authentication method")
 	fs.Var(&cmd.extraBindMounts, "extra-bind-mounts", "extra bind mounts")
 	fs.Var(&cmd.extraCapabilities, "extra-capabilities", "extra capabilities to grant")
-	fs.Var(&cmd.privatePaths, "private-paths", "paths that will be private to the container")
+	fs.Var(&cmd.privateDirs, "private-dirs", "paths under home that will be private to the container")
 	fs.Var(&cmd.syscallFilters, "syscall-filters", "system call filters")
 	fs.Var(&cmd.xdgDesktopExtra, "xdg-desktop-extra", "extra desktop file directories")
 	fs.Var(&cmd.xdgDesktopExports, "xdg-desktop-exports", "exported desktop files patterns")
@@ -109,7 +109,7 @@ func (cmd *configCommand) Execute(app args.App, fs *flag.FlagSet) subcommands.Ex
 
 	cmd.extraBindMounts.Apply(&ct.Config.ExtraBindMounts)
 	cmd.extraCapabilities.Apply(&ct.Config.ExtraCapabilities)
-	cmd.privatePaths.Apply(&ct.Config.PrivatePaths)
+	cmd.privateDirs.Apply(&ct.Config.PrivateDirs)
 	cmd.syscallFilters.Apply(&ct.Config.SyscallFilters)
 	cmd.xdgDesktopExtra.Apply(&ct.Config.XdgDesktopExtra)
 	cmd.xdgDesktopExports.Apply(&ct.Config.XdgDesktopExports)

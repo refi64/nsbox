@@ -217,59 +217,49 @@ func startVarlinkService(ct *container.Container, hostPrivPath string) (*net.Lis
 	return &listener, err
 }
 
-func splitPath(path string) []string {
+func MkdirAllOwnedByUser(path string, uid int, gid int, perm os.FileMode) error {
+	// NOTE: This will assumes path is *not* absolute
 	parts := strings.Split(path, string(os.PathSeparator))
+	currentRoot := ""
+
 	if filepath.IsAbs(path) {
-		parts[0] = "/"
+		parts = parts[1:]
+		currentRoot = "/"
 	}
 
-	return parts
-}
-
-func bindPrivate(builder *nspawn.Builder, ct *container.Container, usrdata *userdata.Userdata) error {
-	for _, private := range ct.Config.PrivatePaths {
-		parts := splitPath(private)
-
-		if !filepath.IsAbs(private) && parts[0] == "home" {
-			parts = append(splitPath(usrdata.User.HomeDir), parts[1:]...)
-			private = filepath.Join(parts...)
-		}
-
-		privateRoot := ct.StorageChild("var", "lib", "private-storage")
-		if err := os.MkdirAll(privateRoot, 0700); err != nil && !os.IsExist(err) {
-			return errors.Wrap(err, "creating private storage root")
-		}
-
-		internal := filepath.Join(privateRoot, private)
-		if _, err := os.Stat(internal); err != nil && os.IsNotExist(err) {
-			// Walk the paths downwards from the root, applying permissions as needed.
-			currentRoot := "/"
-			// parts[1:] to skip trying to do weird things with the root
-			for _, part := range parts[1:] {
-				currentPath := filepath.Join(currentRoot, part)
-				currentInternal := filepath.Join(privateRoot, currentPath)
-
-				if _, err := os.Stat(currentInternal); err != nil && os.IsNotExist(err) {
-					var st unix.Stat_t
-					err := unix.Stat(currentPath, &st)
-					if err != nil {
-						return errors.Wrapf(err, "stat %s to find permissions", currentPath)
-					}
-
-					if err := os.Mkdir(currentInternal, os.FileMode(st.Mode&07777)); err != nil {
-						return errors.Wrapf(err, "create %s", currentPath)
-					}
-
-					if err := os.Chown(currentInternal, int(st.Uid), int(st.Gid)); err != nil {
-						return errors.Wrapf(err, "chown %s(%d,%d)", currentPath, st.Uid, st.Gid)
-					}
-				}
-
-				currentRoot = currentPath
+	for _, part := range parts {
+		path := filepath.Join(currentRoot, part)
+		if err := os.Mkdir(path, perm); err != nil {
+			if !os.IsExist(err) {
+				return errors.Wrapf(err, "mkdir %s", path)
+			}
+		} else {
+			// Only chown if it's a newly created dir (i.e. no error was thrown on mkdir)
+			if err := os.Chown(path, uid, gid); err != nil {
+				return errors.Wrapf(err, "chown %s", path)
 			}
 		}
 
-		builder.AddBindTo(internal, private)
+		currentRoot = path
+	}
+
+	return nil
+}
+
+func bindPrivate(builder *nspawn.Builder, ct *container.Container, usrdata *userdata.Userdata) error {
+	for _, private := range ct.Config.PrivateDirs {
+		// Sanity check.
+		if filepath.IsAbs(private) || strings.Contains(private, "..") {
+			panic("unexpected absolute private path " + private)
+		}
+
+		hostPath := ct.PrivateHomeStorageChild(usrdata, "home", private)
+		uid, gid := usrdata.NumericIds()
+		if err := MkdirAllOwnedByUser(hostPath, uid, gid, 0700); err != nil {
+			return errors.Wrap(err, "create private storage directory")
+		}
+
+		builder.AddBindTo(hostPath, filepath.Join(usrdata.User.HomeDir, private))
 	}
 
 	return nil
@@ -445,8 +435,8 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	// Only bind home if not private.
 	privateHome := false
-	for _, private := range ct.Config.PrivatePaths {
-		if private == "home" || private == "home/" {
+	for _, private := range ct.Config.PrivateDirs {
+		if private == "." {
 			privateHome = true
 		}
 	}

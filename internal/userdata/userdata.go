@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"os/user"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -208,4 +209,26 @@ func (usrdata Userdata) EscapedUsername() string {
 		}
 		return builder.String()
 	}))
+}
+
+func (usrdata Userdata) NumericIds() (uid int, gid int) {
+	ids := []struct {
+		what  string
+		dest  *int
+		value string
+	}{
+		{what: "uid", dest: &uid, value: usrdata.User.Uid},
+		{what: "gid", dest: &gid, value: usrdata.User.Gid},
+	}
+
+	for _, id := range ids {
+		i64, err := strconv.ParseInt(id.value, 10, 32)
+		if err != nil {
+			panic(fmt.Sprintf("failed to convert %s (%s) to number: %v", id.what, id.value, err))
+		}
+
+		*id.dest = int(i64)
+	}
+
+	return
 }

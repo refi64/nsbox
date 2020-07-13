@@ -75,7 +75,7 @@ type Config struct {
 	ExtraCapabilities []string
 	SyscallFilters    []string
 	ExtraBindMounts   []string
-	PrivatePaths      []string
+	PrivateDirs       []string
 	ShareCgroupfs     bool
 	VirtualNetwork    bool
 }
@@ -227,8 +227,13 @@ func (container Container) UpdateConfig() error {
 		return err
 	}
 
-	if err := checkArrayItemsAgainstRegex(container.Config.PrivatePaths,
-		`^(home$|home/|/)`, "invalid private path"); err != nil {
+	// No absolute paths or ones with '..' inside.
+	if err := checkArrayItemsAgainstRegex(container.Config.PrivateDirs,
+		`^[^/]`, "private dirs must be relative"); err != nil {
+		return err
+	}
+	if err := checkArrayItemsAgainstRegex(container.Config.PrivateDirs,
+		`^([^.]{2}|[^.]|\.([^.]|$))+$`, "private dirs must not contain .."); err != nil {
 		return err
 	}
 
@@ -375,6 +380,16 @@ func (container Container) Storage() string {
 
 func (container Container) StorageChild(children ...string) string {
 	parts := append([]string{container.Storage()}, children...)
+	return filepath.Join(parts...)
+}
+
+func (container Container) PrivateHomeStorage(usrdata *userdata.Userdata) string {
+	return filepath.Join(usrdata.User.HomeDir, ".var", "nsbox", container.Name)
+}
+
+func (container Container) PrivateHomeStorageChild(usrdata *userdata.Userdata,
+	children ...string) string {
+	parts := append([]string{container.PrivateHomeStorage(usrdata)}, children...)
 	return filepath.Join(parts...)
 }
 
