@@ -9,21 +9,21 @@ trap 'echo "$BASH_SOURCE:$LINENO: $BASH_COMMAND" failed, sorry.' ERR
 
 . /run/host/nsbox/scripts/nsbox-apply-env.sh
 
-stamp_root=/var/lib/nsbox-container-state/ansible
-mkdir -p $stamp_root
+integrity_root=/var/lib/nsbox-container-state/ansible
+mkdir -p $integrity_root
 
 get_images_to_update() {
   while [[ $# -gt 0 ]]; do
     local image=$1
-    local stamp=$stamp_root/$image.stamp
-    # find /run/host/nsbox/images/$image -newermm $stamp -exec false {} +
+    local integrity_file=$integrity_root/$image.sha256
 
-    # This messy if just checks if we need to run this playbook and, if so, then re-run all
-    # the ones that follow as well.
-    if [[ ! -f $stamp ]] || \
-        # This works by checking if any image file is newer than our stamp file. If so,
-        # find will run "false", which results in a non-zero return code. Therefore, we'll
-        ! find /run/host/nsbox/images/$image -newermm $stamp -exec false {} +; then
+    # If the current image has no previous sha256s saved, or any of them have changed since last
+    # time, then this image and all its dependents will have their playbooks re-run.
+    if [[ ! -f "$integrity_file" ]] || ! sha256sum --status -c $integrity_file; then
+      # Generate a new integrity file.
+      find /run/host/nsbox/images/$image -type f | xargs sha256sum > $integrity_file.tmp
+      # It will be renamed below if the ansible playbook runs successfully.
+
       echo "$@"
       return
     fi
@@ -55,7 +55,8 @@ if [[ -z "$NSBOX_NO_REPLAY" ]]; then
       ANSIBLE_STDOUT_CALLBACK=default ansible-playbook \
         --connection=local --inventory=localhost, --extra-vars "${extra_vars[*]}" --skip-tags bend \
         /run/host/nsbox/images/$image/playbook.yaml
-      touch $stamp_root/$image.stamp
+      # XXX: ugly duplication, but this is getting nuked in favor of a Python variant later on anyway
+      mv $integrity_root/$image.sha256{.tmp,}
     done
   fi
 fi
