@@ -1,4 +1,4 @@
-FROM registry.fedoraproject.org/fedora:31
+FROM registry.fedoraproject.org/fedora:32
 RUN dnf install -y git go ninja-build unzip && dnf clean all
 RUN \
   curl -o gn.zip -L https://chrome-infra-packages.appspot.com/dl/gn/gn/linux-amd64/+/latest && \

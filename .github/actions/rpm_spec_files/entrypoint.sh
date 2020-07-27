@@ -4,7 +4,7 @@ git_token="$1"
 
 set -ex
 
-gn_args=(fedora_package=true fedora_guest_tools=true)
+gn_args=(fedora_package=true)
 if [[ "$GITHUB_REF" == "*/stable" ]]; then
   git_branch=stable
   gn_args+=(is_stable_build=true)

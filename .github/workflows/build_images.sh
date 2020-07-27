@@ -4,7 +4,7 @@ set -ex
 
 dnf install -y ansible-bender buildah findutils git ninja-build podman unzip
 sed -i 's/"overlay"/"vfs"/;s/^mountopt/#mountopt/' /etc/containers/storage.conf
-sed -i 's/# events_logger = "journald"/events_logger = "file"/g;s/"systemd"/"cgroupfs"/' /usr/share/containers/libpod.conf
+sed -i 's/# \(cgroup_manager = "cgroupfs"\)/\1/' /usr/share/containers/containers.conf
 
 export _BUILDAH_STARTED_IN_USERNS="" BUILDAH_ISOLATION=chroot
 
@@ -19,7 +19,6 @@ ninja -C out nsbox-edge-bender :install_share_release
 IMAGES_TO_BUILD=(
   arch
   debian:buster
-  fedora:31
   fedora:32
 )
 

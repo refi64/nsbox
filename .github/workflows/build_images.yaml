@@ -15,7 +15,7 @@ jobs:
     name: 'Build and push the images'
     runs-on: ubuntu-latest
     container:
-      image: registry.fedoraproject.org/fedora:31
+      image: registry.fedoraproject.org/fedora:32
       options: '--privileged'
     steps:
       - name: 'Checkout the nsbox repo'
