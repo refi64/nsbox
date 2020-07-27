@@ -88,6 +88,10 @@ func main() {
 	var usrdata *userdata.Userdata
 	var err error
 
+	if _, err := os.Stat("/run/host/nsbox"); err == nil {
+		log.Fatal("nsbox cannot be run nested")
+	}
+
 	if os.Getuid() == 0 {
 		usrdata, err = userdata.BeneathSudo()
 	} else {
