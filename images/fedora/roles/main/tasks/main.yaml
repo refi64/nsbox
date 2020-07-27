@@ -6,6 +6,11 @@
     - console-getty.service
     - systemd-logind.service
 
+- name: Create tmpfiles.d's user config directory
+  file:
+    path: /etc/tmpfiles.d
+    state: directory
+
 - name: Mask tmpfiles.d's selinux setup
   file:
     src: /dev/null
