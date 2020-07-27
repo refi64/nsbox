@@ -4,7 +4,7 @@ set -ex
 
 dnf install -y ansible-bender buildah findutils git ninja-build podman unzip
 sed -i 's/"overlay"/"vfs"/;s/^mountopt/#mountopt/' /etc/containers/storage.conf
-sed -i 's/# \(cgroup_manager = "cgroupfs"\)/\1/' /usr/share/containers/containers.conf
+sed -i 's/# \(cgroup_manager = \).*$/\1"cgroupfs"/' /usr/share/containers/containers.conf
 
 export _BUILDAH_STARTED_IN_USERNS="" BUILDAH_ISOLATION=chroot
 
