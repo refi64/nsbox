@@ -1,11 +1,3 @@
-- name: Unmask required services
-  file:
-    path: '/etc/systemd/system/{{ item }}'
-    state: absent
-  loop:
-    - console-getty.service
-    - systemd-logind.service
-
 - name: Create tmpfiles.d's user config directory
   file:
     path: /etc/tmpfiles.d

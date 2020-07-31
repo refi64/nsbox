@@ -16,6 +16,7 @@ Requires: hostname
 Requires: man-pages
 Requires: nsbox-guest-tools
 Requires: iso-codes
+Requires: systemd
 Requires: sudo
 Requires: vte-profile
 
