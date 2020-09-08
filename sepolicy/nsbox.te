@@ -18,63 +18,10 @@ type @{TYPE_PREFIX}_nsboxd_t;
 type @{TYPE_PREFIX}_nsboxd_exec_t;
 init_daemon_domain(@{TYPE_PREFIX}_nsboxd_t, @{TYPE_PREFIX}_nsboxd_exec_t)
 
+# To transition to spt_t when exec-ing nspawn
 spec_domtrans_pattern(@{TYPE_PREFIX}_nsboxd_t, bin_t, spc_t)
 domain_entry_file(spc_t, bin_t)
 
-# Running losetup.
-fstools_run(@{TYPE_PREFIX}_nsboxd_t, system_r)
-
-# Checking SELinux enforcing.
-selinux_get_fs_mount(@{TYPE_PREFIX}_nsboxd_t)
-selinux_get_enforce_mode(@{TYPE_PREFIX}_nsboxd_t)
-
-# Reading directories for preparation to mount into / manage from a container.
-getattr_dirs_pattern(@{TYPE_PREFIX}_nsboxd_t, user_tmp_t, user_tmp_t)
-read_files_pattern(@{TYPE_PREFIX}_nsboxd_t, sysctl_net_t, sysctl_net_t)
-read_files_pattern(@{TYPE_PREFIX}_nsboxd_t, home_root_t, home_root_t)
-read_lnk_files_pattern(@{TYPE_PREFIX}_nsboxd_t, home_root_t, home_root_t)
-# XXX: mta_read_spool_files gives a syntax error here for some reason
-read_files_pattern(@{TYPE_PREFIX}_nsboxd_t, mail_spool_t, mail_spool_t)
-read_lnk_files_pattern(@{TYPE_PREFIX}_nsboxd_t, mail_spool_t, mail_spool_t)
-
-# Talking to the init system.
-dbus_connect_system_bus(@{TYPE_PREFIX}_nsboxd_t)
-dbus_system_bus_client(@{TYPE_PREFIX}_nsboxd_t)
-init_dbus_chat(@{TYPE_PREFIX}_nsboxd_t)
-
-# Private networking.
-allow @{TYPE_PREFIX}_nsboxd_t self:netlink_route_socket r_netlink_socket_perms;
 optional_policy(`
-firewalld_dbus_chat(@{TYPE_PREFIX}_nsboxd_t)
+unconfined_domain(@{TYPE_PREFIX}_nsboxd_t)
 ')
-
-# Misc. permissions.
-kernel_getattr_proc(@{TYPE_PREFIX}_nsboxd_t)
-allow @{TYPE_PREFIX}_nsboxd_t bin_t:file exec_file_perms;
-allow @{TYPE_PREFIX}_nsboxd_t self:capability dac_read_search;
-
-# Checking the password database.
-read_files_pattern(@{TYPE_PREFIX}_nsboxd_t, passwd_file_t, passwd_file_t)
-read_files_pattern(@{TYPE_PREFIX}_nsboxd_t, shadow_t, shadow_t)
-sssd_manage_lib_files(@{TYPE_PREFIX}_nsboxd_t)
-sssd_read_lib_files(@{TYPE_PREFIX}_nsboxd_t)
-sssd_read_public_files(@{TYPE_PREFIX}_nsboxd_t)
-sssd_stream_connect(@{TYPE_PREFIX}_nsboxd_t)
-# Relevant for systems with systemd-homed (F32+).
-ifdef(`systemd_userdbd_stream_connect', `
-stream_connect_pattern(@{TYPE_PREFIX}_nsboxd_t, init_t, init_t, init_t)
-systemd_userdbd_stream_connect(@{TYPE_PREFIX}_nsboxd_t)
-')
-
-# Golang reads hpage_pmd_size automatically.
-dev_read_sysfs(@{TYPE_PREFIX}_nsboxd_t)
-
-# Modifying container files.
-manage_dirs_pattern(@{TYPE_PREFIX}_nsboxd_t, var_lib_t, var_lib_t)
-manage_files_pattern(@{TYPE_PREFIX}_nsboxd_t, var_lib_t, var_lib_t)
-manage_lnk_files_pattern(@{TYPE_PREFIX}_nsboxd_t, var_lib_t, var_lib_t)
-manage_sock_files_pattern(@{TYPE_PREFIX}_nsboxd_t, var_lib_t, var_lib_t)
-
-# IPC.
-dgram_send_pattern(@{TYPE_PREFIX}_nsboxd_t, kernel_t, kernel_t, kernel_t)
-allow @{TYPE_PREFIX}_nsboxd_t self:unix_dgram_socket create_socket_perms;
