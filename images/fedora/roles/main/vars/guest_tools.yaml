@@ -1,4 +1,7 @@
+gpg_name: nsbox-guest-tools
+gpg_email: fedora-guest-tools@nsbox.dev
 min_version: 20.07.06.282
 build_requires:
   - python3-rpm-macros
   - rpm-build
+  - rpm-sign
