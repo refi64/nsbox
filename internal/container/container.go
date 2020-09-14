@@ -324,6 +324,10 @@ func (container Container) Lock(level LockLevel, wait LockWaitRequest) (*Lock, e
 	}
 
 	if err := unix.Flock(fd, operation); err != nil {
+		if errno, ok := err.(unix.Errno); ok && errno == unix.EWOULDBLOCK {
+			return nil, errors.New("container is locked")
+		}
+
 		return nil, errors.Wrap(err, "failed to lock container directory")
 	}
 

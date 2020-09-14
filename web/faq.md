@@ -1,6 +1,6 @@
 # FAQ
 
-## Why am I getting errors that say `failed to lock container directory`?
+## Why am I getting errors that say `failed to lock container directory` or similar?
 
 Your container is currently running, so the commands cannot lock the directory. Try killing the
 container first.
