@@ -16,5 +16,6 @@ Vagrant.configure('2') do |config|
     override.vm.synced_folder '.', '/vagrant', type: :nfs
     end
 
-  define_fedora_vm config, '31'
+  define_fedora_vm config, '32'
+  define_fedora_vm config, '33'
 end

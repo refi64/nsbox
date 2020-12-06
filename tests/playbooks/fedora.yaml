@@ -1,4 +1,5 @@
 - hosts: all
+  gather_facts: true
   tasks:
     - name: Add the gn COPR repo
       yum_repository:

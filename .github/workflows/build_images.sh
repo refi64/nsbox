@@ -20,6 +20,7 @@ IMAGES_TO_BUILD=(
   arch
   debian:buster
   fedora:32
+  fedora:33
 )
 
 for image in "${IMAGES_TO_BUILD[@]}"; do

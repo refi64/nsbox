@@ -46,7 +46,7 @@ template("nsbox_image") {
 images_with_tags = [
   {
     name = "fedora"
-    versions = ["30", "31", "32"]
+    versions = ["32", "33"]
     extra_image_files = [
       "roles/main/files/nsbox_trigger.py",
       "roles/main/files/nsbox-guest-tools.spec",
