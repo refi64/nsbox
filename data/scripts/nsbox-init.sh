@@ -61,8 +61,6 @@ if [[ -n "$NSBOX_HOME_LINK_TARGET" ]]; then
   ln -s "$NSBOX_HOME_LINK_TARGET" /home
 fi
 
-ln -sf /var/log/journal/$NSBOX_HOST_MACHINE /run/host/journal
-
 if [[ -n "$NSBOX_BOOTED" ]]; then
   rm -f "$XDG_RUNTIME_DIR"/wayland-*
 fi

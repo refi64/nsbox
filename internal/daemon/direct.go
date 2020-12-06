@@ -371,7 +371,9 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		return errors.Wrap(err, "failed to read machine id")
 	}
 
-	builder.AddBind(filepath.Join("/var/log/journal", machineId))
+	hostJournal := filepath.Join("/var/log/journal", machineId)
+	builder.AddBind(hostJournal)
+	builder.AddBindTo(hostJournal, "/run/host/journal")
 
 	releaseDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "release")
 	if err != nil {
