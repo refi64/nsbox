@@ -55,9 +55,15 @@ type processExitStatus struct {
 	result int
 }
 
+type sessionHandle interface {
+	Signal(os.Signal) error
+	Wait() (*processExitStatus, error)
+	Destroy()
+}
+
 // A "door" is responsible for entry into a container's environment.
 type containerDoor interface {
-	Enter(ct *container.Container, spec *containerEntrySpec, usrdata *userdata.Userdata) (*processExitStatus, error)
+	Enter(ct *container.Container, spec *containerEntrySpec, usrdata *userdata.Userdata) (sessionHandle, error)
 }
 
 func getLeader(ct *container.Container, usrdata *userdata.Userdata) (uint32, error) {
@@ -196,6 +202,8 @@ func EnterContainer(ct *container.Container, command []string, usrdata *userdata
 	spec.noReplay = noReplay
 	spec.command = command
 
+	var handle sessionHandle
+
 	// Set-up the PTY forwarding.
 	if spec.ptyIo != 0 {
 		if forwardStdinToPty {
@@ -206,11 +214,13 @@ func EnterContainer(ct *container.Container, command []string, usrdata *userdata
 			go safeCopy(forwardPtyToWriter, pty)
 		}
 
-		oldState, err := terminal.MakeRaw(int(os.Stdin.Fd()))
-		if err != nil {
-			log.Debug("failed to make terminal raw", err)
-		} else {
-			defer terminal.Restore(int(os.Stdin.Fd()), oldState)
+		if forwardStdinToPty {
+			oldState, err := terminal.MakeRaw(int(os.Stdin.Fd()))
+			if err != nil {
+				log.Debug("failed to make terminal raw", err)
+			} else {
+				defer terminal.Restore(int(os.Stdin.Fd()), oldState)
+			}
 		}
 
 		// Trace SIGWINCH to forward the window size.
@@ -240,10 +250,31 @@ func EnterContainer(ct *container.Container, command []string, usrdata *userdata
 		}()
 	}
 
-	status, err := door.Enter(ct, &spec, usrdata)
+	sigchan := make(chan os.Signal)
+	signal.Notify(sigchan, unix.SIGINT, unix.SIGTSTP, unix.SIGQUIT, unix.SIGHUP)
+
+	defer func() {
+		signal.Stop(sigchan)
+		close(sigchan)
+	}()
+
+	go func() {
+		for sig := range sigchan {
+			if handle != nil {
+				log.Debugf("Forwarding signal %v", sig)
+				handle.Signal(sig)
+			} else {
+				log.Debug("Ignoring signal sent with nil handle")
+			}
+		}
+	}()
+
+	handle, err := door.Enter(ct, &spec, usrdata)
 	if err != nil {
 		return 0, err
 	}
+
+	status, err := handle.Wait()
 
 	if status.exitType == processExitSignaled {
 		// Mimic the shell's exit code on signal.

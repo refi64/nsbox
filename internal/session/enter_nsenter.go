@@ -18,6 +18,10 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+type nsenterSessionHandle struct {
+	process *os.Process
+}
+
 // A door that enters the container environment via nsenter.
 type nsenterDoor struct{}
 
@@ -35,8 +39,26 @@ func convertStateToProcessExit(state *os.ProcessState) (*processExitStatus, erro
 	}
 }
 
+func (handle *nsenterSessionHandle) Signal(signal os.Signal) error {
+	return handle.process.Signal(signal)
+}
+
+func (handle *nsenterSessionHandle) Wait() (*processExitStatus, error) {
+	state, err := handle.process.Wait()
+	if err != nil {
+		// Handle ExitError in convertStateToProcessExit.
+		if _, ok := err.(*exec.ExitError); !ok {
+			return nil, errors.Wrap(err, "waiting for nsenter")
+		}
+	}
+
+	return convertStateToProcessExit(state)
+}
+
+func (handle *nsenterSessionHandle) Destroy() {}
+
 func (door *nsenterDoor) Enter(ct *container.Container,
-	spec *containerEntrySpec, usrdata *userdata.Userdata) (*processExitStatus, error) {
+	spec *containerEntrySpec, usrdata *userdata.Userdata) (sessionHandle, error) {
 	leader, err := getLeader(ct, usrdata)
 	if err != nil {
 		return nil, errors.Wrap(err, "getting leader process")
@@ -74,12 +96,9 @@ func (door *nsenterDoor) Enter(ct *container.Container,
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 
-	if err := cmd.Run(); err != nil {
-		// Handle ExitError later on.
-		if _, ok := err.(*exec.ExitError); !ok {
-			return nil, errors.Wrap(err, "failed to enter into namespace")
-		}
+	if err := cmd.Start(); err != nil {
+		return nil, err
 	}
 
-	return convertStateToProcessExit(cmd.ProcessState)
+	return &nsenterSessionHandle{process: cmd.Process}, nil
 }
