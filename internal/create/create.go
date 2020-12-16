@@ -101,7 +101,7 @@ func saveImageToContainer(img *image.Image, ct *container.Container, tarOverride
 }
 
 func CreateContainer(usrdata *userdata.Userdata, name, tar string, config container.Config) error {
-	img, err := image.Open(config.Image)
+	img, err := image.Open(config.Image, true)
 	if err != nil {
 		return errors.Wrap(err, "failed to open image")
 	}

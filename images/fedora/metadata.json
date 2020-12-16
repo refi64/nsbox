@@ -2,5 +2,5 @@
   "base": "registry.fedoraproject.org/fedora:{image_tag}",
   "remote": "registry.nsbox.dev/fedora:{nsbox_branch}-{image_tag}",
   "target": "gcr.io/nsbox-data/fedora:{nsbox_branch}-{image_tag}",
-  "valid_tags": ["31", "32", "33"]
+  "valid_tags": ["32", "33"]
 }

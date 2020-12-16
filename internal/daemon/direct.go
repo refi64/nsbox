@@ -347,12 +347,12 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	builder.AddBindTo(nsboxHost, filepath.Join(paths.InContainerPrivPath, "bin/nsbox-host"))
 
-	mainImage, err := image.Open(ct.Config.Image)
+	mainImage, err := image.Open(ct.Config.Image, false)
 	if err != nil {
 		return errors.Wrap(err, "failed to get container base image path")
 	}
 
-	imgChain, err := mainImage.ResolveChain()
+	imgChain, err := mainImage.ResolveChain(false)
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve image chain")
 	}

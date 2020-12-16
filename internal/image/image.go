@@ -56,7 +56,7 @@ func openImageAtPath(path string) (*Image, error) {
 	return &image, nil
 }
 
-func openTaggedImageAtPath(path, tag string) (*Image, error) {
+func openTaggedImageAtPath(path, tag string, validateTag bool) (*Image, error) {
 	rel, err := release.Read()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read release info")
@@ -69,24 +69,26 @@ func openTaggedImageAtPath(path, tag string) (*Image, error) {
 
 	// XXX: Similar code to nsbox-bender.py.
 
-	if len(image.ValidTags) != 0 {
-		if tag == "" {
-			return nil, errors.New("image requires a tag")
-		}
-
-		isValidTag := false
-		for _, validTag := range image.ValidTags {
-			if validTag == tag {
-				isValidTag = true
+	if validateTag {
+		if len(image.ValidTags) != 0 {
+			if tag == "" {
+				return nil, errors.New("image requires a tag")
 			}
-		}
 
-		if !isValidTag {
-			return nil, errors.New("image does not accept this tag")
-		}
-	} else {
-		if tag != "" {
-			return nil, errors.New("image does not accept a tag")
+			isValidTag := false
+			for _, validTag := range image.ValidTags {
+				if validTag == tag {
+					isValidTag = true
+				}
+			}
+
+			if !isValidTag {
+				return nil, errors.New("image does not accept this tag")
+			}
+		} else {
+			if tag != "" {
+				return nil, errors.New("image does not accept a tag")
+			}
 		}
 	}
 
@@ -105,7 +107,7 @@ func openTaggedImageAtPath(path, tag string) (*Image, error) {
 	return image, nil
 }
 
-func Open(name string) (*Image, error) {
+func Open(name string, validateTag bool) (*Image, error) {
 	var tag string
 	if idx := strings.Index(name, ":"); idx != -1 {
 		tag = name[idx+1:]
@@ -114,14 +116,14 @@ func Open(name string) (*Image, error) {
 
 	customImagePath := filepath.Join(paths.Config, "nsbox", "images", name)
 	if _, err := os.Stat(customImagePath); err == nil {
-		return openTaggedImageAtPath(customImagePath, tag)
+		return openTaggedImageAtPath(customImagePath, tag, validateTag)
 	} else {
 		log.Debug("failed to stat user image path:", err)
 	}
 
 	if globalImagePath, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "images", name); err == nil {
 		if _, err := os.Stat(globalImagePath); err == nil {
-			return openTaggedImageAtPath(globalImagePath, tag)
+			return openTaggedImageAtPath(globalImagePath, tag, validateTag)
 		} else {
 			log.Debug("failed to stat global image path:", err)
 		}
@@ -136,17 +138,17 @@ func (img Image) Name() string {
 	return filepath.Base(img.RootPath)
 }
 
-func (img *Image) ResolveChain() ([]*Image, error) {
+func (img *Image) ResolveChain(validateTag bool) ([]*Image, error) {
 	var chain []*Image
 
 	if img.Parent != "" {
 		log.Debug("resolve parent", img.Parent)
-		parent, err := Open(img.Parent)
+		parent, err := Open(img.Parent, validateTag)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not resolve parent %s", img.Parent)
 		}
 
-		chain, err = parent.ResolveChain()
+		chain, err = parent.ResolveChain(validateTag)
 		if err != nil {
 			return nil, err
 		}
