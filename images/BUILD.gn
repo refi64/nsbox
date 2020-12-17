@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import("images.gni")
+
 template("nsbox_image") {
   action(target_name) {
     pool = "//:console"
@@ -43,56 +45,50 @@ template("nsbox_image") {
   }
 }
 
-images_with_tags = [
-  {
-    name = "fedora"
-    versions = ["32", "33"]
-    extra_image_files = [
-      "roles/main/files/nsbox_trigger.py",
-      "roles/main/files/nsbox-guest-tools.spec",
-      "roles/main/tasks/build_guest_tools.yaml",
-      "roles/main/vars/guest_tools.yaml",
-    ]
-  },
-  {
-    name = "debian"
-    versions = ["buster"]
-  },
-]
+foreach(def, image_definitions) {
+  versions = []
 
-foreach(spec, images_with_tags) {
-  foreach(version, spec.versions) {
-    nsbox_image("${spec.name}-$version-image") {
-      image = spec.name
-      tag = version
-      image_files = [
-        "roles/main/tasks/main.yaml",
-      ]
+  if (defined(def.versions)) {
+    versions = def.versions
+  } else {
+    versions = [""]
+  }
 
-      if (defined(spec.extra_image_files)) {
-        image_files += spec.extra_image_files
+  foreach(version, versions) {
+    target_base = "${def.name}"
+    if (version != "") {
+      target_base += "-$version"
+    }
+
+    nsbox_image("$target_base-image") {
+      image = def.name
+      if (version != "") {
+        tag = version
+      }
+
+      image_files = common_image_files
+
+      if (defined(def.local) && def.local) {
+        image_files += common_local_image_files
+      }
+
+      if (defined(def.extra_image_files)) {
+        image_files += def.extra_image_files
       }
     }
   }
 }
 
-nsbox_image("arch-image") {
-  image = "arch"
-  local = true
-  image_files = [
-    "roles/main/files/nsbox-trigger.hook",
-    "roles/main/files/PKGBUILD",
-    "roles/main/tasks/build_guest_tools.yaml",
-    "roles/main/tasks/main.yaml",
-    "roles/main/vars/guest_tools.yaml",
-  ]
-}
-
 group("images") {
-  deps = [":arch-image"]
-  foreach(spec, images_with_tags) {
-    foreach(version, spec.versions) {
-      deps += [":${spec.name}-$version-image"]
+  deps = []
+
+  foreach(def, image_definitions) {
+    if (defined(def.versions)) {
+      foreach(version, def.versions) {
+        deps += [":${def.name}-$version-image"]
+      }
+    } else {
+      deps += [":${def.name}-image"]
     }
   }
 }

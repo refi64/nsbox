@@ -7,6 +7,7 @@ import("//build/install.gni")
 import("//build/python_binary.gni")
 import("//build/substitute_file.gni")
 import("//build/symlink.gni")
+import("//images/images.gni")
 
 install_dir = "$root_out_dir/install"
 
@@ -231,28 +232,23 @@ install_files("install_share_data") {
 }
 
 install_files("install_share_images") {
-  # XXX: Need to dedup this with images/BUILD.gn
-  sources = [
-    "images/arch/Dockerfile",
-    "images/arch/metadata.json",
-    "images/arch/playbook.yaml",
-    "images/arch/roles/main/files/nsbox-trigger.hook",
-    "images/arch/roles/main/files/PKGBUILD",
-    "images/arch/roles/main/tasks/build_guest_tools.yaml",
-    "images/arch/roles/main/tasks/main.yaml",
-    "images/arch/roles/main/vars/guest_tools.yaml",
-    "images/debian/Dockerfile",
-    "images/debian/metadata.json",
-    "images/debian/playbook.yaml",
-    "images/debian/roles/main/tasks/main.yaml",
-    "images/fedora/metadata.json",
-    "images/fedora/playbook.yaml",
-    "images/fedora/roles/main/files/nsbox-guest-tools.spec",
-    "images/fedora/roles/main/files/nsbox_trigger.py",
-    "images/fedora/roles/main/tasks/build_guest_tools.yaml",
-    "images/fedora/roles/main/tasks/main.yaml",
-    "images/fedora/roles/main/vars/guest_tools.yaml",
-  ]
+  sources = []
+  foreach(def, image_definitions) {
+    image_files = []
+    image_files += common_image_files
+
+    if (defined(def.local) && def.local) {
+      image_files += common_local_image_files
+    }
+
+    if (defined(def.extra_image_files)) {
+      image_files += def.extra_image_files
+    }
+
+    foreach(file, image_files) {
+      sources += ["images/${def.name}/$file"]
+    }
+  }
   output = "$share_dir/$product_name/{{source}}"
 }
 
