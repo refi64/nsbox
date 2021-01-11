@@ -6,6 +6,7 @@ package userdata
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -81,13 +82,13 @@ userSpecSearch:
 		}
 
 		for _, user := range userSpec.UserList {
-			if user.Username == usrdata.User.Username || string(user.Userid) == usrdata.User.Uid {
+			if user.Username == usrdata.User.Username || fmt.Sprint(user.Userid) == usrdata.User.Uid {
 				userCanSudo = true
 				break userSpecSearch
 			}
 
 			for _, group := range usrdata.Groups {
-				if user.Usergroup == group.Name || string(user.Usergid) == group.Gid {
+				if user.Usergroup == group.Name || fmt.Sprint(user.Usergid) == group.Gid {
 					userCanSudo = true
 					break userSpecSearch
 				}
