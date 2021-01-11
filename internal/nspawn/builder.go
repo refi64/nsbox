@@ -5,10 +5,12 @@
 package nspawn
 
 import (
+	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/log"
 )
 
 const NetworkZonePrefix = "vz-"
@@ -67,6 +69,11 @@ func (builder *Builder) AddRecursiveBindTo(host string, dest string) {
 }
 
 func (builder *Builder) AddBindFull(host string, dest string, recursive bool) {
+	if _, err := os.Stat(host); err != nil {
+		log.Debugf("Failed to stat %s, skipping bind: %v", host, err)
+		return
+	}
+
 	builder.Binds = append(builder.Binds, BindMount{
 		Host:      host,
 		Dest:      dest,

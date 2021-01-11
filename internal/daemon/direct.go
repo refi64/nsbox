@@ -99,11 +99,7 @@ func bindHome(builder *nspawn.Builder, usrdata *userdata.Userdata) error {
 func bindDevices(builder *nspawn.Builder) {
 	tmpdir := os.TempDir()
 	x11 := filepath.Join(tmpdir, ".X11-unix")
-	if _, err := os.Stat(x11); err != nil {
-		log.Debug("Failed to access X11 socket:", err)
-	} else {
-		builder.AddBind(x11)
-	}
+	builder.AddBind(x11)
 
 	builder.AddBind("/dev/dri")
 	builder.AddBind("/dev/input")
@@ -424,16 +420,12 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		}
 	}
 
-	if _, err := os.Stat("/run/media"); err == nil {
-		builder.AddBind("/run/media")
-	}
+	builder.AddBind("/run/media")
 
 	builder.AddBindTo("/etc", "/run/host/etc")
 
 	maildir := filepath.Join("/var/mail", usrdata.User.Username)
-	if _, err := os.Stat(maildir); err == nil {
-		builder.AddBindTo(maildir, filepath.Join(paths.InContainerPrivPath, "mail"))
-	}
+	builder.AddBindTo(maildir, filepath.Join(paths.InContainerPrivPath, "mail"))
 
 	// Only bind home if not private.
 	privateHome := false
