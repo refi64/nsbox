@@ -25,8 +25,11 @@ type cvtsudoersCommand struct {
 	Command string
 }
 
+type cvtsudoersOption map[string]interface{}
+
 type cvtsudoersCommandSpec struct {
 	Commands []cvtsudoersCommand `json:"Commands"`
+	Options  []cvtsudoersOption  `json:"Options"`
 }
 
 type cvtsudoersUserSpec struct {
@@ -38,12 +41,20 @@ type cvtsudoersJson struct {
 	UserSpecs []cvtsudoersUserSpec `json:"User_Specs"`
 }
 
-func (usrdata *Userdata) checkSudoAccess() (bool, error) {
+type SudoAccess int
+
+const (
+	NoSudo SudoAccess = iota
+	CanSudo
+	CanSudoNoPasswd
+)
+
+func (usrdata *Userdata) checkSudoAccess() (SudoAccess, error) {
 	log.Debug("Checking sudo access")
 
 	if _, err := exec.LookPath("cvtsudoers"); err != nil {
 		log.Debugf("cvtsudoers not found (%v), skipping sudo access grant", err)
-		return false, nil
+		return NoSudo, nil
 	}
 
 	// NOTE: we don't bother with paths.Config here because:
@@ -53,26 +64,35 @@ func (usrdata *Userdata) checkSudoAccess() (bool, error) {
 	cmd.Stderr = os.Stderr
 	out, err := cmd.Output()
 	if err != nil {
-		return false, errors.Wrap(err, "cvtsudoers")
+		return NoSudo, errors.Wrap(err, "cvtsudoers")
 	}
 
 	var cvtsudoers cvtsudoersJson
 	if err := json.Unmarshal(out, &cvtsudoers); err != nil {
-		return false, errors.Wrap(err, "failed to parse cvtsudoers output")
+		return NoSudo, errors.Wrap(err, "failed to parse cvtsudoers output")
 	}
 
-	userCanSudo := false
+	sudoAccess := NoSudo
 
-userSpecSearch:
 	for _, userSpec := range cvtsudoers.UserSpecs {
+		canSudo := false
 		canRunAnyCommand := false
+		authenticated := true
 
-	allCommandSearch:
 		for _, commandSpec := range userSpec.CommandSpecs {
 			for _, command := range commandSpec.Commands {
 				if command.Command == "ALL" {
 					canRunAnyCommand = true
-					break allCommandSearch
+					break
+				}
+			}
+
+			for _, option := range commandSpec.Options {
+				for k, v := range option {
+					if k == "authenticate" {
+						authenticated = v.(bool)
+						break
+					}
 				}
 			}
 		}
@@ -81,29 +101,40 @@ userSpecSearch:
 			continue
 		}
 
+	userSpecSearch:
 		for _, user := range userSpec.UserList {
 			if user.Username == usrdata.User.Username || fmt.Sprint(user.Userid) == usrdata.User.Uid {
-				userCanSudo = true
-				break userSpecSearch
+				canSudo = true
+				break
 			}
 
 			for _, group := range usrdata.Groups {
 				if user.Usergroup == group.Name || fmt.Sprint(user.Usergid) == group.Gid {
-					userCanSudo = true
+					canSudo = true
 					break userSpecSearch
 				}
 			}
 		}
+
+		if canSudo {
+			if authenticated {
+				sudoAccess = CanSudo
+			} else {
+				sudoAccess = CanSudoNoPasswd
+			}
+
+			break
+		}
 	}
 
-	return userCanSudo, nil
+	return sudoAccess, nil
 }
 
-func (usrdata *Userdata) HasSudoAccess() bool {
+func (usrdata *Userdata) GetSudoAccess() SudoAccess {
 	access, err := usrdata.checkSudoAccess()
 	if err != nil {
 		log.Debug("failed to check sudo access:", err)
-		return false
+		return NoSudo
 	}
 
 	return access

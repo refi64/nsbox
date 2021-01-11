@@ -9,6 +9,7 @@ package daemon
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
@@ -116,19 +117,46 @@ func stripLeadingSlash(path string) string {
 	return result
 }
 
-func setUserEnv(hostMachineId string, img *image.Image, ct *container.Container, usrdata *userdata.Userdata) {
-	usrdata.Environ["NSBOX_USER"] = usrdata.User.Username
-	usrdata.Environ["NSBOX_UID"] = usrdata.User.Uid
+func setupSudo(img *image.Image, ct *container.Container, usrdata *userdata.Userdata) error {
+	shouldSetNoPasswd := false
 
-	if usrdata.HasSudoAccess() {
-		if img.SudoGroup != "" {
-			usrdata.Environ["NSBOX_SUDO_GROUP"] = img.SudoGroup
-		} else {
-			usrdata.Environ["NSBOX_SUDO_GROUP"] = "wheel"
+	sudoGroup := img.SudoGroup
+	if sudoGroup == "" {
+		sudoGroup = "wheel"
+	}
+
+	if sudoAccess := usrdata.GetSudoAccess(); sudoAccess != userdata.NoSudo {
+		usrdata.Environ["NSBOX_SUDO_GROUP"] = sudoGroup
+
+		if sudoAccess == userdata.CanSudoNoPasswd {
+			shouldSetNoPasswd = true
 		}
 	} else {
 		usrdata.Environ["NSBOX_SUDO_GROUP"] = ""
 	}
+
+	noPasswdFile := ct.StorageChild("etc", "sudoers.d", "10-nsbox-passwd")
+	if shouldSetNoPasswd {
+		line := fmt.Sprintf("%%%s ALL=(ALL:ALL) NOPASSWD: ALL", sudoGroup)
+		if err := ioutil.WriteFile(noPasswdFile, []byte(line), 0640); err != nil {
+			return errors.Wrap(err, "write nopasswd file")
+		}
+
+		if err := os.Chmod(noPasswdFile, 0440); err != nil {
+			return errors.Wrap(err, "chmod nopasswd file")
+		}
+	} else {
+		if err := os.Remove(noPasswdFile); err != nil && !os.IsNotExist(err) {
+			return errors.Wrap(err, "remove nopasswd file")
+		}
+	}
+
+	return nil
+}
+
+func setUserEnv(hostMachineId string, img *image.Image, ct *container.Container, usrdata *userdata.Userdata) {
+	usrdata.Environ["NSBOX_USER"] = usrdata.User.Username
+	usrdata.Environ["NSBOX_UID"] = usrdata.User.Uid
 
 	usrdata.Environ["NSBOX_SHELL"] = ct.Shell(usrdata)
 
@@ -464,6 +492,10 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	}
 
 	setUserEnv(machineId, mainImage, ct, usrdata)
+
+	if err := setupSudo(mainImage, ct, usrdata); err != nil {
+		return errors.Wrap(err, "setup sudo")
+	}
 
 	if err := writeContainerFiles(ct, hostPrivPath, usrdata); err != nil {
 		return errors.Wrap(err, "failed to write private container files")
