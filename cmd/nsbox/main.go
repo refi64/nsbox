@@ -119,6 +119,7 @@ func main() {
 	subcommands.Register(newInfoCommand(app), "")
 	subcommands.Register(newKillCommand(app), "")
 	subcommands.Register(newListCommand(app), "")
+	subcommands.Register(newRenameCommand(app), "")
 	subcommands.Register(newRunCommand(app), "")
 	subcommands.Register(newSetDefaultCommand(app), "")
 	subcommands.Register(newVersionCommand(app), "")

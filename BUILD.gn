@@ -79,6 +79,7 @@ copy("gofiles") {
     "cmd/nsbox/kill.go",
     "cmd/nsbox/list.go",
     "cmd/nsbox/main.go",
+    "cmd/nsbox/rename.go",
     "cmd/nsbox/run.go",
     "cmd/nsbox/set_default.go",
     "cmd/nsbox/version.go",
