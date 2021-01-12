@@ -80,8 +80,19 @@ func SetDefaultContainer(usrdata *userdata.Userdata, name string) error {
 			return err
 		}
 
-		if err := os.Symlink(ct.Path, paths.ContainerDefault(usrdata)); err != nil {
-			return errors.Wrap(err, "failed to symlink new default container")
+		defaultPath := paths.ContainerDefault(usrdata)
+		defaultTmp := defaultPath + ".tmp"
+
+		if err := os.Remove(defaultTmp); err != nil && !os.IsNotExist(err) {
+			return errors.Wrap(err, "failed to unlink old temporary default link")
+		}
+
+		if err := os.Symlink(ct.Path, defaultTmp); err != nil {
+			return errors.Wrap(err, "failed to symlink new temporary default container")
+		}
+
+		if err := os.Rename(defaultTmp, defaultPath); err != nil {
+			return errors.Wrap(err, "failed to rename temporary link")
 		}
 	} else {
 		if err := os.Remove(paths.ContainerDefault(usrdata)); err != nil && !os.IsNotExist(err) {
