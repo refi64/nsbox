@@ -122,8 +122,6 @@ func (usrdata *Userdata) checkSudoAccess() (SudoAccess, error) {
 			} else {
 				sudoAccess = CanSudoNoPasswd
 			}
-
-			break
 		}
 	}
 
