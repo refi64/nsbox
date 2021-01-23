@@ -36,6 +36,11 @@ if [[ -n "$NSBOX_BOOTED" ]]; then
   if [[ ! -e "$XDG_RUNTIME_DIR/pulse" ]]; then
     ln -sf "/run/host/nsbox/usr-run/pulse" "$XDG_RUNTIME_DIR"
   fi
+
+  host_pipewire=/run/host/nsbox/usr-run/pipewire-0
+  if [[ ! -e "$XDG_RUNTIME_DIR/pipewire-0" && -e "$host_pipewire" ]]; then
+    ln -sf "$host_pipewire" "$XDG_RUNTIME_DIR"
+  fi
 fi
 
 exec "$@"
