@@ -18,11 +18,7 @@ def main():
 
     args = parser.parse_args()
 
-    fmt = '%ct'
-    if args.branch == 'edge':
-        fmt += '.%h'
-
-    git_version_cmd = ['git', '-C', args.root, 'log', '-1', f'--format={fmt}']
+    git_version_cmd = ['git', '-C', args.root, 'log', '-1', f'--format=%ct.%h']
     if args.override_commit is not None:
         git_version_cmd.append(args.override_commit)
 
@@ -32,18 +28,16 @@ def main():
                                   universal_newlines=True,
                                   cwd=args.root)
     version_proc_parts = version_proc.stdout.strip().split('.')
-    assert len(version_proc_parts) in (1, 2), version_proc_parts
+    assert len(version_proc_parts) == 2, version_proc_parts
 
     data = {
         'version':
         time.strftime('%y.%m.%d', time.gmtime(int(version_proc_parts[0]))),
         'commit':
-        '',
+        version_proc_parts[1],
     }
 
     if args.branch == 'edge':
-        data['commit'] = version_proc_parts[1]
-
         git_rev_list_cmd = [
             'git', 'rev-list', '--count', args.override_commit or 'HEAD'
         ]
