@@ -7,7 +7,6 @@ package integration
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,8 +51,15 @@ type exportContext struct {
 	targetIconsDir        string
 }
 
-func (ctx *exportContext) exportDesktopFile(desktopFilePath string) error {
+func (ctx *exportContext) exportDesktopFile(desktopFilesDir, desktopFilePath string) error {
 	log.Debug("Exporting desktop file", desktopFilePath)
+
+	relative, err := filepath.Rel(desktopFilesDir, desktopFilePath)
+	if err != nil {
+		return errors.Wrap(err, "making path relative")
+	}
+
+	newName := strings.ReplaceAll(relative, "/", "-")
 
 	source, err := os.Open(desktopFilePath)
 	if err != nil {
@@ -61,7 +67,7 @@ func (ctx *exportContext) exportDesktopFile(desktopFilePath string) error {
 	}
 	defer source.Close()
 
-	target, err := os.Create(filepath.Join(ctx.targetApplicationsDir, filepath.Base(desktopFilePath)))
+	target, err := os.Create(filepath.Join(ctx.targetApplicationsDir, newName))
 	if err != nil {
 		return errors.Wrapf(err, "failed to create exported desktop file of %s", desktopFilePath)
 	}
@@ -106,32 +112,24 @@ func (ctx *exportContext) exportDesktopFile(desktopFilePath string) error {
 }
 
 func (ctx *exportContext) exportDesktopFiles(desktopFilesDir string) error {
-	desktopFiles, err := ioutil.ReadDir(desktopFilesDir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			log.Debug(desktopFilesDir, "does not exist")
-			return nil
-		} else {
+	err := filepath.Walk(desktopFilesDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
 			return err
 		}
-	}
 
-	for _, file := range desktopFiles {
 		const desktopSuffix = ".desktop"
-
-		if !strings.HasSuffix(file.Name(), desktopSuffix) {
-			continue
+		if !strings.HasSuffix(info.Name(), desktopSuffix) {
+			return nil
 		}
 
-		name := file.Name()[:len(file.Name())-len(desktopSuffix)]
+		name := info.Name()[:len(info.Name())-len(desktopSuffix)]
 		for _, pat := range ctx.ct.Config.XdgDesktopExports {
 			ok, err := filepath.Match(pat, name)
 
 			if err != nil {
 				log.Alertf("%s failed to match: %v", pat, name)
 			} else if ok {
-				path := filepath.Join(desktopFilesDir, file.Name())
-				if err := ctx.exportDesktopFile(path); err != nil {
+				if err := ctx.exportDesktopFile(desktopFilesDir, path); err != nil {
 					log.Alertf("failed to export %s: %v", path, err)
 				}
 
@@ -139,6 +137,17 @@ func (ctx *exportContext) exportDesktopFiles(desktopFilesDir string) error {
 			} else {
 				log.Debugf("%s failed to match %s", pat, name)
 			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Debugf("%s does not exist (%v)", desktopFilesDir, err)
+			return nil
+		} else {
+			return err
 		}
 	}
 
