@@ -24,12 +24,21 @@ type nsboxApp struct {
 	workdir string
 }
 
-func (app *nsboxApp) PreexecHook(cmd subcommands.Command, fs *flag.FlagSet) {
-	// No auth needed for "version".
-	if os.Getuid() == 0 || cmd.Name() == "version" {
-		return
+func createStateDirectory() {
+	if err := os.MkdirAll(paths.StorageRoot, 0755); err != nil && !os.IsExist(err) {
+		log.Fatal("failed to create state directory:", err)
 	}
 
+	if err := os.Chmod(paths.StorageRoot, 0600); err != nil {
+		log.Fatal("failed to chmod state directory:", err)
+	}
+}
+
+func commandNeedsRoot(cmd subcommands.Command) bool {
+	return cmd.Name() != "version"
+}
+
+func (app *nsboxApp) privilegedReexec(cmd subcommands.Command, fs *flag.FlagSet) {
 	var redirector string
 	if app.sudo || os.Getenv("NSBOX_USE_SUDO") == "1" {
 		redirector = "sudo"
@@ -77,6 +86,14 @@ func (app *nsboxApp) PreexecHook(cmd subcommands.Command, fs *flag.FlagSet) {
 	log.Debug(redirect)
 	err = unix.Exec(redirectorPath, redirect, os.Environ())
 	log.Fatal("failed to exec redirect", err)
+}
+
+func (app *nsboxApp) PreexecHook(cmd subcommands.Command, fs *flag.FlagSet) {
+	if os.Getuid() == 0 {
+		createStateDirectory()
+	} else if commandNeedsRoot(cmd) {
+		app.privilegedReexec(cmd, fs)
+	}
 }
 
 func (app *nsboxApp) SetGlobalFlags(fs *flag.FlagSet) {
