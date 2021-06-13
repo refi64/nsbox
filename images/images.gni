@@ -11,7 +11,7 @@ common_local_image_files = [
 image_definitions = [
   {
     name = "fedora"
-    versions = ["32", "33"]
+    versions = ["33", "34"]
     extra_image_files = [
       "roles/main/files/nsbox_trigger.py",
       "roles/main/files/nsbox-guest-tools.spec",

@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+      - staging
+      - stable
     paths:
       - '.github/workflows/build_images.*'
       - 'images/**'
@@ -15,7 +17,7 @@ jobs:
     name: 'Build and push the images'
     runs-on: ubuntu-latest
     container:
-      image: registry.fedoraproject.org/fedora:32
+      image: registry.fedoraproject.org/fedora:34
       options: '--privileged'
     steps:
       - name: 'Checkout the nsbox repo'

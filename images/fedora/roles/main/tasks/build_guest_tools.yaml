@@ -104,6 +104,8 @@
         --define {{ ('_gpg_path ' + gpg_home) | quote }}
         --define {{ ('_gpg_name ' + guest_tools.gpg_name) | quote }}
         --addsign {{ (guest_tools_rpm.files | first).path }}
+      args:
+        warn: false
 
     - name: Install the gpg key
       rpm_key:

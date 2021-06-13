@@ -13,20 +13,47 @@ unzip gn.zip gn
 install -Dm 755 gn /usr/local/bin/gn
 rm -f gn.zip gn
 
-gn gen out
-ninja -C out nsbox-edge-bender :install_share_release
+# XXX: partly copied from .github/actions/rpm_spec_files/entrypoint.sh
+gn_args=()
+if [[ "$GITHUB_REF" == *"/stable" ]]; then
+  gn_args+=(is_stable_build=true)
+  bender=nsbox-bender
+elif [[ "$GITHUB_REF" == *"/staging" ]]; then
+  gn_args+=(is_stable_build=true)
+  staging=1
+  bender=nsbox-bender
+else
+  bender=nsbox-edge-bender
+fi
+
+gn gen out --args="${gn_args[*]}"
+ninja -C out "$bender" :install_share_release
 
 IMAGES_TO_BUILD=(
   arch
   debian:buster
-  fedora:32
   fedora:33
+  fedora:34
 )
 
 for image in "${IMAGES_TO_BUILD[@]}"; do
-  out/install/bin/nsbox-edge-bender images/"$image"
+  out/install/bin/"$bender" images/"$image"
 done
 
+list_images() {
+  podman images --format '{{.Repository}}:{{.Tag}}' | grep '^gcr.io/nsbox-data' | grep -Ev -- '-(bud|failed)$'
+}
+
+push() {
+  (set -x; podman push "$@")
+}
+
 echo "$GCR_JSON_KEY" | podman login gcr.io -u _json_key --password-stdin
-podman images --format '{{.Repository}}:{{.Tag}}' | grep '^gcr.io/nsbox-data' | grep -Ev -- '-(bud|failed)$' \
-  | xargs -t -d$'\n' -n1 podman push
+
+for image in $(list_images); do
+  if [[ -n "$staging" ]]; then
+    push "$image" "$(echo "$image" | sed 's/\(:.*\)stable/\1staging/')"
+  else
+    push "$image"
+  fi
+done

@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+      - staging
+      - stable
     paths-ignore:
       - '.firebaserc'
       - 'firebase.json'
