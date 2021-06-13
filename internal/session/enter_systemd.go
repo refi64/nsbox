@@ -98,7 +98,7 @@ func (handle *systemdSessionHandle) Destroy() {
 
 func (door *systemdDoor) Enter(ct *container.Container, spec *containerEntrySpec,
 	usrdata *userdata.Userdata) (sessionHandle, error) {
-	leader, err := getLeader(ct, usrdata)
+	leader, err := ct.Leader(usrdata)
 	if err != nil {
 		return nil, errors.Wrap(err, "get container leader")
 	}

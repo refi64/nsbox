@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	crypt "github.com/GehirnInc/crypt/sha512_crypt"
+	"github.com/coreos/go-systemd/v22/machine1"
 	"github.com/pkg/errors"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
@@ -264,6 +265,20 @@ func (container Container) Shell(usrdata *userdata.Userdata) string {
 	} else {
 		return usrdata.Shell
 	}
+}
+
+func (container Container) Leader(usrdata *userdata.Userdata) (uint32, error) {
+	machined, err := machine1.New()
+	if err != nil {
+		return 0, err
+	}
+
+	props, err := machined.DescribeMachine(container.MachineName(usrdata))
+	if err != nil {
+		return 0, err
+	}
+
+	return props["Leader"].(uint32), nil
 }
 
 type LockWaitRequest int

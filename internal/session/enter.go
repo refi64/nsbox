@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/coreos/go-systemd/v22/machine1"
 	krpty "github.com/creack/pty"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/log"
@@ -64,20 +63,6 @@ type sessionHandle interface {
 // A "door" is responsible for entry into a container's environment.
 type containerDoor interface {
 	Enter(ct *container.Container, spec *containerEntrySpec, usrdata *userdata.Userdata) (sessionHandle, error)
-}
-
-func getLeader(ct *container.Container, usrdata *userdata.Userdata) (uint32, error) {
-	machined, err := machine1.New()
-	if err != nil {
-		return 0, err
-	}
-
-	props, err := machined.DescribeMachine(ct.MachineName(usrdata))
-	if err != nil {
-		return 0, err
-	}
-
-	return props["Leader"].(uint32), nil
 }
 
 func safeCopy(dest *os.File, source *os.File) {
