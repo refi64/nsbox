@@ -8,8 +8,6 @@ package ptyservice
 
 import (
 	"fmt"
-	// NOTE: This is technically outdated, but it's pretty much identical to the newer
-	// creack/pty and is *actually packaged in Fedora*.
 	"net"
 	"os"
 
