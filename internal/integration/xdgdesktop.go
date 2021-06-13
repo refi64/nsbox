@@ -51,7 +51,14 @@ type exportContext struct {
 	targetIconsDir        string
 }
 
-func (ctx *exportContext) exportDesktopFile(desktopFilesDir, desktopFilePath string) error {
+func (ctx *exportContext) Destroy() {
+	for _, iconCtx := range ctx.iconCtxs {
+		iconCtx.Destroy()
+	}
+}
+
+func (ctx *exportContext) exportDesktopFile(desktopFilesDir string, desktopFile *os.File) error {
+	desktopFilePath := desktopFile.Name()
 	log.Debug("Exporting desktop file", desktopFilePath)
 
 	relative, err := filepath.Rel(desktopFilesDir, desktopFilePath)
@@ -61,19 +68,13 @@ func (ctx *exportContext) exportDesktopFile(desktopFilesDir, desktopFilePath str
 
 	newName := strings.ReplaceAll(relative, "/", "-")
 
-	source, err := os.Open(desktopFilePath)
-	if err != nil {
-		return errors.Wrapf(err, "failed to open desktop file %s", desktopFilePath)
-	}
-	defer source.Close()
-
 	target, err := os.Create(filepath.Join(ctx.targetApplicationsDir, newName))
 	if err != nil {
 		return errors.Wrapf(err, "failed to create exported desktop file of %s", desktopFilePath)
 	}
 	defer target.Close()
 
-	scanner := bufio.NewScanner(source)
+	scanner := bufio.NewScanner(desktopFile)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if !strings.HasPrefix(line, "[") && !strings.HasPrefix(line, "#") && line != "" {
@@ -111,8 +112,18 @@ func (ctx *exportContext) exportDesktopFile(desktopFilesDir, desktopFilePath str
 	return nil
 }
 
-func (ctx *exportContext) exportDesktopFiles(desktopFilesDir string) error {
-	err := filepath.Walk(desktopFilesDir, func(path string, info os.FileInfo, err error) error {
+func (ctx *exportContext) gatherDesktopFiles(desktopFilesDir string) (desktopFiles []*os.File, err error) {
+	defer (func() {
+		if err != nil {
+			for _, file := range desktopFiles {
+				if err := file.Close(); err != nil {
+					log.Alertf("failed to close %s: %v", file.Name(), err)
+				}
+			}
+		}
+	})()
+
+	err = filepath.Walk(desktopFilesDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -129,10 +140,13 @@ func (ctx *exportContext) exportDesktopFiles(desktopFilesDir string) error {
 			if err != nil {
 				log.Alertf("%s failed to match: %v", pat, name)
 			} else if ok {
-				if err := ctx.exportDesktopFile(desktopFilesDir, path); err != nil {
-					log.Alertf("failed to export %s: %v", path, err)
+				file, err := os.Open(path)
+				if err != nil {
+					log.Alertf("failed to open %s: %v", path, err)
+					continue
 				}
 
+				desktopFiles = append(desktopFiles, file)
 				break
 			} else {
 				log.Debugf("%s failed to match %s", pat, name)
@@ -145,10 +159,27 @@ func (ctx *exportContext) exportDesktopFiles(desktopFilesDir string) error {
 	if err != nil {
 		if os.IsNotExist(err) {
 			log.Debugf("%s does not exist (%v)", desktopFilesDir, err)
-			return nil
+			return nil, nil
 		} else {
-			return err
+			return nil, errors.Wrap(err, "walking desktop files")
 		}
+	}
+
+	return desktopFiles, nil
+}
+
+func (ctx *exportContext) exportDesktopFiles(desktopFilesDir string) error {
+	desktopFiles, err := ctx.gatherDesktopFiles(desktopFilesDir)
+	if err != nil {
+		return errors.Wrap(err, "gathering files")
+	}
+
+	for _, file := range desktopFiles {
+		err := ctx.exportDesktopFile(desktopFilesDir, file)
+		if err != nil {
+			log.Alertf("failed to export %s: %v", file.Name(), err)
+		}
+		file.Close()
 	}
 
 	return nil
