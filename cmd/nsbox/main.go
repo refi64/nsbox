@@ -25,11 +25,11 @@ type nsboxApp struct {
 }
 
 func createStateDirectory() {
-	if err := os.MkdirAll(paths.StorageRoot, 0755); err != nil && !os.IsExist(err) {
+	if err := os.MkdirAll(paths.StorageRoot, 0744); err != nil && !os.IsExist(err) {
 		log.Fatal("failed to create state directory:", err)
 	}
 
-	if err := os.Chmod(paths.StorageRoot, 0600); err != nil {
+	if err := os.Chmod(paths.StorageRoot, 0744); err != nil {
 		log.Fatal("failed to chmod state directory:", err)
 	}
 }
