@@ -357,14 +357,14 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 
 	builder.AddBindTo(hostPrivPath, "/run/host/nsbox")
 
-	dataDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "data")
+	dataDir, err := paths.GetDataDir()
 	if err != nil {
 		return errors.Wrap(err, "failed to locate nsbox data directory")
 	}
 
 	builder.AddBindTo(filepath.Join(dataDir, "scripts"), filepath.Join(paths.InContainerPrivPath, "scripts"))
 
-	nsboxHost, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, paths.ProductName, "nsbox-host")
+	nsboxHost, err := paths.GetPrivateExecutable("nsbox-host")
 	if err != nil {
 		return errors.Wrap(err, "failed to locate nsbox-host")
 	}
@@ -399,7 +399,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	builder.AddBind(hostJournal)
 	builder.AddBindTo(hostJournal, "/run/host/journal")
 
-	releaseDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "release")
+	releaseDir, err := paths.GetReleaseDataDir()
 	if err != nil {
 		return errors.Wrap(err, "failed to locate release files")
 	}

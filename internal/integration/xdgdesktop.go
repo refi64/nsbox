@@ -12,10 +12,10 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/config"
 	"github.com/refi64/nsbox/internal/container"
 	"github.com/refi64/nsbox/internal/gtkicons"
 	"github.com/refi64/nsbox/internal/log"
-	"github.com/refi64/nsbox/internal/paths"
 )
 
 var (
@@ -85,7 +85,7 @@ func (ctx *exportContext) exportDesktopFile(desktopFilesDir string, desktopFile 
 				if parts[0] == "Exec" {
 					// Exec= should not replay, otherwise the user may be greeted with
 					// random delays on starting GUI apps.
-					line = fmt.Sprintf("Exec=%s run -no-replay -- %s %s", paths.ProductName, ctx.ct.Name, parts[1])
+					line = fmt.Sprintf("Exec=%s run -no-replay -- %s %s", config.ProductName, ctx.ct.Name, parts[1])
 				} else if parts[0] == "Icon" {
 					for _, iconCtx := range ctx.iconCtxs {
 						icons := iconCtx.FindIcon(parts[1])

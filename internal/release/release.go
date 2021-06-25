@@ -38,7 +38,7 @@ type ReleaseInfo struct {
 }
 
 func Read() (*ReleaseInfo, error) {
-	releaseDir, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "release")
+	releaseDir, err := paths.GetReleaseDataDir()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get release path")
 	}

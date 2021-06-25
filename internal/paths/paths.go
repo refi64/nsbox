@@ -12,13 +12,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/refi64/nsbox/internal/config"
 	"github.com/refi64/nsbox/internal/userdata"
 )
 
 const InContainerPrivPath = "/var/lib/.nsbox-priv"
 const HostServiceSocketName = "host-service.sock"
 const PtyServiceSocketName = "pty-service.sock"
-const StorageRoot = State + "/nsbox"
+const StorageRoot = config.StateDir + "/nsbox"
 
 func ContainerDefault(usrdata *userdata.Userdata) string {
 	return filepath.Join(StorageRoot, usrdata.User.Username, "default")
@@ -47,7 +48,7 @@ func GetExecutablePath() (self string, err error) {
 	return
 }
 
-func GetPathRelativeToInstallRoot(subpaths ...string) (string, error) {
+func getPathRelativeToInstallRoot(subpaths ...string) (string, error) {
 	self, err := GetExecutablePath()
 	if err != nil {
 		return "", err
@@ -69,4 +70,41 @@ func GetPathRelativeToInstallRoot(subpaths ...string) (string, error) {
 	}
 
 	return path, nil
+}
+
+func GetSystemImagesDir() (string, error) {
+	return getPathRelativeToInstallRoot(config.ShareDir, config.ProductName, "images")
+}
+
+func GetSystemImageDir(name string) (string, error) {
+	systemImages, err := GetSystemImagesDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(systemImages, name), nil
+}
+
+func GetCustomImagesDir() string {
+	return filepath.Join(config.ConfigDir, "nsbox", "images")
+}
+
+func GetCustomImageDir(name string) string {
+	return filepath.Join(GetCustomImagesDir(), name)
+}
+
+func GetReleaseDataDir() (string, error) {
+	return getPathRelativeToInstallRoot(config.ShareDir, config.ProductName, "release")
+}
+
+func GetDataDir() (string, error) {
+	return getPathRelativeToInstallRoot(config.ShareDir, config.ProductName, "data")
+}
+
+func GetMainExecutable() (string, error) {
+	return getPathRelativeToInstallRoot(config.BinDir, config.ProductName)
+}
+
+func GetPrivateExecutable(name string) (string, error) {
+	return getPathRelativeToInstallRoot(config.LibexecDir, config.ProductName, name)
 }

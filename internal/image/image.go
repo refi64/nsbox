@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/config"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/release"
@@ -96,7 +97,7 @@ func openTaggedImageAtPath(path, tag string, validateTag bool) (*Image, error) {
 		"{image_tag}", tag,
 		"{nsbox_branch}", rel.Branch.String(),
 		"{nsbox_version}", rel.Version,
-		"{nsbox_product_name}", paths.ProductName,
+		"{nsbox_product_name}", config.ProductName,
 	)
 
 	image.Base = replacer.Replace(image.Base)
@@ -114,14 +115,14 @@ func Open(name string, validateTag bool) (*Image, error) {
 		name = name[:idx]
 	}
 
-	customImagePath := filepath.Join(paths.Config, "nsbox", "images", name)
+	customImagePath := paths.GetCustomImageDir(name)
 	if _, err := os.Stat(customImagePath); err == nil {
 		return openTaggedImageAtPath(customImagePath, tag, validateTag)
 	} else {
 		log.Debug("failed to stat user image path:", err)
 	}
 
-	if globalImagePath, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "images", name); err == nil {
+	if globalImagePath, err := paths.GetSystemImageDir(name); err == nil {
 		if _, err := os.Stat(globalImagePath); err == nil {
 			return openTaggedImageAtPath(globalImagePath, tag, validateTag)
 		} else {
@@ -161,13 +162,13 @@ func List() ([]*Image, error) {
 	images := []*Image{}
 	foundImages := map[string]interface{}{}
 
-	systemImages, err := paths.GetPathRelativeToInstallRoot(paths.Share, paths.ProductName, "images")
+	systemImages, err := paths.GetSystemImagesDir()
 	if err != nil {
 		return nil, err
 	}
 
 	paths := []string{
-		filepath.Join(paths.Config, "nsbox", "images"),
+		paths.GetCustomImagesDir(),
 		systemImages,
 	}
 

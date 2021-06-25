@@ -36,9 +36,9 @@ symlink("vendor_symlink") {
   value = rebase_path("//vendor")
 }
 
-substitute_file("host_paths") {
-  source = "internal/paths/host_paths.template.go"
-  output = "$go_target_dir/internal/paths/host_paths.go"
+substitute_file("host_config") {
+  source = "internal/config/host_config.template.go"
+  output = "$go_target_dir/internal/config/host_config.go"
 
   vars = substitute_config_vars + [
     ["PRODUCT_NAME", product_name]
@@ -126,7 +126,7 @@ copy("gofiles") {
 
   outputs = ["$go_target_dir/{{source}}"]
 
-  deps = [":vendor_symlink", ":host_paths"]
+  deps = [":vendor_symlink", ":host_config"]
 }
 
 go_binary("varlink-go-interface-generator") {

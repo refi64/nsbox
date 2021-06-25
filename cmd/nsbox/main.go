@@ -51,7 +51,7 @@ func (app *nsboxApp) privilegedReexec(cmd subcommands.Command, fs *flag.FlagSet)
 		log.Fatalf("failed to locate %s: %v", redirector, err)
 	}
 
-	invokerPath, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, paths.ProductName, "nsbox-invoker")
+	invokerPath, err := paths.GetPrivateExecutable("nsbox-invoker")
 	if err != nil {
 		log.Fatal("failed to get invoker path:", err)
 	}

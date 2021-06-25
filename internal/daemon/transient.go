@@ -154,7 +154,7 @@ func RunContainerViaTransientUnit(ct *container.Container, restart bool, usrdata
 	if _, err := machined.GetMachine(ct.MachineName(usrdata)); err != nil {
 		log.Debug("GetMachine:", err)
 
-		nsboxd, err := paths.GetPathRelativeToInstallRoot(paths.Libexec, paths.ProductName, "nsboxd")
+		nsboxd, err := paths.GetPrivateExecutable("nsboxd")
 		if err != nil {
 			return errors.Wrap(err, "cannot locate nsboxd")
 		}
