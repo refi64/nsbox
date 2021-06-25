@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/subcommands"
 	"github.com/refi64/nsbox/internal/args"
+	"github.com/refi64/nsbox/internal/config"
 	"github.com/refi64/nsbox/internal/log"
 	"github.com/refi64/nsbox/internal/paths"
 	"github.com/refi64/nsbox/internal/userdata"
@@ -41,6 +42,10 @@ func commandNeedsRoot(cmd subcommands.Command) bool {
 func (app *nsboxApp) privilegedReexec(cmd subcommands.Command, fs *flag.FlagSet) {
 	var redirector string
 	if app.sudo || os.Getenv("NSBOX_USE_SUDO") == "1" {
+		if !config.EnableSudo {
+			log.Fatal("sudo access is disabled for this build of nsbox")
+		}
+
 		redirector = "sudo"
 	} else {
 		redirector = "pkexec"
@@ -97,7 +102,10 @@ func (app *nsboxApp) PreexecHook(cmd subcommands.Command, fs *flag.FlagSet) {
 }
 
 func (app *nsboxApp) SetGlobalFlags(fs *flag.FlagSet) {
-	fs.BoolVar(&app.sudo, "sudo", app.sudo, "Use sudo for privilege escalation instead of polkit")
+	if config.EnableSudo {
+		fs.BoolVar(&app.sudo, "sudo", app.sudo, "Use sudo for privilege escalation instead of polkit")
+	}
+
 	fs.StringVar(&app.workdir, "workdir", app.workdir, "Run from the given directory")
 }
 

@@ -41,8 +41,18 @@ substitute_file("host_config") {
   output = "$go_target_dir/internal/config/host_config.go"
 
   vars = substitute_config_vars + [
-    ["PRODUCT_NAME", product_name]
+    ["PRODUCT_NAME", product_name],
+    ["ENABLE_SUDO", "$enable_sudo"],
+    ["ENABLE_CVTSUDOERS", "$enable_cvtsudoers"],
   ]
+
+  # XXX: GN does not quote empty arguments correctly, so we replace sudo_group with a
+  # space if needed. (It is not consulted if enable_cvtsudoers is true anyway.)
+  if (sudo_group != "") {
+    vars += [["SUDO_GROUP", sudo_group]]
+  } else {
+    vars += [["SUDO_GROUP", " "]]
+  }
 }
 
 substitute_file("nsbox_profile") {

@@ -10,3 +10,7 @@ const ShareDir = "@SHARE_DIR"
 const StateDir = "@STATE_DIR"
 
 const ProductName = "@PRODUCT_NAME"
+
+const EnableSudo = "@ENABLE_SUDO" == "true"
+const EnableCvtsudoers = "@ENABLE_CVTSUDOERS" == "true"
+const SudoGroup = "@SUDO_GROUP"

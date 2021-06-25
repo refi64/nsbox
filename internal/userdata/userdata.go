@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/config"
 )
 
 // Stored as a map to make membership tests fast.
@@ -166,7 +167,10 @@ func BeneathSudo() (*Userdata, error) {
 	}
 
 	var callingUid string
-	envVars := []string{"PKEXEC_UID", "SUDO_UID"}
+	envVars := []string{"PKEXEC_UID"}
+	if config.EnableSudo {
+		envVars = append(envVars, "SUDO_UID")
+	}
 
 	for _, envVar := range envVars {
 		if callingUid = os.Getenv(envVar); callingUid != "" {

@@ -9,8 +9,10 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
 
 	"github.com/pkg/errors"
+	"github.com/refi64/nsbox/internal/config"
 	"github.com/refi64/nsbox/internal/log"
 )
 
@@ -49,7 +51,7 @@ const (
 	CanSudoNoPasswd
 )
 
-func (usrdata *Userdata) checkSudoAccess() (SudoAccess, error) {
+func (usrdata *Userdata) checkSudoAccessViaCvtsudoers() (SudoAccess, error) {
 	log.Debug("Checking sudo access")
 
 	if _, err := exec.LookPath("cvtsudoers"); err != nil {
@@ -128,8 +130,37 @@ func (usrdata *Userdata) checkSudoAccess() (SudoAccess, error) {
 	return sudoAccess, nil
 }
 
-func (usrdata *Userdata) GetSudoAccess() SudoAccess {
-	access, err := usrdata.checkSudoAccess()
+func (usrdata *Userdata) checkSudoAccessViaGroupName() (SudoAccess, error) {
+	gids, err := usrdata.User.GroupIds()
+	if err != nil {
+		return NoSudo, errors.Wrap(err, "getting user's group IDs")
+	}
+
+	for _, gid := range gids {
+		group, err := user.LookupGroupId(gid)
+		if err != nil {
+			log.Alertf("failed to look up group ID %s: %v", gid, err)
+			continue
+		}
+
+		if group.Name == config.SudoGroup {
+			log.Debugf("User %s can is part of group %s (%s) and can sudo",
+				usrdata.User.Name, group.Name, gid)
+			return CanSudo, nil
+		}
+	}
+
+	return NoSudo, nil
+}
+
+func (usrdata *Userdata) GetSudoAccess() (access SudoAccess) {
+	var err error
+	if config.EnableCvtsudoers {
+		access, err = usrdata.checkSudoAccessViaCvtsudoers()
+	} else {
+		access, err = usrdata.checkSudoAccessViaGroupName()
+	}
+
 	if err != nil {
 		log.Debug("failed to check sudo access:", err)
 		return NoSudo

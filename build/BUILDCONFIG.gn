@@ -58,6 +58,17 @@ declare_args() {
   # Path to the SELinux build makefile.
   selinux_makefile = "/usr/share/selinux/devel/Makefile"
 
+  # Enable using sudo for auth instead of polkit.
+  enable_sudo = true
+
+  # Enable using cvtusers to determine what users should have sudo access in a
+  # container. If false, sudo_group must be set instead.
+  enable_cvtsudoers = true
+
+  # Name of a group that will always have sudo access in containers. Only should be set if
+  # enable_cvtsudoers is false.
+  sudo_group = ""
+
   # The path to the rpmbuild executable.
   rpmbuild_exe = "rpmbuild"
 
@@ -73,6 +84,9 @@ declare_args() {
 
 assert(image_builder == "buildah" || image_builder == "docker",
        "image_builder must be buildah or docker, not $image_builder")
+
+assert(enable_cvtsudoers == (sudo_group == ""),
+       "sudo_group must be set if enable_cvtsudoers is disabled")
 
 # We're not building any C/C++ code, so the toolchain only needs to define a few tools.
 set_default_toolchain("//build/minimal-toolchain")
