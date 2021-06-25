@@ -125,14 +125,16 @@ func setupSudo(img *image.Image, ct *container.Container, usrdata *userdata.User
 		sudoGroup = "wheel"
 	}
 
+	usrdata.Environ["NSBOX_SUDO_GROUP"] = sudoGroup
+
 	if sudoAccess := usrdata.GetSudoAccess(); sudoAccess != userdata.NoSudo {
-		usrdata.Environ["NSBOX_SUDO_GROUP"] = sudoGroup
+		usrdata.Environ["NSBOX_CAN_SUDO"] = "1"
 
 		if sudoAccess == userdata.CanSudoNoPasswd {
 			shouldSetNoPasswd = true
 		}
 	} else {
-		usrdata.Environ["NSBOX_SUDO_GROUP"] = ""
+		usrdata.Environ["NSBOX_CAN_SUDO"] = ""
 	}
 
 	noPasswdFile := ct.StorageChild("etc", "sudoers.d", "10-nsbox-passwd")

@@ -15,10 +15,18 @@ shell="$NSBOX_SHELL"
 
 rm -f /var/mail/"$user"
 
-if grep -q "^$user:" /etc/passwd; then
-  usermod -d "$NSBOX_HOME" -aG "$NSBOX_SUDO_GROUP" -u "$uid" -s "$shell" "$user"
+if id "$user" &>/dev/null; then
+  usermod -d "$NSBOX_HOME" -u "$uid" -s "$shell" "$user" >/dev/null
 else
-  useradd -d "$NSBOX_HOME" -MU -G "$NSBOX_SUDO_GROUP" -u "$uid" -s "$shell" "$user"
+  useradd -d "$NSBOX_HOME" -MU -u "$uid" -s "$shell" "$user" >/dev/null
+fi
+
+currently_can_sudo=$(id -Gnz "$user" | grep -Fqxz "$NSBOX_SUDO_GROUP" && echo 1 ||:)
+
+if [[ -n "$NSBOX_CAN_SUDO" && -z "$currently_can_sudo" ]]; then
+  gpasswd -a "$user" "$NSBOX_SUDO_GROUP" >/dev/null
+elif [[ -z "$NSBOX_CAN_SUDO" && -n "$currently_can_sudo" ]]; then
+  gpasswd -d "$user" "$NSBOX_SUDO_GROUP" >/dev/null
 fi
 
 if [[ -d /run/host/nsbox/mail ]]; then
