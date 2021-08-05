@@ -60,7 +60,7 @@ func startNsboxd(systemd *systemd1.Conn, nsboxd string, ct *container.Container,
 	if err != nil {
 		return err
 	}
-	env := append([]string{"SUDO_UID=" + usrdata.User.Uid, "XDG_RUNTIME_DIR=" + xdgRuntimeDir})
+	env := append([]string{"PKEXEC_UID=" + usrdata.User.Uid, "XDG_RUNTIME_DIR=" + xdgRuntimeDir})
 
 	properties := []systemd1.Property{
 		systemd1.PropType("notify"),
