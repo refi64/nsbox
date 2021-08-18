@@ -2,7 +2,7 @@ name: Build and push the images
 on:
   push:
     branches:
-      - master
+      - main
       - staging
       - stable
     paths:
