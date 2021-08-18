@@ -22,7 +22,7 @@ image_definitions = [
   {
     name = "debian"
     local = true
-    versions = ["buster"]
+    versions = ["buster", "bullseye"]
   },
   {
     name = "arch"

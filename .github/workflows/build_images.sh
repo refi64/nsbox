@@ -32,6 +32,7 @@ ninja -C out "$bender" :install_share_release
 IMAGES_TO_BUILD=(
   arch
   debian:buster
+  debian:bullseye
   fedora:33
   fedora:34
 )
