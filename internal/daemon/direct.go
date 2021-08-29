@@ -532,6 +532,9 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 	nspawnCmd.Env = os.Environ()
 	nspawnCmd.Env = append(nspawnCmd.Env, "NOTIFY_SOCKET=")
 
+	// Shared IPC namespace is required for XShm to work.
+	nspawnCmd.Env = append(nspawnCmd.Env, "SYSTEMD_NSPAWN_SHARE_NS_IPC=1")
+
 	if ct.Config.ShareCgroupfs {
 		nspawnCmd.Env = append(nspawnCmd.Env, "SYSTEMD_NSPAWN_USE_CGNS=0")
 	}
