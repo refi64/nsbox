@@ -35,6 +35,7 @@ IMAGES_TO_BUILD=(
   debian:bullseye
   fedora:33
   fedora:34
+  fedora:35
 )
 
 for image in "${IMAGES_TO_BUILD[@]}"; do
