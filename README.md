@@ -3,6 +3,13 @@
 nsbox is a multi-purpose, nspawn-powered container manager. Please see the
 [website](https://nsbox.dev) for more user-friendly information and documentation.
 
+## Links
+
+- [sr.ht project](https://sr.ht/~refi64/nsbox/)
+- [GitHub Mirror](https://github.com/refi64/nsbox/) (will be decomissioned in the future)
+- [Legacy ora.pm issues board](https://ora.pm/project/211667/kanban) (superceded by the
+  sr.ht project, will be decomissioned in the future)
+
 [![View issues](https://img.shields.io/badge/issues-here-yellow)](https://ora.pm/project/211667/kanban)
 
 ## Build dependencies
@@ -52,17 +59,20 @@ $ yarn run build
 
 ## Contributing
 
-### Using Gerrit
+### Submitting Patches
 
-[GerritHub](http://gerrithub.io) is used for all contributions (the Gerrit repository is just `refi64/nsbox`).
+Please see the [guide for submitting patches on
+git.sr.ht](https://man.sr.ht/git.sr.ht/#sending-patches-upstream). (If you choose to use
+`git send-email`, the patches should be sent to
+[~refi64/nsbox-devel@lists.sr.ht](https://lists.sr.ht/~refi64/nsbox-devel).)
 
-If you're not familiar with Gerrit, there is a generic walkthrough
-[here](https://gerrit-review.googlesource.com/Documentation/intro-gerrit-walkthrough.html),
-where `gerrithost` is replaced with `review.gerrithub.io`. In addition,
-[this guide](https://gerrit-review.googlesource.com/Documentation/intro-gerrit-walkthrough-github.html)
-is available for users familiar with GitHub pull requests.
+### Coding Guidelines
+
+TODO
 
 ### Running the tests
+
+**These are not currently functional!** I'm doing a major overhaul to the way tests work.
 
 Unit testing is done by running [Expect](https://www.tcl.tk/man/expect5.31/expect.1.html) scripts inside
 an isolated environment. **Do not run the tests on your host system, as they will modify your containers.**
