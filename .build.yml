@@ -3,6 +3,10 @@ secrets:
   - 618623af-4ab3-4e03-a115-56ca5b1e9c12
 sources:
   - https://git.sr.ht/~refi64/nsbox
+triggers:
+  - action: email
+    condition: failure
+    to: 'nsbox-devel <~refi64/nsbox-devel@lists.sr.ht>'
 tasks:
   - mirror: |
       ssh-keyscan -t ed25519 github.com > ~/.ssh/known_hosts
