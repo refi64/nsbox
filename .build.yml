@@ -1,0 +1,13 @@
+image: fedora/35
+secrets:
+  - 618623af-4ab3-4e03-a115-56ca5b1e9c12
+sources:
+  - https://git.sr.ht/~refi64/nsbox
+tasks:
+  - mirror: |
+      ssh-keyscan -t ed25519 github.com > ~/.ssh/known_hosts
+      ssh-keygen -lf ~/.ssh/known_hosts | awk '{print $2}' | \
+        grep SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU
+
+      cd nsbox
+      git push git@github.com:refi64/nsbox.git main
