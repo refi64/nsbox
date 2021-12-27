@@ -10,8 +10,6 @@ nsbox is a multi-purpose, nspawn-powered container manager. Please see the
 - [Legacy ora.pm issues board](https://ora.pm/project/211667/kanban) (superceded by the
   sr.ht project, will be decomissioned in the future)
 
-[![View issues](https://img.shields.io/badge/issues-here-yellow)](https://ora.pm/project/211667/kanban)
-
 ## Build dependencies
 
 You need:
