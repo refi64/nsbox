@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -78,6 +79,7 @@ type Config struct {
 	ExtraBindMounts   []string
 	PrivateDirs       []string
 	ShareCgroupfs     bool
+	ShareDevices      []string
 	VirtualNetwork    bool
 }
 
@@ -240,6 +242,16 @@ func (container Container) UpdateConfig() error {
 
 	if container.Config.VirtualNetwork && !container.Config.Boot {
 		return errors.New("cannot use private networking on a non-booted container")
+	}
+
+	for _, dev := range container.Config.ShareDevices {
+		if dev == "*" {
+			if container.Config.Boot {
+				return errors.New("cannot share all devices for a booted container")
+			}
+		} else if !path.IsAbs(dev) {
+			return errors.New("shared devices must be paths or '*'")
+		}
 	}
 
 	configPath := filepath.Join(container.Path, configJson)

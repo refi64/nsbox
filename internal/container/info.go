@@ -58,6 +58,8 @@ func (ct Container) ShowInfo(usrdata *userdata.Userdata) error {
 	fmt.Fprintln(writer, "Shares cgroups:\t", boolYesNo(ct.Config.ShareCgroupfs))
 	fmt.Fprintln(writer, "Virtual network:\t", boolYesNo(ct.Config.VirtualNetwork))
 
+	fmt.Fprintln(writer, "Shared devices:\t", strings.Join(ct.Config.ShareDevices, ", "))
+
 	fmt.Fprintln(writer, "XDG desktop exports:\t", strings.Join(ct.Config.XdgDesktopExports, ", "))
 	fmt.Fprintln(writer, "XDG desktop extra:\t", strings.Join(ct.Config.XdgDesktopExtra, ", "))
 

@@ -39,24 +39,6 @@ func getXdgRuntimeDir(usrdata *userdata.Userdata) (string, error) {
 	}
 }
 
-func bindLoopDevices(builder *nspawn.Builder) {
-	cmd := exec.Command("losetup", "--find")
-	cmd.Stdout = nil
-	if err := cmd.Run(); err != nil {
-		log.Debug("losetup failed: ", err)
-		return
-	}
-
-	loopDevices, err := filepath.Glob("/dev/loop*")
-	if err != nil {
-		panic(fmt.Sprintf("failed to find loop devices: %v", loopDevices))
-	}
-
-	for _, device := range loopDevices {
-		builder.AddBind(device)
-	}
-}
-
 func bindHome(builder *nspawn.Builder, usrdata *userdata.Userdata) error {
 	usrdata.Environ["NSBOX_HOME"] = usrdata.User.HomeDir
 
@@ -97,15 +79,26 @@ func bindHome(builder *nspawn.Builder, usrdata *userdata.Userdata) error {
 	return nil
 }
 
-func bindDevices(builder *nspawn.Builder) {
+func bindDevices(builder *nspawn.Builder, ct *container.Container) {
 	tmpdir := os.TempDir()
 	x11 := filepath.Join(tmpdir, ".X11-unix")
 	builder.AddBind(x11)
 
-	builder.AddBind("/dev/dri")
-	builder.AddBind("/dev/input")
+	bindFullDev := false
 
-	bindLoopDevices(builder)
+	for _, dev := range ct.Config.ShareDevices {
+		if dev == "*" {
+			builder.AddRecursiveBind("/dev")
+			bindFullDev = true
+		} else {
+			builder.AddRecursiveBind(dev)
+		}
+	}
+
+	if !bindFullDev {
+		builder.AddBind("/dev/dri")
+		builder.AddBind("/dev/input")
+	}
 }
 
 func stripLeadingSlash(path string) string {
@@ -347,6 +340,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		builder.Boot = true
 	} else {
 		builder.AsPid2 = true
+		builder.PipeConsole = true
 	}
 
 	usrdata.Environ["NSBOX_INTERNAL"] = "1"
@@ -474,7 +468,7 @@ func RunContainerDirectNspawn(ct *container.Container, usrdata *userdata.Userdat
 		}
 	}
 
-	bindDevices(builder)
+	bindDevices(builder, ct)
 
 	if ct.Config.ShareCgroupfs {
 		builder.AddRecursiveBind("/sys/fs/cgroup")

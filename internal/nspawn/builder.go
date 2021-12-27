@@ -29,6 +29,7 @@ type Builder struct {
 	AsPid2           bool
 	Boot             bool
 	KeepUnit         bool
+	PipeConsole      bool
 	NetworkVeth      bool
 	NetworkZone      string
 	MachineDirectory string
@@ -123,6 +124,10 @@ func (builder *Builder) Build() []string {
 
 	if builder.KeepUnit {
 		addArg(&args, "keep-unit")
+	}
+
+	if builder.PipeConsole {
+		addArg(&args, "pipe")
 	}
 
 	if builder.NetworkVeth {
