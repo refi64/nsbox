@@ -4,14 +4,16 @@ common_image_files = [
   "roles/main/tasks/main.yaml",
 ]
 
-common_local_image_files = [
-  "Dockerfile"
-]
+common_local_image_files = [ "Dockerfile" ]
 
 image_definitions = [
   {
     name = "fedora"
-    versions = ["33", "34", "35"]
+    versions = [
+      "33",
+      "34",
+      "35",
+    ]
     extra_image_files = [
       "roles/main/files/nsbox_trigger.py",
       "roles/main/files/nsbox-guest-tools.spec",
@@ -22,7 +24,10 @@ image_definitions = [
   {
     name = "debian"
     local = true
-    versions = ["buster", "bullseye"]
+    versions = [
+      "buster",
+      "bullseye",
+    ]
   },
   {
     name = "arch"
@@ -33,5 +38,5 @@ image_definitions = [
       "roles/main/tasks/build_guest_tools.yaml",
       "roles/main/vars/guest_tools.yaml",
     ]
-  }
+  },
 ]

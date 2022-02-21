@@ -8,27 +8,45 @@ import("//build/substitute_file.gni")
 import("//build/symlink.gni")
 
 action("archive") {
-  outputs = ["$target_out_dir/nsbox-sources.tar"]
+  outputs = [ "$target_out_dir/nsbox-sources.tar" ]
   depfile = "$target_gen_dir/nsbox-sources.d"
 
   script = "//build/source_archive.py"
-  args = ["--source-root", rebase_path("//", root_build_dir),
-          "--prefix", "$product_name-$release_version",
-          "--out-tar", rebase_path(outputs[0], root_build_dir),
-          "--out-dep", rebase_path(depfile, root_build_dir),
-          "--include-vendor"]
+  args = [
+    "--source-root",
+    rebase_path("//", root_build_dir),
+    "--prefix",
+    "$product_name-$release_version",
+    "--out-tar",
+    rebase_path(outputs[0], root_build_dir),
+    "--out-dep",
+    rebase_path(depfile, root_build_dir),
+    "--include-vendor",
+  ]
 }
 
 substitute_file("nsbox.spec") {
-  deps = ["//:release_files"]
+  deps = [ "//:release_files" ]
 
   source = "nsbox.spec"
 
   vars = [
-    ["PRODUCT_NAME", product_name],
-    ["RDNS_NAME", rdns_name],
-    ["VERSION", release_version],
-    ["COMMIT", release_commit],
+    [
+      "PRODUCT_NAME",
+      product_name,
+    ],
+    [
+      "RDNS_NAME",
+      rdns_name,
+    ],
+    [
+      "VERSION",
+      release_version,
+    ],
+    [
+      "COMMIT",
+      release_commit,
+    ],
   ]
 }
 
@@ -39,26 +57,36 @@ rpmbuild("rpm") {
   release = "1"
   has_debug = true
 
-  extra_binary_packages = ["$product_name-bender"]
-  extra_noarch_packages = ["$product_name-selinux"]
+  extra_binary_packages = [ "$product_name-bender" ]
+  extra_noarch_packages = [ "$product_name-selinux" ]
 
   if (!is_stable_build) {
-    extra_binary_packages += ["nsbox-edge-alias", "nsbox-edge-bender-alias"]
+    extra_binary_packages += [
+      "nsbox-edge-alias",
+      "nsbox-edge-bender-alias",
+    ]
   }
 
   archive_source = get_target_outputs(":archive")
   substituted_spec = get_target_outputs(":nsbox.spec")
 
   spec = substituted_spec[0]
-  sources = [archive_source[0]]
-  deps = [":archive", ":nsbox.spec"]
+  sources = [ archive_source[0] ]
+  deps = [
+    ":archive",
+    ":nsbox.spec",
+  ]
 }
 
 copy_target_outputs("install") {
-  deps = [":rpm", ":nsbox.spec", ":archive"]
-  outputs = ["$root_build_dir/rpm/{{source_file_part}}"]
+  deps = [
+    ":archive",
+    ":nsbox.spec",
+    ":rpm",
+  ]
+  outputs = [ "$root_build_dir/rpm/{{source_file_part}}" ]
 }
 
 group("fedora") {
-  deps = [":install"]
+  deps = [ ":install" ]
 }

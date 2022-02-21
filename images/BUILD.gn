@@ -8,24 +8,28 @@ template("nsbox_image") {
   action(target_name) {
     pool = "//:console"
 
-    forward_variables_from(invoker, ["deps"])
+    forward_variables_from(invoker, [ "deps" ])
 
     image_root = rebase_path(invoker.image, root_build_dir)
 
     script = "//utils/nsbox-bender.py"
-    outputs = ["$root_out_dir/images/$target_name.tar"]
+    outputs = [ "$root_out_dir/images/$target_name.tar" ]
     args = [
       "--force-color",
-      "--export", rebase_path(outputs[0], root_build_dir),
-      "--override-nsbox-version", release_version,
-      "--override-nsbox-branch", release_branch,
-      "--builder", image_builder,
+      "--export",
+      rebase_path(outputs[0], root_build_dir),
+      "--override-nsbox-version",
+      release_version,
+      "--override-nsbox-branch",
+      release_branch,
+      "--builder",
+      image_builder,
     ]
 
     if (defined(invoker.tag) && invoker.tag != "") {
-      args += ["$image_root:${invoker.tag}"]
+      args += [ "$image_root:${invoker.tag}" ]
     } else {
-      args += [image_root]
+      args += [ image_root ]
     }
 
     sources = [
@@ -35,12 +39,12 @@ template("nsbox_image") {
 
     if (defined(invoker.image_files)) {
       foreach(file, invoker.image_files) {
-        sources += ["${invoker.image}/$file"]
+        sources += [ "${invoker.image}/$file" ]
       }
     }
 
     if (defined(invoker.local) && invoker.local) {
-      sources += ["${invoker.image}/Dockerfile"]
+      sources += [ "${invoker.image}/Dockerfile" ]
     }
   }
 }
@@ -51,7 +55,7 @@ foreach(def, image_definitions) {
   if (defined(def.versions)) {
     versions = def.versions
   } else {
-    versions = [""]
+    versions = [ "" ]
   }
 
   foreach(version, versions) {
@@ -85,10 +89,10 @@ group("images") {
   foreach(def, image_definitions) {
     if (defined(def.versions)) {
       foreach(version, def.versions) {
-        deps += [":${def.name}-$version-image"]
+        deps += [ ":${def.name}-$version-image" ]
       }
     } else {
-      deps += [":${def.name}-image"]
+      deps += [ ":${def.name}-image" ]
     }
   }
 }

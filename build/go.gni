@@ -6,24 +6,33 @@ go_target_dir = "$root_build_dir/gofiles"
 
 template("go_binary") {
   action(target_name) {
-    forward_variables_from(invoker, ["deps"])
+    forward_variables_from(invoker, [ "deps" ])
 
-    outputs = ["$target_out_dir/$target_name"]
+    outputs = [ "$target_out_dir/$target_name" ]
     depfile = "$target_out_dir/$target_name.d"
 
     script = "//build/go.py"
-    args = ["--go", go_exe, "--go-cache", rebase_path("$root_build_dir/gocache"),
-            "--package", invoker.package,
-            "--gofiles-root", rebase_path(go_target_dir, root_build_dir),
-            "--out-bin", rebase_path(outputs[0], root_build_dir),
-            "--out-dep", rebase_path(depfile, root_build_dir)]
+    args = [
+      "--go",
+      go_exe,
+      "--go-cache",
+      rebase_path("$root_build_dir/gocache"),
+      "--package",
+      invoker.package,
+      "--gofiles-root",
+      rebase_path(go_target_dir, root_build_dir),
+      "--out-bin",
+      rebase_path(outputs[0], root_build_dir),
+      "--out-dep",
+      rebase_path(depfile, root_build_dir),
+    ]
 
     if (defined(invoker.static) && invoker.static) {
-      args += ["--static"]
+      args += [ "--static" ]
     }
 
     if (enable_selinux) {
-      args += ["--selinux"]
+      args += [ "--selinux" ]
     }
   }
 }

@@ -4,30 +4,42 @@
 
 template("substitute_file") {
   action(target_name) {
-    forward_variables_from(invoker, ["deps"])
+    forward_variables_from(invoker, [ "deps" ])
 
-    sources = [invoker.source]
+    sources = [ invoker.source ]
 
     if (defined(invoker.output)) {
-      outputs = [invoker.output]
+      outputs = [ invoker.output ]
     } else {
-      outputs = ["$target_out_dir/$target_name"]
+      outputs = [ "$target_out_dir/$target_name" ]
     }
 
     script = "//build/substitute_file.py"
 
-    args = ["--source", rebase_path(invoker.source, root_build_dir),
-            "--dest", rebase_path(outputs[0], root_build_dir)]
+    args = [
+      "--source",
+      rebase_path(invoker.source, root_build_dir),
+      "--dest",
+      rebase_path(outputs[0], root_build_dir),
+    ]
 
     if (defined(invoker.vars)) {
       foreach(var, invoker.vars) {
-        args += ["--var", var[0], var[1]]
+        args += [
+          "--var",
+          var[0],
+          var[1],
+        ]
       }
     }
 
     if (defined(invoker.file_vars)) {
       foreach(file_var, invoker.file_vars) {
-        args += ["--file-var", file_var[0], rebase_path(file_var[1], root_build_dir)]
+        args += [
+          "--file-var",
+          file_var[0],
+          rebase_path(file_var[1], root_build_dir),
+        ]
       }
     }
   }

@@ -7,13 +7,31 @@ import("//build/selinux.gni")
 import("//build/substitute_file.gni")
 
 selinux_vars = [
-  ["PRODUCT_NAME", product_name],
-  ["TYPE_PREFIX", string_replace(product_name, "-", "_")],
-  ["VERSION", release_version],
+  [
+    "PRODUCT_NAME",
+    product_name,
+  ],
+  [
+    "TYPE_PREFIX",
+    string_replace(product_name, "-", "_"),
+  ],
+  [
+    "VERSION",
+    release_version,
+  ],
 
-  ["PREFIX", prefix],
-  ["LIBEXEC_DIR", libexec_dir],
-  ["SHARE_DIR", share_dir],
+  [
+    "PREFIX",
+    prefix,
+  ],
+  [
+    "LIBEXEC_DIR",
+    libexec_dir,
+  ],
+  [
+    "SHARE_DIR",
+    share_dir,
+  ],
 ]
 
 substitute_file("nsbox.te") {
@@ -31,14 +49,17 @@ substitute_file("nsbox.fc") {
 selinux_package("nsbox_policy") {
   name = product_name
   sources = get_target_outputs(":nsbox.te") + get_target_outputs(":nsbox.fc")
-  deps = [":nsbox.te", ":nsbox.fc"]
+  deps = [
+    ":nsbox.fc",
+    ":nsbox.te",
+  ]
 }
 
 group("sepolicy") {
-  deps = [":nsbox_policy"]
+  deps = [ ":nsbox_policy" ]
 }
 
 install_files("install_sepolicy") {
-  targets = [":nsbox_policy"]
+  targets = [ ":nsbox_policy" ]
   output = "$share_dir/selinux/packages/{{source_file_part}}"
 }

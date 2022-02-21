@@ -12,7 +12,11 @@ template("selinux_package") {
       name = target_name
     }
 
-    forward_variables_from(invoker, ["sources", "deps"])
+    forward_variables_from(invoker,
+                           [
+                             "sources",
+                             "deps",
+                           ])
 
     te = ""
     fc = ""
@@ -30,12 +34,23 @@ template("selinux_package") {
     assert(te != "")
 
     scratch_dir = "$target_gen_dir/$name-policy"
-    outputs = ["$target_out_dir/$name.pp.bz2"]
+    outputs = [ "$target_out_dir/$name.pp.bz2" ]
 
-    args = ["--make", selinux_make, "--makefile", selinux_makefile, "--variant", selinux_variant,
-            "--out", rebase_path(outputs[0], root_build_dir),
-            "--scratch-dir", rebase_path(scratch_dir, root_build_dir),
-            "--te", rebase_path(te, root_build_dir),
-            "--fc", rebase_path(fc, root_build_dir)]
+    args = [
+      "--make",
+      selinux_make,
+      "--makefile",
+      selinux_makefile,
+      "--variant",
+      selinux_variant,
+      "--out",
+      rebase_path(outputs[0], root_build_dir),
+      "--scratch-dir",
+      rebase_path(scratch_dir, root_build_dir),
+      "--te",
+      rebase_path(te, root_build_dir),
+      "--fc",
+      rebase_path(fc, root_build_dir),
+    ]
   }
 }

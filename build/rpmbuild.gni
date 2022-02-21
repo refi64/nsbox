@@ -5,8 +5,12 @@
 template("rpmbuild") {
   if (defined(invoker.sources)) {
     copy("${target_name}_sources") {
-      forward_variables_from(invoker, ["sources", "deps"])
-      outputs = ["$target_gen_dir/{{source_file_part}}"]
+      forward_variables_from(invoker,
+                             [
+                               "sources",
+                               "deps",
+                             ])
+      outputs = [ "$target_gen_dir/{{source_file_part}}" ]
     }
   }
 
@@ -19,7 +23,11 @@ template("rpmbuild") {
       package_name = invoker.target_name
     }
 
-    forward_variables_from(invoker, ["version", "release"])
+    forward_variables_from(invoker,
+                           [
+                             "version",
+                             "release",
+                           ])
 
     release += ".fc$fedora_rpm_target_release"
     if (release_branch == "edge") {
@@ -28,7 +36,7 @@ template("rpmbuild") {
 
     deps = []
     if (defined(invoker.sources)) {
-      deps += [":${target_name}_sources"]
+      deps += [ ":${target_name}_sources" ]
     }
     if (defined(invoker.deps)) {
       deps += invoker.deps
@@ -38,7 +46,7 @@ template("rpmbuild") {
 
     absolute_topdir = rebase_path(topdir)
 
-    sources = [invoker.spec]
+    sources = [ invoker.spec ]
     if (defined(invoker.sources)) {
       sources += get_target_outputs(":${target_name}_sources")
     }
@@ -47,13 +55,16 @@ template("rpmbuild") {
     noarch_packages = []
 
     if (defined(invoker.noarch) && invoker.noarch) {
-      noarch_packages += [package_name]
+      noarch_packages += [ package_name ]
     } else {
-      binary_packages += [package_name]
+      binary_packages += [ package_name ]
     }
 
     if (defined(invoker.has_debug) && invoker.has_debug) {
-      binary_packages += ["$package_name-debuginfo", "$package_name-debugsource"]
+      binary_packages += [
+        "$package_name-debuginfo",
+        "$package_name-debugsource",
+      ]
     }
 
     if (defined(invoker.extra_binary_packages)) {
@@ -80,21 +91,33 @@ template("rpmbuild") {
       }
     }
 
-    outputs = ["$topdir/SRPMS/$package_name-$version-$release.src.rpm"]
+    outputs = [ "$topdir/SRPMS/$package_name-$version-$release.src.rpm" ]
     foreach(pkg, binary_packages) {
-      outputs += ["$topdir/RPMS/$arch/$pkg-$version-$release.$arch.rpm"]
+      outputs += [ "$topdir/RPMS/$arch/$pkg-$version-$release.$arch.rpm" ]
     }
     foreach(pkg, noarch_packages) {
-      outputs += ["$topdir/RPMS/noarch/$pkg-$version-$release.noarch.rpm"]
+      outputs += [ "$topdir/RPMS/noarch/$pkg-$version-$release.noarch.rpm" ]
     }
 
     script = "//build/bin_proxy.py"
-    args = [".", rpmbuild_exe, "-ba", rebase_path(invoker.spec),
-            "--define", "_topdir $absolute_topdir", "--undefine", "_disable_source_fetch"]
+    args = [
+      ".",
+      rpmbuild_exe,
+      "-ba",
+      rebase_path(invoker.spec),
+      "--define",
+      "_topdir $absolute_topdir",
+      "--undefine",
+      "_disable_source_fetch",
+    ]
 
     if (defined(invoker.sources)) {
-      srcdir = rebase_path(get_label_info(":${target_name}_sources", "target_gen_dir"))
-      args += ["--define", "_sourcedir $srcdir"]
+      srcdir = rebase_path(
+              get_label_info(":${target_name}_sources", "target_gen_dir"))
+      args += [
+        "--define",
+        "_sourcedir $srcdir",
+      ]
     }
   }
 }

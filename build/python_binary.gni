@@ -4,16 +4,24 @@
 
 template("python_binary") {
   action(target_name) {
-    forward_variables_from(invoker, ["deps"])
+    forward_variables_from(invoker, [ "deps" ])
 
     script = "//build/python_binary.py"
-    sources = [invoker.source]
-    outputs = [invoker.output,
-               "${invoker.python_files_dir}/$target_name.py",
-               "${invoker.python_files_dir}/$target_name.pyc"]
-    args = ["--script", rebase_path(sources[0], root_build_dir),
-            "--out-wrapper", rebase_path(outputs[0], root_build_dir),
-            "--out-py", rebase_path(outputs[1], root_build_dir),
-            "--out-pyc", rebase_path(outputs[2], root_build_dir)]
+    sources = [ invoker.source ]
+    outputs = [
+      invoker.output,
+      "${invoker.python_files_dir}/$target_name.py",
+      "${invoker.python_files_dir}/$target_name.pyc",
+    ]
+    args = [
+      "--script",
+      rebase_path(sources[0], root_build_dir),
+      "--out-wrapper",
+      rebase_path(outputs[0], root_build_dir),
+      "--out-py",
+      rebase_path(outputs[1], root_build_dir),
+      "--out-pyc",
+      rebase_path(outputs[2], root_build_dir),
+    ]
   }
 }

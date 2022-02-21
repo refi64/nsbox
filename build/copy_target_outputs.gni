@@ -9,12 +9,12 @@ template("copy_target_outputs") {
     copy_target = "${target_name}_" + string_replace(dep, "/", "_")
     copy_target = string_replace(copy_target, ":", "_")
 
-    all_copy_targets += [":$copy_target"]
+    all_copy_targets += [ ":$copy_target" ]
 
     copy(copy_target) {
       sources = get_target_outputs(dep)
-      forward_variables_from(invoker, ["outputs"])
-      deps = [dep]
+      forward_variables_from(invoker, [ "outputs" ])
+      deps = [ dep ]
     }
   }
 

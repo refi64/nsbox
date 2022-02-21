@@ -32,6 +32,6 @@ template("install_files") {
       output_prefix = install_dir
     }
 
-    outputs = ["$output_prefix/${invoker.output}"]
+    outputs = [ "$output_prefix/${invoker.output}" ]
   }
 }

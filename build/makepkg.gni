@@ -12,7 +12,12 @@ template("makepkg") {
       package_name = invoker.target_name
     }
 
-    forward_variables_from(invoker, ["deps", "release", "version"])
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "release",
+                             "version",
+                           ])
 
     if (defined(invoker.pkgbuild)) {
       pkgbuild = invoker.pkgbuild
@@ -20,11 +25,11 @@ template("makepkg") {
       pkgbuild = "PKGBUILD"
     }
 
-    sources = [pkgbuild]
+    sources = [ pkgbuild ]
 
     if (defined(invoker.sources)) {
       sources += invoker.sources
-    #   sources += get_target_outputs(":${target_name}_sources")
+      #   sources += get_target_outputs(":${target_name}_sources")
     }
 
     # binary_packages = [package_name]
@@ -36,7 +41,8 @@ template("makepkg") {
     #   binary_packages += invoker.extra_packages
     # }
 
-    outputs = ["$target_gen_dir/$package_name-$version-$release-any.pkg.tar.zst"]
+    outputs =
+        [ "$target_gen_dir/$package_name-$version-$release-any.pkg.tar.zst" ]
 
     pkgdest = rebase_path(target_gen_dir)
     builddir = rebase_path("$target_gen_dir/build-$target_name")
@@ -44,12 +50,19 @@ template("makepkg") {
     buildfile = get_path_info(pkgbuild, "file")
 
     script = "//build/bin_proxy.py"
-    args = [buildfile_dir, makepkg_exe, "-f", "BUILDFILE=$buildfile", "BUILDDIR=$builddir",
-            "PKGDEST=$pkgdest", "PKGEXT=.pkg.tar.zst"]
+    args = [
+      buildfile_dir,
+      makepkg_exe,
+      "-f",
+      "BUILDFILE=$buildfile",
+      "BUILDDIR=$builddir",
+      "PKGDEST=$pkgdest",
+      "PKGEXT=.pkg.tar.zst",
+    ]
 
     if (defined(invoker.vars)) {
       foreach(var, invoker.vars) {
-        args += ["${var[0]}=${var[1]}"]
+        args += [ "${var[0]}=${var[1]}" ]
       }
     }
   }

@@ -7,12 +7,14 @@ template("symlink") {
     stamp = "$target_gen_dir/$target_name.stamp"
 
     script = "//build/symlink.py"
-    args = [invoker.value,
-            rebase_path(invoker.name, root_build_dir),
-            rebase_path(stamp, root_build_dir)]
+    args = [
+      invoker.value,
+      rebase_path(invoker.name, root_build_dir),
+      rebase_path(stamp, root_build_dir),
+    ]
     sources = []
-    outputs = [stamp]
+    outputs = [ stamp ]
 
-    forward_variables_from(invoker, ["deps"])
+    forward_variables_from(invoker, [ "deps" ])
   }
 }

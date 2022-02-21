@@ -93,11 +93,26 @@ set_default_toolchain("//build/minimal-toolchain")
 
 # Define some common substitution vars that build files will use.
 substitute_config_vars = [
-  ["BIN_DIR", bin_dir],
-  ["CONFIG_DIR", config_dir],
-  ["LIBEXEC_DIR", libexec_dir],
-  ["SHARE_DIR", share_dir],
-  ["STATE_DIR", state_dir],
+  [
+    "BIN_DIR",
+    bin_dir,
+  ],
+  [
+    "CONFIG_DIR",
+    config_dir,
+  ],
+  [
+    "LIBEXEC_DIR",
+    libexec_dir,
+  ],
+  [
+    "SHARE_DIR",
+    share_dir,
+  ],
+  [
+    "STATE_DIR",
+    state_dir,
+  ],
 ]
 
 if (is_stable_build) {
@@ -114,8 +129,14 @@ if (override_release_version != "") {
   release_version = override_release_version
 } else {
   version_data = exec_script("//build/parse_release.py",
-                             ["--root", rebase_path("//"),  "--branch", release_branch],
-                             "json", ["//.git/logs/HEAD"])
+                             [
+                               "--root",
+                               rebase_path("//"),
+                               "--branch",
+                               release_branch,
+                             ],
+                             "json",
+                             [ "//.git/logs/HEAD" ])
   release_version = version_data.version
   release_commit = version_data.commit
 
