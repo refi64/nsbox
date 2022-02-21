@@ -73,7 +73,7 @@ declare_args() {
   rpmbuild_exe = "rpmbuild"
 
   # The Fedora release to build RPMs for.
-  fedora_rpm_target_release = "34"
+  fedora_rpm_target_release = "35"
 
   # The path to the makepkg executable.
   makepkg_exe = "makepkg"
