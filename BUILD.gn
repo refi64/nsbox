@@ -159,6 +159,8 @@ copy("gofiles") {
     "internal/session/enter.go",
     "internal/session/enter_nsenter.go",
     "internal/session/enter_systemd.go",
+    "internal/session/nsbox-ptyfwd.c",
+    "internal/session/nsbox-ptyfwd.h",
     "internal/session/setup.go",
     "internal/userdata/check_privs.go",
     "internal/userdata/userdata.go",

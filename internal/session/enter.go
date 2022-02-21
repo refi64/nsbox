@@ -7,7 +7,6 @@ package session
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"os/signal"
 
@@ -19,6 +18,9 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/sys/unix"
 )
+
+// #include "nsbox-ptyfwd.h"
+import "C"
 
 type ptyIoFlags int
 
@@ -65,23 +67,12 @@ type containerDoor interface {
 	Enter(ct *container.Container, spec *containerEntrySpec, usrdata *userdata.Userdata) (sessionHandle, error)
 }
 
-func safeCopy(dest *os.File, source *os.File) {
-	hadSuccessYet := false
-
-	for {
-		if _, err := io.Copy(dest, source); err != nil {
-			if pathErr, ok := err.(*os.PathError); ok && !hadSuccessYet {
-				if unixErr, ok := pathErr.Err.(unix.Errno); ok && unixErr == unix.EIO {
-					// XXX: the process probably isn't alive yet. Just try again.
-					continue
-				}
-			}
-
-			log.Fatalf("safeCopy %d -> %d failed: %v", source.Fd(), dest.Fd(), err)
-		} else {
-			hadSuccessYet = true
-		}
+func forwardPtys(dst, src *os.File) error {
+	errmsg := C.nsbox_forward_pty(C.int(dst.Fd()), C.int(src.Fd()))
+	if errmsg != nil {
+		log.Fatal("Failed to forward PTYs:", C.GoString(errmsg))
 	}
+	return nil
 }
 
 func (spec containerEntrySpec) buildNsboxHostCommand() []string {
@@ -192,11 +183,11 @@ func EnterContainer(ct *container.Container, command []string, usrdata *userdata
 	// Set-up the PTY forwarding.
 	if spec.ptyIo != 0 {
 		if forwardStdinToPty {
-			go safeCopy(pty, os.Stdin)
+			go forwardPtys(pty, os.Stdin)
 		}
 
 		if forwardPtyToWriter != nil {
-			go safeCopy(forwardPtyToWriter, pty)
+			go forwardPtys(forwardPtyToWriter, pty)
 		}
 
 		if forwardStdinToPty {

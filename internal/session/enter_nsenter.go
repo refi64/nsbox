@@ -18,6 +18,11 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// We add the "import C" here, because enter.go has it, so if CGO_ENABLED=0, then enter.go
+// would not be built BUT this file still would be, resulting in undefined symbol errors.
+
+import "C"
+
 type nsenterSessionHandle struct {
 	process *os.Process
 }
