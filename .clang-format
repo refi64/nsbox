@@ -1,0 +1,5 @@
+AlignEscapedNewlines: Left
+ColumnLimit: 90
+IncludeBlocks: Regroup
+PointerAlignment: Right
+SpacesBeforeTrailingComments: 2
